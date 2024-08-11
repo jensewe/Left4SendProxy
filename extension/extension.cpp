@@ -253,6 +253,11 @@ DETOUR_DECL_STATIC3(SV_ComputeClientPacks, void, int, iClientCount, CGameClient 
 		}
 
 		SV_ComputeClientPacks_ActualCall(1, &pClients[i], snap);
+
+		// should be "pSnapshot->ReleaseReference()" but no need for an extra sig
+		// since it's almost certain that the snapshot won't get deleted now
+		Assert(snap->m_nReferences == 2);
+		snap->m_nReferences--;
 	}
 
 	g_iCurrentClientIndexInLoop = -1;
