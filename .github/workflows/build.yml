@@ -120,7 +120,8 @@ jobs:
             --hl2sdk-root="${{ github.workspace }}/alliedmodders" \
             --sm-path="${{ github.workspace }}/alliedmodders/sourcemod" \
             --mms-path="${{ github.workspace }}/alliedmodders/mmsource-1.10" \
-            --sdks=${{ join(fromJSON(env.SDKS)) }}
+            --sdks=${{ join(fromJSON(env.SDKS)) }} \
+            --enable-optimize
           ambuild
 
       - name: Copy to addons directory
