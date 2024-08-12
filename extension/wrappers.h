@@ -16,6 +16,17 @@ class CEventInfo;
 class CFrameSnapshot
 {
 public:
+	static void *s_pfnReleaseReference;
+	static ICallWrapper *s_callReleaseReference;
+	void ReleaseReference()
+	{
+		struct {
+			CFrameSnapshot *pThis;
+		} stack{ this };
+
+		s_callReleaseReference->Execute(&stack, NULL);
+	}
+
 	// Index info CFrameSnapshotManager::m_FrameSnapshots.
 	CInterlockedInt			m_ListIndex;	
 
