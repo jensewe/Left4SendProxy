@@ -83,6 +83,11 @@
 				"library"			"engine"
 				"linux"				"@_ZN21CFrameSnapshotManager16TakeTickSnapshotEi"
 			}
+			"CFrameSnapshot::ReleaseReference"
+			{
+				"library"			"engine"
+				"linux"				"@_ZN14CFrameSnapshot16ReleaseReferenceEv"
+			}
 		}
 	}
 	"tf"

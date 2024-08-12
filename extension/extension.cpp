@@ -254,10 +254,7 @@ DETOUR_DECL_STATIC3(SV_ComputeClientPacks, void, int, iClientCount, CGameClient 
 
 		SV_ComputeClientPacks_ActualCall(1, &pClients[i], snap);
 
-		// should be "pSnapshot->ReleaseReference()" but no need for an extra sig
-		// since it's almost certain that the snapshot won't get deleted now
-		Assert(snap->m_nReferences == 2);
-		snap->m_nReferences--;
+		snap->ReleaseReference();
 	}
 
 	g_iCurrentClientIndexInLoop = -1;
@@ -476,6 +473,13 @@ bool SendProxyManager::SDK_OnLoad(char *error, size_t maxlength, bool late)
 		return false;
 	}
 
+	if (!g_pGameConf->GetMemSig("CFrameSnapshot::ReleaseReference", &CFrameSnapshot::s_pfnReleaseReference))
+	{
+		if (conf_error[0])
+			snprintf(error, maxlength, "Unable to find signature address ""\"CFrameSnapshot::ReleaseReference\""" (%s)", conf_error);
+		return false;
+	}
+
 	if (!g_pGameConf->GetOffset("CGameClient::edict", &CGameClient::s_iOffs_edict))
 	{
 		if (conf_error[0])
@@ -538,6 +542,12 @@ void SendProxyManager::SDK_OnAllLoaded()
 			{ PassType_Basic, PASSFLAG_BYVAL, sizeof(int), NULL, 0 },
 			{ PassType_Basic, PASSFLAG_BYVAL, sizeof(CFrameSnapshot*), NULL, 0 }
 		};
+
+		CFrameSnapshot::s_callReleaseReference = bintools->CreateCall(CFrameSnapshot::s_pfnReleaseReference, CallConv_ThisCall, NULL, params, 0);
+		if (CFrameSnapshot::s_callReleaseReference == NULL) {
+			smutils->LogError(myself, "Unable to create ICallWrapper for \"CFrameSnapshot::s_callReleaseReference\"!");
+			return;
+		}
 
 		CFrameSnapshotManager::s_callTakeTickSnapshot = bintools->CreateCall(CFrameSnapshotManager::s_pfnTakeTickSnapshot, CallConv_ThisCall, &params[1], &params[0], 1);
 		if (CFrameSnapshotManager::s_callTakeTickSnapshot == NULL) {
