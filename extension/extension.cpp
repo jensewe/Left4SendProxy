@@ -94,7 +94,7 @@ ConVar * sv_parallel_sendsnapshot = nullptr;
 
 edict_t * g_pGameRulesProxyEdict = nullptr;
 int g_iGameRulesProxyIndex = -1;
-PackedEntityHandle_t g_PlayersPackedGameRules[g_iMaxPlayers][MAX_EDICTS] = {INVALID_PACKED_ENTITY_HANDLE};
+PackedEntityHandle_t g_PlayersPackedEntities[g_iMaxPlayers][MAX_EDICTS] = {INVALID_PACKED_ENTITY_HANDLE};
 void * g_pGameRules = nullptr;
 bool g_bSendSnapshots = false;
 
