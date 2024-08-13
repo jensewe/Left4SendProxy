@@ -94,7 +94,7 @@ ConVar * sv_parallel_sendsnapshot = nullptr;
 
 edict_t * g_pGameRulesProxyEdict = nullptr;
 int g_iGameRulesProxyIndex = -1;
-PackedEntityHandle_t g_PlayersPackedGameRules[SM_MAXPLAYERS] = {INVALID_PACKED_ENTITY_HANDLE};
+PackedEntityHandle_t g_PlayersPackedGameRules[g_iMaxPlayers][MAX_EDICTS] = {INVALID_PACKED_ENTITY_HANDLE};
 void * g_pGameRules = nullptr;
 bool g_bSendSnapshots = false;
 
@@ -137,24 +137,22 @@ ICallWrapper *CFrameSnapshot::s_callReleaseReference = nullptr;
 
 DETOUR_DECL_MEMBER3(CFrameSnapshotManager_UsePreviouslySentPacket, bool, CFrameSnapshot*, pSnapshot, int, entity, int, entSerialNumber)
 {
-	if (g_iCurrentClientIndexInLoop == -1
-	 || entity != g_iGameRulesProxyIndex)
+	if (g_iCurrentClientIndexInLoop == -1)
 	{
 		return DETOUR_MEMBER_CALL(CFrameSnapshotManager_UsePreviouslySentPacket)(pSnapshot, entity, entSerialNumber);
 	}
 
-	if (g_PlayersPackedGameRules[g_iCurrentClientIndexInLoop] == INVALID_PACKED_ENTITY_HANDLE)
+	if (g_PlayersPackedEntities[g_iCurrentClientIndexInLoop][entity] == INVALID_PACKED_ENTITY_HANDLE)
 		return false;
 
 	CFrameSnapshotManager *framesnapshotmanager = (CFrameSnapshotManager *)this;
-	framesnapshotmanager->m_pLastPackedData[entity] = g_PlayersPackedGameRules[g_iCurrentClientIndexInLoop];
+	framesnapshotmanager->m_pLastPackedData[entity] = g_PlayersPackedEntities[g_iCurrentClientIndexInLoop];
 	return DETOUR_MEMBER_CALL(CFrameSnapshotManager_UsePreviouslySentPacket)(pSnapshot, entity, entSerialNumber);
 }
 
 DETOUR_DECL_MEMBER2(CFrameSnapshotManager_GetPreviouslySentPacket, PackedEntity*, int, entity, int, entSerialNumber)
 {
-	if (g_iCurrentClientIndexInLoop == -1
-	 || entity != g_iGameRulesProxyIndex)
+	if (g_iCurrentClientIndexInLoop == -1)
 	{
 		return DETOUR_MEMBER_CALL(CFrameSnapshotManager_GetPreviouslySentPacket)(entity, entSerialNumber);
 	}
@@ -167,14 +165,13 @@ DETOUR_DECL_MEMBER2(CFrameSnapshotManager_GetPreviouslySentPacket, PackedEntity*
 	gamehelpers->TextMsg(g_iCurrentClientIndexInLoop+1, 3, buffer);
 #endif
 
-	framesnapshotmanager->m_pLastPackedData[entity] = g_PlayersPackedGameRules[g_iCurrentClientIndexInLoop];
+	framesnapshotmanager->m_pLastPackedData[entity] = g_PlayersPackedEntities[g_iCurrentClientIndexInLoop][entity];
 	return DETOUR_MEMBER_CALL(CFrameSnapshotManager_GetPreviouslySentPacket)(entity, entSerialNumber);
 }
 
 DETOUR_DECL_MEMBER2(CFrameSnapshotManager_CreatePackedEntity, PackedEntity*, CFrameSnapshot*, pSnapshot, int, entity)
 {
-	if (g_iCurrentClientIndexInLoop == -1
-	 || entity != g_iGameRulesProxyIndex)
+	if (g_iCurrentClientIndexInLoop == -1)
 	{
 		return DETOUR_MEMBER_CALL(CFrameSnapshotManager_CreatePackedEntity)(pSnapshot, entity);
 	}
@@ -182,10 +179,10 @@ DETOUR_DECL_MEMBER2(CFrameSnapshotManager_CreatePackedEntity, PackedEntity*, CFr
 	CFrameSnapshotManager *framesnapshotmanager = (CFrameSnapshotManager *)this;
 	PackedEntityHandle_t origHandle = framesnapshotmanager->m_pLastPackedData[entity];
 
-	if (g_PlayersPackedGameRules[g_iCurrentClientIndexInLoop] != INVALID_PACKED_ENTITY_HANDLE)
-		framesnapshotmanager->m_pLastPackedData[entity] = g_PlayersPackedGameRules[g_iCurrentClientIndexInLoop];
+	if (g_PlayersPackedEntities[g_iCurrentClientIndexInLoop][entity] != INVALID_PACKED_ENTITY_HANDLE)
+		framesnapshotmanager->m_pLastPackedData[entity] = g_PlayersPackedEntities[g_iCurrentClientIndexInLoop][entity];
 	PackedEntity *result = DETOUR_MEMBER_CALL(CFrameSnapshotManager_CreatePackedEntity)(pSnapshot, entity);
-	g_PlayersPackedGameRules[g_iCurrentClientIndexInLoop] = framesnapshotmanager->m_pLastPackedData[entity];
+	g_PlayersPackedEntities[g_iCurrentClientIndexInLoop][entity] = framesnapshotmanager->m_pLastPackedData[entity];
 
 #ifdef DEBUG
 	char buffer[128];
@@ -320,7 +317,10 @@ void Hook_ClientDisconnect(edict_t * pEnt)
 	}
 
 	if (gamehelpers->IndexOfEdict(pEnt) != -1)
-		g_PlayersPackedGameRules[gamehelpers->IndexOfEdict(pEnt)] = INVALID_PACKED_ENTITY_HANDLE;
+	{
+		for (int i = 0; i < g_iMaxPlayers; ++i)
+			g_PlayersPackedEntities[i][gamehelpers->IndexOfEdict(pEnt)] = INVALID_PACKED_ENTITY_HANDLE;
+	}
 
 	RETURN_META(MRES_IGNORED);
 }
@@ -621,10 +621,7 @@ void SendProxyManager::OnCoreMapEnd()
 
 void SendProxyManager::OnCoreMapStart(edict_t * pEdictList, int edictCount, int clientMax)
 {
-	for (int i = 0; i < (sizeof(g_PlayersPackedGameRules) / sizeof(g_PlayersPackedGameRules[0])); ++i)
-	{
-		g_PlayersPackedGameRules[i] = INVALID_PACKED_ENTITY_HANDLE;
-	}
+	memset(g_PlayersPackedEntities, INVALID_PACKED_ENTITY_HANDLE, sizeof(g_PlayersPackedEntities));
 
 	CBaseEntity *pGameRulesProxyEnt = FindEntityByServerClassname(0, g_szGameRulesProxy);
 	if (!pGameRulesProxyEnt)

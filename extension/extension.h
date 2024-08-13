@@ -255,6 +255,11 @@ extern CUtlVector<PropChangeHook> g_ChangeHooks;
 extern CUtlVector<PropChangeHookGamerules> g_ChangeHooksGamerules;
 extern const char * g_szGameRulesProxy;
 constexpr int g_iEdictCount = 2048; //default value, we do not need to get it manually cuz it is constant
+#if SOURCE_ENGINE == SE_LEFT4DEAD || SOURCE_ENGINE == SE_LEFT4DEAD2
+constexpr int g_iMaxPlayers = 32;
+#else
+constexpr int g_iMaxPlayers = SM_MAXPLAYERS;
+#endif
 extern ISDKTools * g_pSDKTools;
 extern void * g_pGameRules;
 
