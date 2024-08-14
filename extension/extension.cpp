@@ -320,7 +320,7 @@ void Hook_ClientDisconnect(edict_t * pEnt)
 	if (gamehelpers->IndexOfEdict(pEnt) != -1)
 	{
 		for (int i = 0; i < MAX_EDICTS; ++i)
-			g_PlayersPackedEntities[gamehelpers->IndexOfEdict(pEnt)][i] = INVALID_PACKED_ENTITY_HANDLE;
+			g_PlayersPackedEntities[gamehelpers->IndexOfEdict(pEnt)-1][i] = INVALID_PACKED_ENTITY_HANDLE;
 	}
 
 	RETURN_META(MRES_IGNORED);
