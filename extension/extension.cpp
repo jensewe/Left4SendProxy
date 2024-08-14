@@ -295,12 +295,6 @@ void SendProxyManager::OnEntityDestroyed(CBaseEntity* pEnt)
 		if (g_ChangeHooks[i].objectID == idx)
 			g_ChangeHooks.Remove(i--);
 	}
-
-	if (idx >= 0 && idx < MAX_EDICTS)
-	{
-		for (int i = 0; i < g_iMaxPlayers; ++i)
-			g_PlayersPackedEntities[i][idx] = INVALID_PACKED_ENTITY_HANDLE;
-	}
 }
 
 void Hook_ClientDisconnect(edict_t * pEnt)
@@ -315,12 +309,6 @@ void Hook_ClientDisconnect(edict_t * pEnt)
 	{
 		if (g_ChangeHooks[i].objectID == gamehelpers->IndexOfEdict(pEnt))
 			g_ChangeHooks.Remove(i--);
-	}
-
-	if (gamehelpers->IndexOfEdict(pEnt) != -1)
-	{
-		for (int i = 0; i < MAX_EDICTS; ++i)
-			g_PlayersPackedEntities[gamehelpers->IndexOfEdict(pEnt)-1][i] = INVALID_PACKED_ENTITY_HANDLE;
 	}
 
 	RETURN_META(MRES_IGNORED);
