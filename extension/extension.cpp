@@ -238,11 +238,11 @@ DETOUR_DECL_STATIC3(SV_ComputeClientPacks, void, int, iClientCount, CGameClient 
 
 		CFrameSnapshot *snap = framesnapshotmanager->TakeTickSnapshot(pSnapShot->m_nTickCount);
 
-		for (int i = 0; i < MAX_EDICTS; ++i)
+		for (int j = 0; j < MAX_EDICTS; ++j)
 		{
-			if (bEdictChanged[i])
+			if (bEdictChanged[j])
 			{
-				gamehelpers->EdictOfIndex(i)->m_fStateFlags |= FL_EDICT_CHANGED;
+				gamehelpers->EdictOfIndex(j)->m_fStateFlags |= FL_EDICT_CHANGED;
 			}
 		}
 
