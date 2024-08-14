@@ -64,11 +64,8 @@ DECL_DETOUR(SV_ComputeClientPacks);
 
 class CGameClient;
 class CFrameSnapshot;
-class CGlobalEntityList;
 
-CGameClient * g_pCurrentGameClientPtr = nullptr;
 int g_iCurrentClientIndexInLoop = -1; //used for optimization
-bool g_bCallingForNullClients = false;
 
 SendProxyManager g_SendProxyManager;
 SendProxyManagerInterfaceImpl * g_pMyInterface = nullptr;
@@ -97,8 +94,6 @@ int g_iGameRulesProxyIndex = -1;
 PackedEntityHandle_t g_PlayersPackedEntities[g_iMaxPlayers][MAX_EDICTS] = {INVALID_PACKED_ENTITY_HANDLE};
 void * g_pGameRules = nullptr;
 bool g_bSendSnapshots = false;
-
-bool g_bEdictChanged[MAX_EDICTS] = {false};
 
 static CBaseEntity * FindEntityByServerClassname(int, const char *);
 static void CallChangeCallbacks(PropChangeHook * pInfo, void * pOldValue, void * pNewValue);
@@ -300,6 +295,12 @@ void SendProxyManager::OnEntityDestroyed(CBaseEntity* pEnt)
 		if (g_ChangeHooks[i].objectID == idx)
 			g_ChangeHooks.Remove(i--);
 	}
+
+	if (idx >= 0 && idx < MAX_EDICTS)
+	{
+		for (int i = 0; i < g_iMaxPlayers; ++i)
+			g_PlayersPackedEntities[i][idx] = INVALID_PACKED_ENTITY_HANDLE;
+	}
 }
 
 void Hook_ClientDisconnect(edict_t * pEnt)
@@ -318,8 +319,8 @@ void Hook_ClientDisconnect(edict_t * pEnt)
 
 	if (gamehelpers->IndexOfEdict(pEnt) != -1)
 	{
-		for (int i = 0; i < g_iMaxPlayers; ++i)
-			g_PlayersPackedEntities[i][gamehelpers->IndexOfEdict(pEnt)] = INVALID_PACKED_ENTITY_HANDLE;
+		for (int i = 0; i < MAX_EDICTS; ++i)
+			g_PlayersPackedEntities[gamehelpers->IndexOfEdict(pEnt)][i] = INVALID_PACKED_ENTITY_HANDLE;
 	}
 
 	RETURN_META(MRES_IGNORED);
