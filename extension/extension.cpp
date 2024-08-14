@@ -92,6 +92,7 @@ ConVar * sv_parallel_sendsnapshot = nullptr;
 edict_t * g_pGameRulesProxyEdict = nullptr;
 int g_iGameRulesProxyIndex = -1;
 PackedEntityHandle_t g_PlayersPackedEntities[g_iMaxPlayers][MAX_EDICTS] = {INVALID_PACKED_ENTITY_HANDLE};
+int g_PlayersPackedSerial[g_iMaxPlayers][MAX_EDICTS];
 void * g_pGameRules = nullptr;
 bool g_bSendSnapshots = false;
 
@@ -142,6 +143,7 @@ DETOUR_DECL_MEMBER3(CFrameSnapshotManager_UsePreviouslySentPacket, bool, CFrameS
 
 	CFrameSnapshotManager *framesnapshotmanager = (CFrameSnapshotManager *)this;
 	framesnapshotmanager->m_pLastPackedData[entity] = g_PlayersPackedEntities[g_iCurrentClientIndexInLoop][entity];
+	framesnapshotmanager->m_pSerialNumber[entity] = g_PlayersPackedSerial[g_iCurrentClientIndexInLoop][entity];
 	return DETOUR_MEMBER_CALL(CFrameSnapshotManager_UsePreviouslySentPacket)(pSnapshot, entity, entSerialNumber);
 }
 
@@ -161,6 +163,7 @@ DETOUR_DECL_MEMBER2(CFrameSnapshotManager_GetPreviouslySentPacket, PackedEntity*
 #endif
 
 	framesnapshotmanager->m_pLastPackedData[entity] = g_PlayersPackedEntities[g_iCurrentClientIndexInLoop][entity];
+	framesnapshotmanager->m_pSerialNumber[entity] = g_PlayersPackedSerial[g_iCurrentClientIndexInLoop][entity];
 	return DETOUR_MEMBER_CALL(CFrameSnapshotManager_GetPreviouslySentPacket)(entity, entSerialNumber);
 }
 
@@ -175,9 +178,15 @@ DETOUR_DECL_MEMBER2(CFrameSnapshotManager_CreatePackedEntity, PackedEntity*, CFr
 	PackedEntityHandle_t origHandle = framesnapshotmanager->m_pLastPackedData[entity];
 
 	if (g_PlayersPackedEntities[g_iCurrentClientIndexInLoop][entity] != INVALID_PACKED_ENTITY_HANDLE)
+	{
 		framesnapshotmanager->m_pLastPackedData[entity] = g_PlayersPackedEntities[g_iCurrentClientIndexInLoop][entity];
+		framesnapshotmanager->m_pSerialNumber[entity] = g_PlayersPackedSerial[g_iCurrentClientIndexInLoop][entity];
+	}
+
 	PackedEntity *result = DETOUR_MEMBER_CALL(CFrameSnapshotManager_CreatePackedEntity)(pSnapshot, entity);
+
 	g_PlayersPackedEntities[g_iCurrentClientIndexInLoop][entity] = framesnapshotmanager->m_pLastPackedData[entity];
+	g_PlayersPackedSerial[g_iCurrentClientIndexInLoop][entity] = framesnapshotmanager->m_pSerialNumber[entity];
 
 #ifdef DEBUG
 	char buffer[128];
