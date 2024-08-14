@@ -162,9 +162,18 @@ DETOUR_DECL_MEMBER2(CFrameSnapshotManager_GetPreviouslySentPacket, PackedEntity*
 	gamehelpers->TextMsg(g_iCurrentClientIndexInLoop+1, 3, buffer);
 #endif
 
+	PackedEntityHandle_t origHandle = framesnapshotmanager->m_pLastPackedData[entity];
+	int serialNumber = framesnapshotmanager->m_pSerialNumber[entity];
+
 	framesnapshotmanager->m_pLastPackedData[entity] = g_PlayersPackedEntities[g_iCurrentClientIndexInLoop][entity];
 	framesnapshotmanager->m_pSerialNumber[entity] = g_PlayersPackedSerial[g_iCurrentClientIndexInLoop][entity];
-	return DETOUR_MEMBER_CALL(CFrameSnapshotManager_GetPreviouslySentPacket)(entity, entSerialNumber);
+
+	PackedEntity *result = DETOUR_MEMBER_CALL(CFrameSnapshotManager_GetPreviouslySentPacket)(entity, entSerialNumber);
+
+	framesnapshotmanager->m_pLastPackedData[entity] = origHandle;
+	framesnapshotmanager->m_pSerialNumber[entity] = serialNumber;
+
+	return result;
 }
 
 DETOUR_DECL_MEMBER2(CFrameSnapshotManager_CreatePackedEntity, PackedEntity*, CFrameSnapshot*, pSnapshot, int, entity)
@@ -246,6 +255,7 @@ DETOUR_DECL_STATIC3(SV_ComputeClientPacks, void, int, iClientCount, CGameClient 
 		g_iCurrentClientIndexInLoop = gamehelpers->IndexOfEdict(pClients[i]->GetEdict()) - 1;
 
 		CFrameSnapshot *snap = framesnapshotmanager->TakeTickSnapshot(pSnapShot->m_nTickCount);
+		snap->m_iExplicitDeleteSlots.CopyArray(pSnapShot->m_iExplicitDeleteSlots.Base(), pSnapShot->m_iExplicitDeleteSlots.Count());
 
 		for (int j = 0; j < MAX_EDICTS; ++j)
 		{
