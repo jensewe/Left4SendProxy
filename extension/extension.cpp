@@ -91,8 +91,7 @@ ConVar * sv_parallel_sendsnapshot = nullptr;
 
 edict_t * g_pGameRulesProxyEdict = nullptr;
 int g_iGameRulesProxyIndex = -1;
-PackedEntityHandle_t g_PlayersPackedEntities[g_iMaxPlayers][MAX_EDICTS] = {INVALID_PACKED_ENTITY_HANDLE};
-int g_PlayersPackedSerial[g_iMaxPlayers][MAX_EDICTS];
+PackedEntityHandle_t g_PlayersPackedEntities[g_iMaxPlayers];
 void * g_pGameRules = nullptr;
 bool g_bSendSnapshots = false;
 
@@ -108,6 +107,8 @@ ICallWrapper* CFrameSnapshotManager::s_callTakeTickSnapshot = nullptr;
 int CGameClient::s_iOffs_edict = -1;
 void* CFrameSnapshot::s_pfnReleaseReference = nullptr;
 ICallWrapper *CFrameSnapshot::s_callReleaseReference = nullptr;
+
+CUtlVector<edict_t *> g_vHookedEdicts;
 
 //detours
 
@@ -126,6 +127,21 @@ ICallWrapper *CFrameSnapshot::s_callReleaseReference = nullptr;
 // #define _FORCE_DEBUG
 
 #ifdef _FORCE_DEBUG
+#include <sm_platform.h>
+#include <memory>
+#include <sh_memory.h>
+
+static int g_iOffset = 0;
+static void *g_pPatch = nullptr;
+
+static bool g_bPrinted[SM_MAXPLAYERS] = {false};
+static ConVar left4sendproxy_debug("left4sendproxy_debug", "0", 0);
+
+void ChangeNoneMsg(const char *format, int edictIdx, const char *classname, const char *propname)
+{
+	Msg(" !!! %s : Entity %d (class '%s') reported ENTITY_CHANGE_NONE but '%s' changed.\n", g_iCurrentClientIndexInLoop == -1 ? "Nobody" : playerhelpers->GetGamePlayer(g_iCurrentClientIndexInLoop + 1)->GetName(), edictIdx, classname, propname);
+}
+
 #define DEBUG
 #endif
 
@@ -133,52 +149,45 @@ ICallWrapper *CFrameSnapshot::s_callReleaseReference = nullptr;
 
 DETOUR_DECL_MEMBER3(CFrameSnapshotManager_UsePreviouslySentPacket, bool, CFrameSnapshot*, pSnapshot, int, entity, int, entSerialNumber)
 {
-	if (g_iCurrentClientIndexInLoop == -1)
+	if (g_iCurrentClientIndexInLoop == -1
+	 || entity != g_iGameRulesProxyIndex)
 	{
 		return DETOUR_MEMBER_CALL(CFrameSnapshotManager_UsePreviouslySentPacket)(pSnapshot, entity, entSerialNumber);
 	}
 
-	if (g_PlayersPackedEntities[g_iCurrentClientIndexInLoop][entity] == INVALID_PACKED_ENTITY_HANDLE)
+	if (g_PlayersPackedEntities[g_iCurrentClientIndexInLoop] == INVALID_PACKED_ENTITY_HANDLE)
 		return false;
 
 	CFrameSnapshotManager *framesnapshotmanager = (CFrameSnapshotManager *)this;
-	framesnapshotmanager->m_pLastPackedData[entity] = g_PlayersPackedEntities[g_iCurrentClientIndexInLoop][entity];
-	framesnapshotmanager->m_pSerialNumber[entity] = g_PlayersPackedSerial[g_iCurrentClientIndexInLoop][entity];
+	framesnapshotmanager->m_pLastPackedData[entity] = g_PlayersPackedEntities[g_iCurrentClientIndexInLoop];
 	return DETOUR_MEMBER_CALL(CFrameSnapshotManager_UsePreviouslySentPacket)(pSnapshot, entity, entSerialNumber);
 }
 
 DETOUR_DECL_MEMBER2(CFrameSnapshotManager_GetPreviouslySentPacket, PackedEntity*, int, entity, int, entSerialNumber)
 {
-	if (g_iCurrentClientIndexInLoop == -1)
+	if (g_iCurrentClientIndexInLoop == -1
+	 || entity != g_iGameRulesProxyIndex)
 	{
 		return DETOUR_MEMBER_CALL(CFrameSnapshotManager_GetPreviouslySentPacket)(entity, entSerialNumber);
 	}
 
 	CFrameSnapshotManager *framesnapshotmanager = (CFrameSnapshotManager *)this;
 	
-#ifdef DEBUG
-	char buffer[128];
-	smutils->Format(buffer, sizeof(buffer), "GetPreviouslySentPacket (%d / %d)", framesnapshotmanager->m_pLastPackedData[entity], g_PlayersPackedGameRules[g_iCurrentClientIndexInLoop]);
-	gamehelpers->TextMsg(g_iCurrentClientIndexInLoop+1, 3, buffer);
-#endif
+// #ifdef DEBUG
+// 	char buffer[128];
+// 	smutils->Format(buffer, sizeof(buffer), "GetPreviouslySentPacket %d (0x%X / 0x%X)\n", entity, framesnapshotmanager->m_pLastPackedData[entity], g_PlayersPackedEntities[g_iCurrentClientIndexInLoop]);
+// 	if (left4sendproxy_debug.GetBool() || !g_bPrinted[g_iCurrentClientIndexInLoop])
+// 		Msg("%s %s", playerhelpers->GetGamePlayer(g_iCurrentClientIndexInLoop+1)->GetName(), buffer);
+// #endif
 
-	PackedEntityHandle_t origHandle = framesnapshotmanager->m_pLastPackedData[entity];
-	int serialNumber = framesnapshotmanager->m_pSerialNumber[entity];
-
-	framesnapshotmanager->m_pLastPackedData[entity] = g_PlayersPackedEntities[g_iCurrentClientIndexInLoop][entity];
-	framesnapshotmanager->m_pSerialNumber[entity] = g_PlayersPackedSerial[g_iCurrentClientIndexInLoop][entity];
-
-	PackedEntity *result = DETOUR_MEMBER_CALL(CFrameSnapshotManager_GetPreviouslySentPacket)(entity, entSerialNumber);
-
-	framesnapshotmanager->m_pLastPackedData[entity] = origHandle;
-	framesnapshotmanager->m_pSerialNumber[entity] = serialNumber;
-
-	return result;
+	framesnapshotmanager->m_pLastPackedData[entity] = g_PlayersPackedEntities[g_iCurrentClientIndexInLoop];
+	return DETOUR_MEMBER_CALL(CFrameSnapshotManager_GetPreviouslySentPacket)(entity, entSerialNumber);
 }
 
 DETOUR_DECL_MEMBER2(CFrameSnapshotManager_CreatePackedEntity, PackedEntity*, CFrameSnapshot*, pSnapshot, int, entity)
 {
-	if (g_iCurrentClientIndexInLoop == -1)
+	if (g_iCurrentClientIndexInLoop == -1
+	 || entity != g_iGameRulesProxyIndex)
 	{
 		return DETOUR_MEMBER_CALL(CFrameSnapshotManager_CreatePackedEntity)(pSnapshot, entity);
 	}
@@ -186,29 +195,27 @@ DETOUR_DECL_MEMBER2(CFrameSnapshotManager_CreatePackedEntity, PackedEntity*, CFr
 	CFrameSnapshotManager *framesnapshotmanager = (CFrameSnapshotManager *)this;
 	PackedEntityHandle_t origHandle = framesnapshotmanager->m_pLastPackedData[entity];
 
-	if (g_PlayersPackedEntities[g_iCurrentClientIndexInLoop][entity] != INVALID_PACKED_ENTITY_HANDLE)
+	if (g_PlayersPackedEntities[g_iCurrentClientIndexInLoop] != INVALID_PACKED_ENTITY_HANDLE)
 	{
-		framesnapshotmanager->m_pLastPackedData[entity] = g_PlayersPackedEntities[g_iCurrentClientIndexInLoop][entity];
-		framesnapshotmanager->m_pSerialNumber[entity] = g_PlayersPackedSerial[g_iCurrentClientIndexInLoop][entity];
+		framesnapshotmanager->m_pLastPackedData[entity] = g_PlayersPackedEntities[g_iCurrentClientIndexInLoop];
 	}
 
 	PackedEntity *result = DETOUR_MEMBER_CALL(CFrameSnapshotManager_CreatePackedEntity)(pSnapshot, entity);
 
-	g_PlayersPackedEntities[g_iCurrentClientIndexInLoop][entity] = framesnapshotmanager->m_pLastPackedData[entity];
-	g_PlayersPackedSerial[g_iCurrentClientIndexInLoop][entity] = framesnapshotmanager->m_pSerialNumber[entity];
+	g_PlayersPackedEntities[g_iCurrentClientIndexInLoop] = framesnapshotmanager->m_pLastPackedData[entity];
 
 #ifdef DEBUG
 	char buffer[128];
-	smutils->Format(buffer, sizeof(buffer), "CreatePackedEntity (%d / %d / %d)", origHandle, g_PlayersPackedGameRules[g_iCurrentClientIndexInLoop], framesnapshotmanager->m_pLastPackedData[entity]);
-	gamehelpers->TextMsg(g_iCurrentClientIndexInLoop+1, 3, buffer);
+	smutils->Format(buffer, sizeof(buffer), "CreatePackedEntity %s (%d) (0x%X / 0x%X / 0x%X)\n", gamehelpers->GetEntityClassname(gamehelpers->EdictOfIndex(entity)), entity, origHandle, g_PlayersPackedEntities[g_iCurrentClientIndexInLoop], framesnapshotmanager->m_pLastPackedData[entity]);
+	if (left4sendproxy_debug.GetBool() || !g_bPrinted[g_iCurrentClientIndexInLoop])
+	{
+		Msg("%s %s", playerhelpers->GetGamePlayer(g_iCurrentClientIndexInLoop+1)->GetName(), buffer);
+		g_bPrinted[g_iCurrentClientIndexInLoop] = true;
+	}
 #endif
 
 	return result;
 }
-
-#ifdef _FORCE_DEBUG
-#undef DEBUG
-#endif
 
 #if defined __linux__
 void __attribute__((__cdecl__)) SV_ComputeClientPacks_ActualCall(int iClientCount, CGameClient ** pClients, CFrameSnapshot * pSnapShot);
@@ -226,52 +233,50 @@ DETOUR_DECL_STATIC3(SV_ComputeClientPacks, void, int, iClientCount, CGameClient 
 	__asm mov pSnapShot, ebx // @Forgetest: ???Why???
 #endif
 
-	bool bEdictChanged[MAX_EDICTS];
+	g_iCurrentClientIndexInLoop = gamehelpers->IndexOfEdict(pClients[0]->GetEdict()) - 1;
+
+	for (int i = 0; i < g_vHookedEdicts.Count(); ++i)
+		g_vHookedEdicts[i]->m_fStateFlags |= FL_EDICT_CHANGED;
+
+	if (g_HooksGamerules.Count() && g_pGameRulesProxyEdict)
+		g_pGameRulesProxyEdict->m_fStateFlags |= FL_EDICT_CHANGED;
+
+	bool bEdictChanged[MAX_EDICTS] = {false};
 	for (int i = 0; i < MAX_EDICTS; ++i)
 	{
-		bEdictChanged[i] = false;
-
-		edict_t *edict = gamehelpers->EdictOfIndex(i);
-		if (!edict || !edict->GetUnknown() || edict->IsFree())
-			continue;
-
-		if (i > 0 && i <= playerhelpers->GetMaxClients())
-		{
-			if (!playerhelpers->GetGamePlayer(i)->IsInGame())
-				continue;
-		}
-
-		if (!edict->HasStateChanged())
-			continue;
-
-		bEdictChanged[i] = true;
+		bEdictChanged[i] = gamehelpers->EdictOfIndex(i)->HasStateChanged();
 	}
 
-	g_iCurrentClientIndexInLoop = gamehelpers->IndexOfEdict(pClients[0]->GetEdict()) - 1;
+	g_bIsEndOfLoop = iClientCount == 1;
 	SV_ComputeClientPacks_ActualCall(1, &pClients[0], pSnapShot);
 
-	for (int i = 1; i < iClientCount; ++i)
+	for (int iClient = 1; iClient < iClientCount; ++iClient)
 	{
-		g_iCurrentClientIndexInLoop = gamehelpers->IndexOfEdict(pClients[i]->GetEdict()) - 1;
+		g_iCurrentClientIndexInLoop = gamehelpers->IndexOfEdict(pClients[iClient]->GetEdict()) - 1;
 
 		CFrameSnapshot *snap = framesnapshotmanager->TakeTickSnapshot(pSnapShot->m_nTickCount);
 		snap->m_iExplicitDeleteSlots.CopyArray(pSnapShot->m_iExplicitDeleteSlots.Base(), pSnapShot->m_iExplicitDeleteSlots.Count());
 
-		for (int j = 0; j < MAX_EDICTS; ++j)
+		for (int i = 0; i < snap->m_nValidEntities; ++i)
 		{
-			if (bEdictChanged[j])
+			unsigned short index = snap->m_pValidEntities[i];
+			if (bEdictChanged[index])
 			{
-				gamehelpers->EdictOfIndex(j)->m_fStateFlags |= FL_EDICT_CHANGED;
+				gamehelpers->EdictOfIndex(index)->m_fStateFlags |= FL_EDICT_CHANGED;
 			}
 		}
 
-		SV_ComputeClientPacks_ActualCall(1, &pClients[i], snap);
+		SV_ComputeClientPacks_ActualCall(1, &pClients[iClient], snap);
 
 		snap->ReleaseReference();
 	}
 
 	g_iCurrentClientIndexInLoop = -1;
 }
+
+#ifdef _FORCE_DEBUG
+#undef DEBUG
+#endif
 
 #if defined _WIN32 && SOURCE_ENGINE == SE_CSGO
 __declspec(naked) void __cdecl SV_ComputeClientPacks_ActualCall(int iClientCount, CGameClient ** pClients, CFrameSnapshot * pSnapShot)
@@ -314,6 +319,9 @@ void SendProxyManager::OnEntityDestroyed(CBaseEntity* pEnt)
 		if (g_ChangeHooks[i].objectID == idx)
 			g_ChangeHooks.Remove(i--);
 	}
+
+	if (idx >= 0 && idx < MAX_EDICTS)
+		g_vHookedEdicts.FindAndRemove(gamehelpers->EdictOfIndex(idx));
 }
 
 void Hook_ClientDisconnect(edict_t * pEnt)
@@ -504,6 +512,30 @@ bool SendProxyManager::SDK_OnLoad(char *error, size_t maxlength, bool late)
 		return false;
 	}
 
+#ifdef DEBUG
+	if (!g_pGameConf->GetAddress("PackEntities_Normal", (void**)&g_pPatch))
+	{
+		if (conf_error[0])
+			snprintf(error, maxlength, "Unable to find offset ""\"PackEntities_Normal\""" (%s)", conf_error);
+		return false;
+	}
+
+	if (*(uint8_t*)g_pPatch != 0xE8)
+	{
+		if (conf_error[0])
+			snprintf(error, maxlength, "Invalid g_pPatch (%s)", conf_error);
+		return false;
+	}
+
+	SourceHook::SetMemAccess(g_pPatch, 5, SH_MEM_READ | SH_MEM_WRITE | SH_MEM_EXEC);
+
+	void (*pDest)(const char *, int, const char *, const char *) = &ChangeNoneMsg;
+	g_iOffset = *(int *)((uint8_t *)g_pPatch + 1);
+	int offs = (intptr_t)pDest - (intptr_t)((uint8_t *)g_pPatch + 5);
+	Msg("(intptr_t *)&ChangeNoneMsg - (intptr_t *)((char *)g_pPatch + 5) = %X   |  %X    | (%X / %X)\n", offs, g_iOffset, g_pPatch, pDest);
+	*(intptr_t *)((uint8_t *)g_pPatch + 1) = offs;
+#endif
+
 	CDetourManager::Init(smutils->GetScriptingEngine(), g_pGameConf);
 	
 	bool bDetoursInited = false;
@@ -530,6 +562,8 @@ bool SendProxyManager::SDK_OnLoad(char *error, size_t maxlength, bool late)
 	//we should not maintain compatibility with old plugins which uses earlier versions of sendproxy (< 1.3)
 	sharesys->RegisterLibrary(myself, "sendproxy13");
 	plsys->AddPluginsListener(&g_SendProxyManager);
+
+	ConVar_Register(0, this);
 
 	return true;
 }
@@ -584,6 +618,12 @@ bool SendProxyManager::QueryRunning(char* error, size_t maxlength)
 	return true;
 }
 
+bool SendProxyManager::RegisterConCommandBase(ConCommandBase* pVar)
+{
+	// Notify metamod of ownership
+	return META_REGCVAR(pVar);
+}
+
 void SendProxyManager::SDK_OnUnload()
 {
 	for (int i = 0; i < g_Hooks.Count(); i++)
@@ -613,6 +653,13 @@ void SendProxyManager::SDK_OnUnload()
 		g_pSDKHooks->RemoveEntityListener(this);
 	}
 	delete g_pMyInterface;
+
+#ifdef DEBUG
+	if (g_iOffset)
+		*(intptr_t *)((uint8_t *)g_pPatch + 1) = g_iOffset;
+#endif
+
+	ConVar_Unregister();
 }
 
 void SendProxyManager::OnCoreMapEnd()
@@ -625,11 +672,15 @@ void SendProxyManager::OnCoreMapEnd()
 
 	g_pGameRulesProxyEdict = nullptr;
 	g_iGameRulesProxyIndex = -1;
+
+	for (int i = 0; i < g_iMaxPlayers; ++i)
+		g_PlayersPackedEntities[i] = INVALID_PACKED_ENTITY_HANDLE;
 }
 
 void SendProxyManager::OnCoreMapStart(edict_t * pEdictList, int edictCount, int clientMax)
 {
-	memset(g_PlayersPackedEntities, INVALID_PACKED_ENTITY_HANDLE, sizeof(g_PlayersPackedEntities));
+	for (int i = 0; i < g_iMaxPlayers; ++i)
+		g_PlayersPackedEntities[i] = INVALID_PACKED_ENTITY_HANDLE;
 
 	CBaseEntity *pGameRulesProxyEnt = FindEntityByServerClassname(0, g_szGameRulesProxy);
 	if (!pGameRulesProxyEnt)
@@ -660,7 +711,7 @@ bool SendProxyManager::SDK_OnMetamodLoad(ISmmAPI *ismm, char *error, size_t maxl
 	sv_parallel_packentities->SetValue(0); //If we don't do that the sendproxy extension will crash the server (Post ref: https://forums.alliedmods.net/showpost.php?p=2540106&postcount=324 )
 	GET_CONVAR(sv_parallel_sendsnapshot);
 	sv_parallel_sendsnapshot->SetValue(0); //If we don't do that, sendproxy will not work correctly and may crash server. This affects all versions of sendproxy manager!
-	
+
 	return true;
 }
 
@@ -733,6 +784,8 @@ bool SendProxyManager::AddHookToList(SendPropHook hook)
 		}
 	}
 	g_Hooks.AddToTail(hook);
+	if (!bEdictHooked)
+		g_vHookedEdicts.AddToTail(hook.pEnt);
 	return true;
 }
 
@@ -850,6 +903,12 @@ void SendProxyManager::UnhookProxy(int i)
 			return;
 		}
 	}
+	for (int j = 0; j < g_vHookedEdicts.Count(); j++)
+		if (g_vHookedEdicts[j] == g_Hooks[i].pEnt)
+		{
+			g_vHookedEdicts.Remove(j);
+			break;
+		}
 	CallListenersForHookID(i);
 	g_Hooks[i].pVar->SetProxyFn(g_Hooks[i].pRealProxy);
 	g_Hooks.Remove(i);
@@ -1061,6 +1120,9 @@ void CallChangeGamerulesCallbacks(PropChangeHookGamerules * pInfo, void * pOldVa
 
 bool CallInt(SendPropHook &hook, int *ret, int iElement)
 {
+	if (g_iCurrentClientIndexInLoop == -1)
+		return false;
+
 	AUTO_LOCK_FM(g_WorkMutex);
 
 	if (!hook.pVar->IsInsideArray())
@@ -1104,6 +1166,9 @@ bool CallInt(SendPropHook &hook, int *ret, int iElement)
 
 bool CallIntGamerules(SendPropHookGamerules &hook, int *ret, int iElement)
 {
+	if (g_iCurrentClientIndexInLoop == -1)
+		return false;
+
 	AUTO_LOCK_FM(g_WorkMutex);
 
 	if (!hook.pVar->IsInsideArray())
@@ -1146,6 +1211,9 @@ bool CallIntGamerules(SendPropHookGamerules &hook, int *ret, int iElement)
 
 bool CallFloat(SendPropHook &hook, float *ret, int iElement)
 {
+	if (g_iCurrentClientIndexInLoop == -1)
+		return false;
+
 	AUTO_LOCK_FM(g_WorkMutex);
 	
 	if (!hook.pVar->IsInsideArray())
@@ -1189,6 +1257,9 @@ bool CallFloat(SendPropHook &hook, float *ret, int iElement)
 
 bool CallFloatGamerules(SendPropHookGamerules &hook, float *ret, int iElement)
 {
+	if (g_iCurrentClientIndexInLoop == -1)
+		return false;
+
 	AUTO_LOCK_FM(g_WorkMutex);
 
 	if (!hook.pVar->IsInsideArray())
@@ -1231,6 +1302,9 @@ bool CallFloatGamerules(SendPropHookGamerules &hook, float *ret, int iElement)
 
 bool CallString(SendPropHook &hook, char **ret, int iElement)
 {
+	if (g_iCurrentClientIndexInLoop == -1)
+		return false;
+
 	AUTO_LOCK_FM(g_WorkMutex);
 
 	if (!hook.pVar->IsInsideArray())
@@ -1275,6 +1349,9 @@ bool CallString(SendPropHook &hook, char **ret, int iElement)
 
 bool CallStringGamerules(SendPropHookGamerules &hook, char **ret, int iElement)
 {
+	if (g_iCurrentClientIndexInLoop == -1)
+		return false;
+
 	AUTO_LOCK_FM(g_WorkMutex);
 
 	if (!hook.pVar->IsInsideArray())
@@ -1327,6 +1404,9 @@ bool CallStringGamerules(SendPropHookGamerules &hook, char **ret, int iElement)
 
 bool CallVector(SendPropHook &hook, Vector &vec, int iElement)
 {
+	if (g_iCurrentClientIndexInLoop == -1)
+		return false;
+
 	AUTO_LOCK_FM(g_WorkMutex);
 
 	if (!hook.pVar->IsInsideArray())
@@ -1379,6 +1459,9 @@ bool CallVector(SendPropHook &hook, Vector &vec, int iElement)
 
 bool CallVectorGamerules(SendPropHookGamerules &hook, Vector &vec, int iElement)
 {
+	if (g_iCurrentClientIndexInLoop == -1)
+		return false;
+
 	AUTO_LOCK_FM(g_WorkMutex);
 
 	if (!hook.pVar->IsInsideArray())

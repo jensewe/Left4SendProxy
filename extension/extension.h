@@ -175,12 +175,14 @@ struct PropChangeHookGamerules
 class SendProxyManager :
 	public SDKExtension,
 	public IPluginsListener,
+	public IConCommandBaseAccessor,
 	public ISMEntityListener
 {
 public: //sm
 	virtual bool SDK_OnLoad(char * error, size_t maxlength, bool late);
 	virtual void SDK_OnUnload();
 	virtual void SDK_OnAllLoaded();
+	bool RegisterConCommandBase(ConCommandBase* pVar) override;
 
 	/**
 	 * @brief Asks the extension whether it's safe to remove an external
