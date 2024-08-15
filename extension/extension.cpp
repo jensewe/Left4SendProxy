@@ -247,7 +247,6 @@ DETOUR_DECL_STATIC3(SV_ComputeClientPacks, void, int, iClientCount, CGameClient 
 		bEdictChanged[i] = gamehelpers->EdictOfIndex(i)->HasStateChanged();
 	}
 
-	g_bIsEndOfLoop = iClientCount == 1;
 	SV_ComputeClientPacks_ActualCall(1, &pClients[0], pSnapShot);
 
 	for (int iClient = 1; iClient < iClientCount; ++iClient)
