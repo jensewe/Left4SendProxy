@@ -233,7 +233,9 @@ DETOUR_DECL_STATIC3(SV_ComputeClientPacks, void, int, iClientCount, CGameClient 
 	__asm mov pSnapShot, ebx // @Forgetest: ???Why???
 #endif
 
-	g_iCurrentClientIndexInLoop = gamehelpers->IndexOfEdict(pClients[0]->GetEdict()) - 1;
+	IClient *pClient = reinterpret_cast<IClient *>((char *)pClients[0] + 4);
+
+	g_iCurrentClientIndexInLoop = pClient->GetPlayerSlot();
 
 	for (int i = 0; i < g_vHookedEdicts.Count(); ++i)
 		g_vHookedEdicts[i]->m_fStateFlags |= FL_EDICT_CHANGED;
@@ -251,7 +253,8 @@ DETOUR_DECL_STATIC3(SV_ComputeClientPacks, void, int, iClientCount, CGameClient 
 
 	for (int iClient = 1; iClient < iClientCount; ++iClient)
 	{
-		g_iCurrentClientIndexInLoop = gamehelpers->IndexOfEdict(pClients[iClient]->GetEdict()) - 1;
+		pClient = reinterpret_cast<IClient *>((char *)pClients[iClient] + 4);
+		g_iCurrentClientIndexInLoop = pClient->GetPlayerSlot();
 
 		CFrameSnapshot *snap = framesnapshotmanager->TakeTickSnapshot(pSnapShot->m_nTickCount);
 		snap->m_iExplicitDeleteSlots.CopyArray(pSnapShot->m_iExplicitDeleteSlots.Base(), pSnapShot->m_iExplicitDeleteSlots.Count());
@@ -494,13 +497,6 @@ bool SendProxyManager::SDK_OnLoad(char *error, size_t maxlength, bool late)
 	{
 		if (conf_error[0])
 			snprintf(error, maxlength, "Unable to find signature address ""\"CFrameSnapshot::ReleaseReference\""" (%s)", conf_error);
-		return false;
-	}
-
-	if (!g_pGameConf->GetOffset("CGameClient::edict", &CGameClient::s_iOffs_edict))
-	{
-		if (conf_error[0])
-			snprintf(error, maxlength, "Unable to find offset ""\"CGameClient::edict\""" (%s)", conf_error);
 		return false;
 	}
 

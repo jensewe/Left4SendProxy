@@ -99,16 +99,7 @@ public:
 	CUtlVector<int>			m_iExplicitDeleteSlots;
 };
 
-class CGameClient
-{
-public:
-	static int s_iOffs_edict;
-
-	edict_t* GetEdict()
-	{
-		return *(edict_t**)(reinterpret_cast<const byte*>(this) + s_iOffs_edict);
-	}
-};
+class CGameClient;
 
 extern CFrameSnapshotManager* framesnapshotmanager;
 
