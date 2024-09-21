@@ -104,7 +104,6 @@ const char * g_szGameRulesProxy;
 CFrameSnapshotManager* framesnapshotmanager = nullptr;
 void* CFrameSnapshotManager::s_pfnTakeTickSnapshot = nullptr;
 ICallWrapper* CFrameSnapshotManager::s_callTakeTickSnapshot = nullptr;
-int CGameClient::s_iOffs_edict = -1;
 void* CFrameSnapshot::s_pfnReleaseReference = nullptr;
 ICallWrapper *CFrameSnapshot::s_callReleaseReference = nullptr;
 
