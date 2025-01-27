@@ -661,7 +661,7 @@ static cell_t Native_UnhookArrayPropGamerules(IPluginContext * pContext, const c
 	int iElement = params[2];
 	PropType iPropType = static_cast<PropType>(params[3]);
 	IPluginFunction * pFunction = pContext->GetFunctionById(params[4]);
-	for (int i = 0; i < g_Hooks.Count(); i++)
+	for (int i = 0; i < g_HooksGamerules.Count(); i++)
 	{
 		if (g_HooksGamerules[i].Element == iElement && g_HooksGamerules[i].sCallbackInfo.iCallbackType == CallBackType::Callback_PluginFunction && g_HooksGamerules[i].PropType == iPropType && g_HooksGamerules[i].sCallbackInfo.pCallback == (void *)pFunction && !strcmp(g_HooksGamerules[i].pVar->GetName(), propName))
 		{
