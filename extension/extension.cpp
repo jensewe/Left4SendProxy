@@ -249,6 +249,7 @@ DETOUR_DECL_STATIC3(SV_ComputeClientPacks, void, int, iClientCount, CGameClient 
 	}
 
 	SV_ComputeClientPacks_ActualCall(1, &pClients[0], pSnapShot);
+	gameclients->PostClientMessagesSent();
 
 	for (int iClient = 1; iClient < iClientCount; ++iClient)
 	{
@@ -268,6 +269,7 @@ DETOUR_DECL_STATIC3(SV_ComputeClientPacks, void, int, iClientCount, CGameClient 
 		}
 
 		SV_ComputeClientPacks_ActualCall(1, &pClients[iClient], snap);
+		gameclients->PostClientMessagesSent();
 
 		snap->ReleaseReference();
 	}
