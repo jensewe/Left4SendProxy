@@ -175,12 +175,51 @@ struct PropChangeHookGamerules
 class SendProxyManager :
 	public SDKExtension,
 	public IPluginsListener,
+	public IConCommandBaseAccessor,
 	public ISMEntityListener
 {
 public: //sm
 	virtual bool SDK_OnLoad(char * error, size_t maxlength, bool late);
 	virtual void SDK_OnUnload();
 	virtual void SDK_OnAllLoaded();
+	bool RegisterConCommandBase(ConCommandBase* pVar) override;
+
+	/**
+	 * @brief Asks the extension whether it's safe to remove an external
+	 * interface it's using.  If it's not safe, return false, and the
+	 * extension will be unloaded afterwards.
+	 *
+	 * NOTE: It is important to also hook NotifyInterfaceDrop() in order to clean
+	 * up resources.
+	 *
+	 * @param pInterface		Pointer to interface being dropped.  This
+	 * 							pointer may be opaque, and it should not
+	 *							be queried using SMInterface functions unless
+	 *							it can be verified to match an existing
+	 *							pointer of known type.
+	 * @return					True to continue, false to unload this
+	 * 							extension afterwards.
+	 */
+	bool QueryInterfaceDrop(SMInterface* pInterface) override;
+
+	/**
+	 * @brief Notifies the extension that an external interface it uses is being removed.
+	 *
+	 * @param pInterface		Pointer to interface being dropped.  This
+	 * 							pointer may be opaque, and it should not
+	 *							be queried using SMInterface functions unless
+	 *							it can be verified to match an existing
+	 */
+	void NotifyInterfaceDrop(SMInterface* pInterface) override;
+
+	/**
+	 * @brief Return false to tell Core that your extension should be considered unusable.
+	 *
+	 * @param error				Error buffer.
+	 * @param maxlength			Size of error buffer.
+	 * @return					True on success, false otherwise.
+	 */
+	bool QueryRunning(char* error, size_t maxlength) override;
 	
 	virtual void OnCoreMapEnd();
 	virtual void OnCoreMapStart(edict_t *, int, int);
@@ -200,7 +239,6 @@ public: //other
 
 	void UnhookChange(int i, CallBackInfo * pInfo);
 	void UnhookChangeGamerules(int i, CallBackInfo * pInfo);
-	virtual int GetClientCount() const;
 public: // ISMEntityListener
 	virtual void OnEntityDestroyed(CBaseEntity * pEntity);
 public:
@@ -219,6 +257,11 @@ extern CUtlVector<PropChangeHook> g_ChangeHooks;
 extern CUtlVector<PropChangeHookGamerules> g_ChangeHooksGamerules;
 extern const char * g_szGameRulesProxy;
 constexpr int g_iEdictCount = 2048; //default value, we do not need to get it manually cuz it is constant
+#if SOURCE_ENGINE == SE_LEFT4DEAD || SOURCE_ENGINE == SE_LEFT4DEAD2
+constexpr int g_iMaxPlayers = 32;
+#else
+constexpr int g_iMaxPlayers = SM_MAXPLAYERS;
+#endif
 extern ISDKTools * g_pSDKTools;
 extern void * g_pGameRules;
 
