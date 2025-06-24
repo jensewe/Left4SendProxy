@@ -7,10 +7,10 @@ project = builder.LibraryProject(projectName)
 
 project.sources += [
   os.path.join(Extension.sm_root, "public", "smsdk_ext.cpp"),
-  'extension.cpp',
-  'asm/asm.c',
-  'natives.cpp',
-  'interfaceimpl.cpp'
+  'extension/extension.cpp',
+  'extension/asm/asm.c',
+  'extension/natives.cpp',
+  'extension/interfaceimpl.cpp'
 ]
 
 for sdk_name in Extension.sdks:
