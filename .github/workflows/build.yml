@@ -51,7 +51,7 @@ jobs:
     name: Build Project on ${{ matrix.os_short }}-${{ matrix.sm_short }}-${{ matrix.target_arch }}
     runs-on: ${{ matrix.os }}
     env:
-      SDKS: ["l4d","l4d2"]
+      SDKS: '["l4d","l4d2"]'
       MMSOURCE_VERSION: '1.12'
 
     steps:
