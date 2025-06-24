@@ -163,7 +163,6 @@ jobs:
         working-directory: src
         shell: bash
         run: |
-          cd extension
           mkdir build
           cd build
           python ../configure.py \
@@ -180,7 +179,7 @@ jobs:
         working-directory: src
         shell: bash
         run: |
-          cp -r extension/build/package/addons/sourcemod/extensions addons/sourcemod
+          cp -r build/package/addons/sourcemod/extensions addons/sourcemod
 
       - name: Upload Binary (Package)
         uses: actions/upload-artifact@v4
