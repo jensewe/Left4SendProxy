@@ -9,7 +9,14 @@ builder.SetBuildFolder('package')
 folder_list = [
   'addons/sourcemod/extensions',
   'addons/sourcemod/scripting/include',
+  'addons/sourcemod/gamedata',
+  #'addons/sourcemod/configs',
 ]
+
+if 'x86_64' in Extension.target_archs:
+  folder_list.extend([
+    'addons/sourcemod/extensions/x64',
+  ])
 
 # Create the distribution folder hierarchy.
 folder_map = {}
@@ -26,14 +33,23 @@ def CopyFiles(src, dest, files):
     source_path = os.path.join(builder.sourcePath, src, source_file)
     builder.AddCopy(source_path, dest_entry)
 
+# Include files 
+CopyFiles('addons/sourcemod/scripting/include', 'addons/sourcemod/scripting/include',
+  ['sendproxy.inc']
+)
+
 # GameData files
-#CopyFiles('gamedata', 'addons/sourcemod/gamedata',
-#  [ '../../addons/sourcemod/gamedata/sendproxy.txt',
-#  ]
-#)
+CopyFiles('addons/sourcemod/gamedata', 'addons/sourcemod/gamedata',
+  ['sendproxy.txt']
+)
+
+# Autoload extension
+CopyFiles('addons/sourcemod/extensions', 'addons/sourcemod/extensions',
+  [ 'sendproxy.autoload' ]
+)
 
 # Config Files
-#CopyFiles('configs', 'addons/sourcemod/configs',
+#CopyFiles('addons/sourcemod/configs', 'addons/sourcemod/configs',
 #  [ 'configfile.cfg',
 #  'otherconfig.cfg,
 #  ]
@@ -41,4 +57,7 @@ def CopyFiles(src, dest, files):
 
 # Copy binaries.
 for cxx_task in Extension.extensions:
-  builder.AddCopy(cxx_task.binary, folder_map['addons/sourcemod/extensions'])
+  if cxx_task.target.arch == 'x86_64':
+    builder.AddCopy(cxx_task.binary, folder_map['addons/sourcemod/extensions/x64'])
+  else:
+    builder.AddCopy(cxx_task.binary, folder_map['addons/sourcemod/extensions'])
