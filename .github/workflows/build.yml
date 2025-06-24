@@ -22,12 +22,17 @@ jobs:
         include:
           - os: ubuntu-latest
             os_short: ubuntu_latest
+            compiler_cc: clang
+            compiler_cxx: clang++
 
           - os: ubuntu-22.04
             os_short: ubuntu_22_04
+            compiler_cc: clang-14
+            compiler_cxx: clang++-14
 
           - os: windows-latest
             os_short: win_latest
+            compiler_cc: msvc
 
           - sm_version: latest
             sm_branch: master
@@ -46,7 +51,7 @@ jobs:
     name: Build Project on ${{ matrix.os_short }}-${{ matrix.sm_short }}-${{ matrix.target_arch }}
     runs-on: ${{ matrix.os }}
     env:
-      SDKS: '["l4d","l4d2"]'
+      SDKS: ["l4d","l4d2"]
       MMSOURCE_VERSION: '1.12'
 
     steps:
@@ -55,14 +60,23 @@ jobs:
         run: |
           echo "GITHUB_SHA_SHORT=${GITHUB_SHA::7}" >> $GITHUB_ENV
           
-      - name: Install Linux Dependencies
-        if: runner.os == 'Linux'
+      - name: Install Linux dependencies
+        if: startsWith(runner.os, 'Linux')
         run: |
           sudo dpkg --add-architecture i386
           sudo apt-get update
-          sudo apt-get install -y gcc g++ g++-multilib libstdc++6
-          echo "CC=gcc" >> $GITHUB_ENV
-          echo "CXX=g++" >> $GITHUB_ENV
+          sudo apt-get install -y --no-install-recommends \
+            gcc-multilib g++-multilib libstdc++6 lib32stdc++6 \
+            libc6-dev libc6-dev-i386 linux-libc-dev \
+            linux-libc-dev:i386 lib32z1-dev ${{ matrix.compiler_cc }}
+
+      - name: Select clang compiler
+        if: startsWith(runner.os, 'Linux')
+        run: |
+          echo "CC=${{ matrix.compiler_cc }}" >> $GITHUB_ENV
+          echo "CXX=${{ matrix.compiler_cxx }}" >> $GITHUB_ENV
+          ${{ matrix.compiler_cc }} --version
+          ${{ matrix.compiler_cxx }} --version
 
       - name: Install Windows Dependencies
         if: runner.os == 'Windows'
@@ -96,6 +110,13 @@ jobs:
         shell: bash
         run: |
           mkdir alliedmodders
+
+      - name: Checkout Alliedmodders HL2SDK Manifests
+        uses: actions/checkout@v4
+        with:
+          repository: alliedmodders/hl2sdk-manifests
+          ref: master
+          path: alliedmodders/hl2sdk-manifests
 
       - name: Checkout SourceMod-${{ matrix.sm_short }}
         uses: actions/checkout@v4
@@ -145,9 +166,12 @@ jobs:
           mkdir build
           cd build
           python ../configure.py \
+            --hl2sdk-manifest-path="${{ github.workspace }}/alliedmodders/hl2sdk-manifests" \
             --hl2sdk-root="${{ github.workspace }}/alliedmodders" \
             --sm-path="${{ github.workspace }}/alliedmodders/sourcemod" \
             --mms-path="${{ github.workspace }}/alliedmodders/mmsource-${{ env.MMSOURCE_VERSION }}" \
+            --enable-optimize \
+            --targets=${{ matrix.target_arch }} \
             --sdks=${{ join(fromJSON(env.SDKS)) }}
           ambuild
 
