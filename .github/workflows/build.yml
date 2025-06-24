@@ -119,13 +119,6 @@ jobs:
         run: |
           mkdir alliedmodders
 
-      - name: Checkout Alliedmodders HL2SDK Manifests
-        uses: actions/checkout@v4
-        with:
-          repository: alliedmodders/hl2sdk-manifests
-          ref: master
-          path: alliedmodders/hl2sdk-manifests
-
       - name: Checkout SourceMod-${{ matrix.sm_short }}
         uses: actions/checkout@v4
         with:
@@ -174,7 +167,7 @@ jobs:
           mkdir build
           cd build
           python ../configure.py \
-            --hl2sdk-manifest-path="${{ github.workspace }}/alliedmodders/hl2sdk-manifests" \
+            --hl2sdk-manifest-path="${{ github.workspace }}/alliedmodders/sourcemod/hl2sdk-manifests" \
             --hl2sdk-root="${{ github.workspace }}/alliedmodders" \
             --sm-path="${{ github.workspace }}/alliedmodders/sourcemod" \
             --mms-path="${{ github.workspace }}/alliedmodders/mmsource-${{ env.MMSOURCE_VERSION }}" \
