@@ -678,7 +678,7 @@ bool SendProxyManager::SDK_OnLoad(char *error, size_t maxlength, bool late)
 	{
 		if (conf_error[0])
 			snprintf(error, maxlength, "Could not read config file sdktools.games.txt: %s", conf_error);
-			
+
 		return false;
 	}
 	
@@ -699,13 +699,13 @@ bool SendProxyManager::SDK_OnLoad(char *error, size_t maxlength, bool late)
 		const char *name;
 		void *pFnCallback;
 	} detours[] = {
-		{ "CGameServer::SendClientMessages", pFnSendClientMessages },
-		{ "CGameClient::ShouldSendMessages", pFnShouldSendMessages },
-		{ "CFrameSnapshotManager::UsePreviouslySentPacket", pFnUsePreviouslySentPacket },
-		{ "CFrameSnapshotManager::CreatePackedEntity", pFnCreatePackedEntity },
-		{ "CFrameSnapshotManager::GetPreviouslySentPacket", pFnGetPreviouslySentPacket },
-		{ "SV_ComputeClientPacks", pFnSV_ComputeClientPacks }
-	}
+		{"CGameServer::SendClientMessages", pFnSendClientMessages},
+		{"CGameClient::ShouldSendMessages", pFnShouldSendMessages},
+		{"CFrameSnapshotManager::UsePreviouslySentPacket", pFnUsePreviouslySentPacket},
+		{"CFrameSnapshotManager::CreatePackedEntity", pFnCreatePackedEntity},
+		{"CFrameSnapshotManager::GetPreviouslySentPacket", pFnGetPreviouslySentPacket},
+		{"SV_ComputeClientPacks", pFnSV_ComputeClientPacks}
+	};
 
 	for (auto &i : detours) {
 		if (!g_pGameConf->GetMemSig(i.name, &i.pFnCallback)) {
