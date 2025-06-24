@@ -46,13 +46,11 @@ jobs:
           #- target_arch: x64
           #  vs_dev_arch: x86_64
 
-        env: 
-          MMSOURCE_VERSION: '1.12'
-
     name: Build Project on ${{ matrix.os_short }}-${{ matrix.sm_version }}-${{ matrix.target_arch }}
     runs-on: ${{ matrix.os }}
     env:
       SDKS: '["l4d","l4d2"]'
+      MMSOURCE_VERSION: '1.12'
 
     steps:
       - name: Setup Environment
