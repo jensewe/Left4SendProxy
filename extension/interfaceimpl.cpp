@@ -40,30 +40,38 @@ void Hook_OnExtensionUnload()
 	{
 		//remove all listeners for this extension
 		if (g_Hooks[i].vListeners->Count())
+		{
 			for (int j = 0; j < g_Hooks[i].vListeners->Count(); j++)
 			{
 				ListenerCallbackInfo info = (*g_Hooks[i].vListeners)[j];
 				if (info.m_pExtAPI == pExtAPI)
 					g_Hooks[i].vListeners->Remove(j);
 			}
+		}
+
 		//remove hook for this extension
 		if (g_Hooks[i].sCallbackInfo.iCallbackType == CallBackType::Callback_CPPCallbackInterface && static_cast<IExtension *>(g_Hooks[i].sCallbackInfo.pOwner)->GetAPI() == pExtAPI)
 			g_SendProxyManager.UnhookProxy(i);
 	}
+
 	for (int i = 0; i < g_HooksGamerules.Count(); i++)
 	{
 		//remove all listeners for this extension
 		if (g_HooksGamerules[i].vListeners->Count())
+		{
 			for (int j = 0; j < g_HooksGamerules[i].vListeners->Count(); j++)
 			{
 				ListenerCallbackInfo info = (*g_HooksGamerules[i].vListeners)[j];
 				if (info.m_pExtAPI == pExtAPI)
 					g_HooksGamerules[i].vListeners->Remove(j);
 			}
+		}
+
 		//remove hook for this extension
 		if (g_HooksGamerules[i].sCallbackInfo.iCallbackType == CallBackType::Callback_CPPCallbackInterface && static_cast<IExtension *>(g_HooksGamerules[i].sCallbackInfo.pOwner)->GetAPI() == pExtAPI)
 			g_SendProxyManager.UnhookProxyGamerules(i);
 	}
+
 	SH_REMOVE_HOOK(IExtensionInterface, OnExtensionUnload, pExtAPI, SH_STATIC(Hook_OnExtensionUnload), false);
 	RETURN_META(MRES_IGNORED);
 }
@@ -82,6 +90,7 @@ void HookExtensionUnload(IExtension * pExt)
 			break;
 		}
 		else if (g_Hooks[i].vListeners->Count())
+		{
 			for (int j = 0; j < g_Hooks[i].vListeners->Count(); j++)
 			{
 				ListenerCallbackInfo info = (*g_Hooks[i].vListeners)[j];
@@ -91,8 +100,11 @@ void HookExtensionUnload(IExtension * pExt)
 					break;
 				}
 			}
+		}
 	}
+
 	if (!bHookedAlready)
+	{
 		for (int i = 0; i < g_HooksGamerules.Count(); i++)
 		{
 			if (g_HooksGamerules[i].sCallbackInfo.pOwner == pExt)
@@ -101,6 +113,7 @@ void HookExtensionUnload(IExtension * pExt)
 				break;
 			}
 			else if (g_HooksGamerules[i].vListeners->Count())
+			{
 				for (int j = 0; j < g_HooksGamerules[i].vListeners->Count(); j++)
 				{
 					ListenerCallbackInfo info = (*g_HooksGamerules[i].vListeners)[j];
@@ -110,7 +123,10 @@ void HookExtensionUnload(IExtension * pExt)
 						break;
 					}
 				}
+			}
 		}
+	}
+
 	if (!bHookedAlready) //Hook only if needed!
 		SH_ADD_HOOK(IExtensionInterface, OnExtensionUnload, pExt->GetAPI(), SH_STATIC(Hook_OnExtensionUnload), false);
 }
@@ -129,6 +145,7 @@ void UnhookExtensionUnload(IExtension * pExt)
 			break;
 		}
 		else if (g_Hooks[i].vListeners->Count())
+		{
 			for (int j = 0; j < g_Hooks[i].vListeners->Count(); j++)
 			{
 				ListenerCallbackInfo info = (*g_Hooks[i].vListeners)[j];
@@ -138,8 +155,11 @@ void UnhookExtensionUnload(IExtension * pExt)
 					break;
 				}
 			}
+		}
 	}
+
 	if (!bHaveHooks)
+	{
 		for (int i = 0; i < g_HooksGamerules.Count(); i++)
 		{
 			if (g_HooksGamerules[i].sCallbackInfo.pOwner == pExt)
@@ -148,6 +168,7 @@ void UnhookExtensionUnload(IExtension * pExt)
 				break;
 			}
 			else if (g_HooksGamerules[i].vListeners->Count())
+			{
 				for (int j = 0; j < g_HooksGamerules[i].vListeners->Count(); j++)
 				{
 					ListenerCallbackInfo info = (*g_HooksGamerules[i].vListeners)[j];
@@ -157,8 +178,10 @@ void UnhookExtensionUnload(IExtension * pExt)
 						break;
 					}
 				}
+			}
 		}
-	
+	}
+
 	if (!bHaveHooks) //so, if there are active hooks, we shouldn't remove hook!
 		SH_REMOVE_HOOK(IExtensionInterface, OnExtensionUnload, pExt->GetAPI(), SH_STATIC(Hook_OnExtensionUnload), false);
 }
@@ -209,6 +232,7 @@ bool SendProxyManagerInterfaceImpl::HookProxy(IExtension * pExt, SendProp * pPro
 	hook.pEnt = pEdict;
 	hook.pVar = pProp;
 	bool bHookedAlready = false;
+
 	for (int i = 0; i < g_Hooks.Count(); i++)
 	{
 		if (g_Hooks[i].pVar == pProp)
@@ -218,8 +242,10 @@ bool SendProxyManagerInterfaceImpl::HookProxy(IExtension * pExt, SendProp * pPro
 			break;
 		}
 	}
+
 	if (!bHookedAlready)
 		hook.pRealProxy = pProp->GetProxyFn();
+
 	HookExtensionUnload(pExt);
 	if (g_SendProxyManager.AddHookToList(hook))
 	{
@@ -231,6 +257,7 @@ bool SendProxyManagerInterfaceImpl::HookProxy(IExtension * pExt, SendProp * pPro
 		UnhookExtensionUnload(pExt);
 		return false;
 	}
+
 	return true;
 }
 
@@ -238,16 +265,21 @@ bool SendProxyManagerInterfaceImpl::HookProxy(IExtension * pExt, const char * pP
 {
 	if (!pProp || !*pProp)
 		return false;
+
 	if (!pEntity)
 		return false;
+
 	ServerClass * sc = ((IServerUnknown *)pEntity)->GetNetworkable()->GetServerClass();
 	if (!sc)
 		return false; //we don't use exceptions, bad extensions may do not handle this and server will crashed, just return false
+
 	sm_sendprop_info_t info;
 	gamehelpers->FindSendPropInfo(sc->GetName(), pProp, &info);
 	SendProp * pSendProp = info.prop;
+
 	if (pSendProp)
 		return HookProxy(pExt, pSendProp, pEntity, iType, iCallbackType, pCallback);
+
 	return false;
 }
 
@@ -270,8 +302,10 @@ bool SendProxyManagerInterfaceImpl::HookProxyGamerules(IExtension * pExt, SendPr
 			break;
 		}
 	}
+
 	if (!bHookedAlready)
 		hook.pRealProxy = pProp->GetProxyFn();
+
 	hook.PropType = iType;
 	hook.pVar = pProp;
 	sm_sendprop_info_t info;
@@ -283,14 +317,17 @@ bool SendProxyManagerInterfaceImpl::HookProxyGamerules(IExtension * pExt, SendPr
 	{
 		if (g_SendProxyManager.AddHookToListGamerules(hook))
 			return true;
+
 		UnhookExtensionUnload(pExt);
 		return false;
 	}
+
 	if (g_SendProxyManager.AddHookToListGamerules(hook))
 	{
 		pProp->SetProxyFn(GlobalProxyGamerules);
 		return true;
 	}
+
 	UnhookExtensionUnload(pExt);
 	return false;
 }
@@ -299,11 +336,14 @@ bool SendProxyManagerInterfaceImpl::HookProxyGamerules(IExtension * pExt, const 
 {
 	if (!pProp || !*pProp)
 		return false;
+
 	sm_sendprop_info_t info;
 	gamehelpers->FindSendPropInfo(g_szGameRulesProxy, pProp, &info);
 	SendProp * pSendProp = info.prop;
+
 	if (pSendProp)
 		return HookProxyGamerules(pExt, pSendProp, iType, iCallbackType, pCallback);
+
 	return false;
 }
 
@@ -317,14 +357,18 @@ bool SendProxyManagerInterfaceImpl::UnhookProxy(IExtension * pExt, const char * 
 {
 	if (!pProp || !*pProp)
 		return false;
+
 	edict_t * pEdict = gameents->BaseEntityToEdict(pEntity);
 	for (int i = 0; i < g_Hooks.Count(); i++)
+	{
 		if (g_Hooks[i].sCallbackInfo.pOwner == pExt /*Allow to extension remove only its hooks*/ && pEdict == g_Hooks[i].pEnt && g_Hooks[i].sCallbackInfo.iCallbackType == iCallbackType && !strcmp(g_Hooks[i].pVar->GetName(), pProp) && pCallback == g_Hooks[i].sCallbackInfo.pCallback)
 		{
 			g_SendProxyManager.UnhookProxy(i);
 			UnhookExtensionUnload(pExt);
 			return true;
 		}
+	}
+
 	return false;
 }
 
@@ -338,13 +382,17 @@ bool SendProxyManagerInterfaceImpl::UnhookProxyGamerules(IExtension * pExt, cons
 {
 	if (!pProp || !*pProp)
 		return false;
+
 	for (int i = 0; i < g_HooksGamerules.Count(); i++)
+	{
 		if (g_HooksGamerules[i].sCallbackInfo.pOwner == pExt /*Allow to extension remove only its hooks*/ && g_HooksGamerules[i].sCallbackInfo.iCallbackType == iCallbackType && !strcmp(g_HooksGamerules[i].pVar->GetName(), pProp) && pCallback == g_HooksGamerules[i].sCallbackInfo.pCallback)
 		{
 			g_SendProxyManager.UnhookProxyGamerules(i);
 			UnhookExtensionUnload(pExt);
 			return true;
 		}
+	}
+
 	return false;
 }
 
@@ -358,8 +406,10 @@ bool SendProxyManagerInterfaceImpl::AddUnhookListener(IExtension * pExt, const c
 {
 	if (!pProp || !*pProp)
 		return false;
+
 	edict_t * pEdict = gameents->BaseEntityToEdict(pEntity);
 	for (int i = 0; i < g_Hooks.Count(); i++)
+	{
 		if (pEdict == g_Hooks[i].pEnt && g_Hooks[i].sCallbackInfo.iCallbackType == iCallbackType && !strcmp(g_Hooks[i].pVar->GetName(), pProp) && pCallback == g_Hooks[i].sCallbackInfo.pCallback)
 		{
 			ListenerCallbackInfo info;
@@ -370,6 +420,8 @@ bool SendProxyManagerInterfaceImpl::AddUnhookListener(IExtension * pExt, const c
 			g_Hooks[i].vListeners->AddToTail(info);
 			return true;
 		}
+	}
+
 	return false;
 }
 
@@ -383,7 +435,9 @@ bool SendProxyManagerInterfaceImpl::AddUnhookListenerGamerules(IExtension * pExt
 {
 	if (!pProp || !*pProp)
 		return false;
+
 	for (int i = 0; i < g_HooksGamerules.Count(); i++)
+	{
 		if (g_HooksGamerules[i].sCallbackInfo.iCallbackType == iCallbackType && !strcmp(g_HooksGamerules[i].pVar->GetName(), pProp) && pCallback == g_HooksGamerules[i].sCallbackInfo.pCallback)
 		{
 			ListenerCallbackInfo info;
@@ -394,6 +448,8 @@ bool SendProxyManagerInterfaceImpl::AddUnhookListenerGamerules(IExtension * pExt
 			g_HooksGamerules[i].vListeners->AddToTail(info);
 			return true;
 		}
+	}
+
 	return false;
 }
 
@@ -410,6 +466,7 @@ bool SendProxyManagerInterfaceImpl::RemoveUnhookListener(IExtension * pExt, cons
 	
 	edict_t * pEdict = gameents->BaseEntityToEdict(pEntity);
 	for (int i = 0; i < g_Hooks.Count(); i++)
+	{
 		if (g_Hooks[i].pEnt == pEdict && g_Hooks[i].sCallbackInfo.iCallbackType == iCallbackType && !strcmp(g_Hooks[i].pVar->GetName(), pProp) && pCallback == g_Hooks[i].sCallbackInfo.pCallback)
 		{
 			for (int j = 0; j < g_Hooks[i].vListeners->Count(); j++)
@@ -423,6 +480,8 @@ bool SendProxyManagerInterfaceImpl::RemoveUnhookListener(IExtension * pExt, cons
 				}
 			}
 		}
+	}
+
 	return false;
 }
 
@@ -438,6 +497,7 @@ bool SendProxyManagerInterfaceImpl::RemoveUnhookListenerGamerules(IExtension * p
 		return false;
 	
 	for (int i = 0; i < g_HooksGamerules.Count(); i++)
+	{
 		if (g_HooksGamerules[i].sCallbackInfo.iCallbackType == iCallbackType && !strcmp(g_HooksGamerules[i].pVar->GetName(), pProp) && pCallback == g_HooksGamerules[i].sCallbackInfo.pCallback)
 		{
 			for (int j = 0; j < g_HooksGamerules[i].vListeners->Count(); j++)
@@ -451,6 +511,8 @@ bool SendProxyManagerInterfaceImpl::RemoveUnhookListenerGamerules(IExtension * p
 				}
 			}
 		}
+	}
+
 	return false;
 }
 
@@ -486,6 +548,7 @@ bool SendProxyManagerInterfaceImpl::HookProxyArray(IExtension * pExt, SendProp *
 	hook.pVar = pPropElem;
 	hook.Element = iElement;
 	bool bHookedAlready = false;
+
 	for (int i = 0; i < g_Hooks.Count(); i++)
 	{
 		if (g_Hooks[i].pVar == pPropElem)
@@ -495,8 +558,10 @@ bool SendProxyManagerInterfaceImpl::HookProxyArray(IExtension * pExt, SendProp *
 			break;
 		}
 	}
+
 	if (!bHookedAlready)
 		hook.pRealProxy = pPropElem->GetProxyFn();
+
 	HookExtensionUnload(pExt);
 	if (g_SendProxyManager.AddHookToList(hook))
 	{
@@ -508,6 +573,7 @@ bool SendProxyManagerInterfaceImpl::HookProxyArray(IExtension * pExt, SendProp *
 		UnhookExtensionUnload(pExt);
 		return false;
 	}
+
 	return true;
 }
 
@@ -515,16 +581,21 @@ bool SendProxyManagerInterfaceImpl::HookProxyArray(IExtension * pExt, const char
 {
 	if (!pProp || !*pProp)
 		return false;
+
 	if (!pEntity)
 		return false;
+
 	ServerClass * sc = ((IServerUnknown *)pEntity)->GetNetworkable()->GetServerClass();
 	if (!sc)
 		return false; //we don't use exceptions, bad extensions may do not handle this and server will crashed, just return false
+
 	sm_sendprop_info_t info;
 	gamehelpers->FindSendPropInfo(sc->GetName(), pProp, &info);
 	SendProp * pSendProp = info.prop;
+
 	if (pSendProp)
 		return HookProxyArray(pExt, pSendProp, pEntity, iType, iElement, iCallbackType, pCallback);
+
 	return false;
 }
 
@@ -546,6 +617,7 @@ bool SendProxyManagerInterfaceImpl::HookProxyArrayGamerules(IExtension * pExt, S
 	hook.sCallbackInfo.iCallbackType = iCallbackType;
 	hook.sCallbackInfo.pOwner = (void *)pExt;
 	bool bHookedAlready = false;
+
 	for (int i = 0; i < g_HooksGamerules.Count(); i++)
 	{
 		if (g_HooksGamerules[i].pVar == pProp)
@@ -555,8 +627,10 @@ bool SendProxyManagerInterfaceImpl::HookProxyArrayGamerules(IExtension * pExt, S
 			break;
 		}
 	}
+
 	if (!bHookedAlready)
 		hook.pRealProxy = pProp->GetProxyFn();
+
 	hook.PropType = iType;
 	hook.pVar = pProp;
 	sm_sendprop_info_t info;
@@ -577,6 +651,7 @@ bool SendProxyManagerInterfaceImpl::HookProxyArrayGamerules(IExtension * pExt, S
 		pProp->SetProxyFn(GlobalProxyGamerules);
 		return true;
 	}
+
 	UnhookExtensionUnload(pExt);
 	return false;
 }
@@ -585,11 +660,14 @@ bool SendProxyManagerInterfaceImpl::HookProxyArrayGamerules(IExtension * pExt, c
 {
 	if (!pProp || !*pProp)
 		return false;
+
 	sm_sendprop_info_t info;
 	gamehelpers->FindSendPropInfo(g_szGameRulesProxy, pProp, &info);
 	SendProp * pSendProp = info.prop;
+
 	if (pSendProp)
 		return HookProxyArrayGamerules(pExt, pSendProp, iType, iElement, iCallbackType, pCallback);
+
 	return false;
 }
 
@@ -603,14 +681,18 @@ bool SendProxyManagerInterfaceImpl::UnhookProxyArray(IExtension * pExt, const ch
 {
 	if (!pProp || !*pProp)
 		return false;
+
 	edict_t * pEdict = gameents->BaseEntityToEdict(pEntity);
 	for (int i = 0; i < g_Hooks.Count(); i++)
+	{
 		if (g_Hooks[i].sCallbackInfo.pOwner == pExt /*Allow to extension remove only its hooks*/ && g_Hooks[i].Element == iElement && pEdict == g_Hooks[i].pEnt && g_Hooks[i].sCallbackInfo.iCallbackType == iCallbackType && !strcmp(g_Hooks[i].pVar->GetName(), pProp) && pCallback == g_Hooks[i].sCallbackInfo.pCallback)
 		{
 			g_SendProxyManager.UnhookProxy(i);
 			UnhookExtensionUnload(pExt);
 			return true;
 		}
+	}
+
 	return false;
 }
 
@@ -624,13 +706,17 @@ bool SendProxyManagerInterfaceImpl::UnhookProxyArrayGamerules(IExtension * pExt,
 {
 	if (!pProp || !*pProp)
 		return false;
+
 	for (int i = 0; i < g_HooksGamerules.Count(); i++)
+	{
 		if (g_HooksGamerules[i].sCallbackInfo.pOwner == pExt /*Allow to extension remove only its hooks*/ && g_HooksGamerules[i].Element == iElement && g_HooksGamerules[i].sCallbackInfo.iCallbackType == iCallbackType && !strcmp(g_HooksGamerules[i].pVar->GetName(), pProp) && pCallback == g_HooksGamerules[i].sCallbackInfo.pCallback)
 		{
 			g_SendProxyManager.UnhookProxyGamerules(i);
 			UnhookExtensionUnload(pExt);
 			return true;
 		}
+	}
+
 	return false;
 }
 
@@ -644,8 +730,10 @@ bool SendProxyManagerInterfaceImpl::AddUnhookListenerArray(IExtension * pExt, co
 {
 	if (!pProp || !*pProp)
 		return false;
+
 	edict_t * pEdict = gameents->BaseEntityToEdict(pEntity);
 	for (int i = 0; i < g_Hooks.Count(); i++)
+	{
 		if (pEdict == g_Hooks[i].pEnt && g_Hooks[i].sCallbackInfo.iCallbackType == iCallbackType && g_Hooks[i].Element == iElement && !strcmp(g_Hooks[i].pVar->GetName(), pProp) && pCallback == g_Hooks[i].sCallbackInfo.pCallback)
 		{
 			ListenerCallbackInfo info;
@@ -656,6 +744,8 @@ bool SendProxyManagerInterfaceImpl::AddUnhookListenerArray(IExtension * pExt, co
 			g_Hooks[i].vListeners->AddToTail(info);
 			return true;
 		}
+	}
+
 	return false;
 }
 
@@ -669,7 +759,9 @@ bool SendProxyManagerInterfaceImpl::AddUnhookListenerArrayGamerules(IExtension *
 {
 	if (!pProp || !*pProp)
 		return false;
+
 	for (int i = 0; i < g_HooksGamerules.Count(); i++)
+	{
 		if (g_HooksGamerules[i].sCallbackInfo.iCallbackType == iCallbackType && g_HooksGamerules[i].Element == iElement && !strcmp(g_HooksGamerules[i].pVar->GetName(), pProp) && pCallback == g_HooksGamerules[i].sCallbackInfo.pCallback)
 		{
 			ListenerCallbackInfo info;
@@ -680,6 +772,8 @@ bool SendProxyManagerInterfaceImpl::AddUnhookListenerArrayGamerules(IExtension *
 			g_HooksGamerules[i].vListeners->AddToTail(info);
 			return true;
 		}
+	}
+
 	return false;
 }
 
@@ -696,6 +790,7 @@ bool SendProxyManagerInterfaceImpl::RemoveUnhookListenerArray(IExtension * pExt,
 	
 	edict_t * pEdict = gameents->BaseEntityToEdict(pEntity);
 	for (int i = 0; i < g_Hooks.Count(); i++)
+	{
 		if (g_Hooks[i].pEnt == pEdict && g_Hooks[i].sCallbackInfo.iCallbackType == iCallbackType && g_Hooks[i].Element == iElement && !strcmp(g_Hooks[i].pVar->GetName(), pProp) && pCallback == g_Hooks[i].sCallbackInfo.pCallback)
 		{
 			for (int j = 0; j < g_Hooks[i].vListeners->Count(); j++)
@@ -709,6 +804,8 @@ bool SendProxyManagerInterfaceImpl::RemoveUnhookListenerArray(IExtension * pExt,
 				}
 			}
 		}
+	}
+
 	return false;
 }
 
@@ -724,6 +821,7 @@ bool SendProxyManagerInterfaceImpl::RemoveUnhookListenerArrayGamerules(IExtensio
 		return false;
 	
 	for (int i = 0; i < g_HooksGamerules.Count(); i++)
+	{
 		if (g_HooksGamerules[i].sCallbackInfo.iCallbackType == iCallbackType && g_HooksGamerules[i].Element == iElement && !strcmp(g_HooksGamerules[i].pVar->GetName(), pProp) && pCallback == g_HooksGamerules[i].sCallbackInfo.pCallback)
 		{
 			for (int j = 0; j < g_HooksGamerules[i].vListeners->Count(); j++)
@@ -737,6 +835,8 @@ bool SendProxyManagerInterfaceImpl::RemoveUnhookListenerArrayGamerules(IExtensio
 				}
 			}
 		}
+	}
+
 	return false;
 }
 
@@ -749,10 +849,14 @@ bool SendProxyManagerInterfaceImpl::IsProxyHooked(IExtension * pExt, const char 
 {
 	if (!pProp || !*pProp)
 		return false;
+
 	edict_t * pEdict = gameents->BaseEntityToEdict(pEntity);
 	for (int i = 0; i < g_Hooks.Count(); i++)
+	{
 		if (g_Hooks[i].sCallbackInfo.pOwner == (void *)pExt /*Check if is hooked for this extension*/ && g_Hooks[i].pEnt == pEdict && !strcmp(pProp, g_Hooks[i].pVar->GetName()))
 			return true;
+	}
+
 	return false;
 }
 
@@ -765,9 +869,13 @@ bool SendProxyManagerInterfaceImpl::IsProxyHookedGamerules(IExtension * pExt, co
 {
 	if (!pProp || !*pProp)
 		return false;
+
 	for (int i = 0; i < g_HooksGamerules.Count(); i++)
+	{
 		if (g_HooksGamerules[i].sCallbackInfo.pOwner == (void *)pExt /*Check if is hooked for this extension*/ && !strcmp(pProp, g_HooksGamerules[i].pVar->GetName()))
 			return true;
+	}
+
 	return false;
 }
 
@@ -780,10 +888,14 @@ bool SendProxyManagerInterfaceImpl::IsProxyHookedArray(IExtension * pExt, const 
 {
 	if (!pProp || !*pProp)
 		return false;
+
 	edict_t * pEdict = gameents->BaseEntityToEdict(pEntity);
 	for (int i = 0; i < g_Hooks.Count(); i++)
+	{
 		if (g_Hooks[i].sCallbackInfo.pOwner == (void *)pExt /*Check if is hooked for this extension*/ && g_Hooks[i].pEnt == pEdict && g_Hooks[i].Element == iElement && !strcmp(pProp, g_Hooks[i].pVar->GetName()))
 			return true;
+	}
+
 	return false;
 }
 
@@ -796,8 +908,12 @@ bool SendProxyManagerInterfaceImpl::IsProxyHookedArrayGamerules(IExtension * pEx
 {
 	if (!pProp || !*pProp)
 		return false;
+
 	for (int i = 0; i < g_HooksGamerules.Count(); i++)
+	{
 		if (g_HooksGamerules[i].sCallbackInfo.pOwner == (void *)pExt /*Check if is hooked for this extension*/ && g_HooksGamerules[i].Element == iElement && !strcmp(pProp, g_HooksGamerules[i].pVar->GetName()))
 			return true;
+	}
+
 	return false;
 }

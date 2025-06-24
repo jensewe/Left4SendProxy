@@ -43,6 +43,47 @@ typeset GameRulesPropChangedCallback
 	function void(const char[] cPropName, const float vecOldValue[3], const float vecNewValue[3], const int iElement); //Prop_Vector
 };
 
+methodmap SendProxyManager
+{
+	public static native bool Hook(const int iEntity, const char[] cPropName, const SendPropType stType, const SendProxyCallback pCallback);
+	public static native bool Unhook(const int iEntity, const char[] cPropName, const SendProxyCallback pCallback);
+
+	public static native bool HookGameRules(const char[] cPropName, const SendPropType stType, const SendProxyCallbackGamerules pCallback);
+	public static native bool UnhookGameRules(const char[] cPropName, const SendProxyCallbackGamerules pCallback);
+
+	public static native bool HookArray(const int iEntity, const char[] cPropName, const int iElement, const SendPropType stType, const SendProxyCallback pCallback);
+	public static native bool UnhookArray(const int iEntity, const char[] cPropName, const int iElement, const SendPropType stType, const SendProxyCallback pCallback);
+	
+	public static native bool HookGamerulesArray(const char[] cPropName, const int iElement, const SendPropType stType, const SendProxyCallbackGamerules pCallback);
+	public static native bool UnhookGamerulesArray(const char[] cPropName, const int iElement, const SendPropType stType, const SendProxyCallbackGamerules pCallback);
+
+	public static native bool IsHooked(const int iEntity, const char[] cPropName);
+	public static native bool IsGameRulesHooked(const char[] cPropName);
+	public static native bool IsArrayHooked(const int iEntity, const char[] cPropName, const int iElement);
+	public static native bool IsGamerulesArrayHooked(const char[] cPropName, const int iElement);
+
+	public static native bool HookChange(const int iEntity, const char[] cPropName, const SendPropType stType, const PropChangedCallback pCallback);
+	public static native bool UnhookChange(const int iEntity, const char[] cPropName, const PropChangedCallback pCallback);
+
+	public static native bool HookGameRulesChange(const char[] cPropName, const SendPropType stType, const GameRulesPropChangedCallback pCallback);
+	public static native bool UnhookGameRulesChange(const char[] cPropName, const GameRulesPropChangedCallback pCallback);
+
+	public static native bool HookArrayChange(const int iEntity, const char[] cPropName, const int iElement, const SendPropType stType, const PropChangedCallback pCallback);
+	public static native bool UnhookArrayChange(const int iEntity, const char[] cPropName, const int iElement, const PropChangedCallback pCallback);
+
+	public static native bool HookGameRulesArrayChange(const char[] cPropName, const int iElement, const SendPropType stType, const PropChangedCallback pCallback);
+ 	public static native bool UnhookGameRulesArrayChange(const char[] cPropName, const int iElement, const PropChangedCallback pCallback);
+
+	public static native bool IsChangeHooked(const int iEntity, const char[] cPropName);
+	public static native bool IsGameRulesChangeHooked(const char[] cPropName);
+	public static native bool IsArrayChangeHooked(const int iEntity, const char[] cPropName, const int iElement);
+	public static native bool IsGameRulesArrayChangeHooked(const char[] cPropName, const int iElement);
+}
+
+/**
+ *  @brief For backwards compatibility.
+ */
+
 //Returns true upon success, false upon failure
 native bool SendProxy_Hook(const int iEntity, const char[] cPropName, const SendPropType stType, const SendProxyCallback pCallback);
 native bool SendProxy_HookGameRules(const char[] cPropName, const SendPropType stType, const SendProxyCallbackGamerules pCallback);
@@ -72,9 +113,11 @@ native bool SendProxy_IsPropChangeHooked(const int iEntity, const char[] cPropNa
 native bool SendProxy_IsPropChangeHookedGameRules(const char[] cPropName);
 native bool SendProxy_IsPropChangeArrayHooked(const int iEntity, const char[] cPropName, const int iElement);
 native bool SendProxy_IsPropChangeArrayHookedGameRules(const char[] cPropName, const int iElement);
-//these functions returns always true and because they are "void", so, we don't care about value they return because it always same
-native void SendProxy_UnhookPropChangeArray(const int iEntity, const char[] cPropName, const int iElement, const PropChangedCallback pCallback);
-native void SendProxy_UnhookPropChangeArrayGameRules(const char[] cPropName, const int iElement, const PropChangedCallback pCallback);
+// always true, unless throw error.
+native bool SendProxy_UnhookPropChange(const int iEntity, const char[] cPropName, const PropChangedCallback pCallback);
+native bool SendProxy_UnhookPropChangeGameRules(const char[] cPropName, const GameRulesPropChangedCallback pCallback);
+native bool SendProxy_UnhookPropChangeArray(const int iEntity, const char[] cPropName, const int iElement, const PropChangedCallback pCallback);
+native bool SendProxy_UnhookPropChangeArrayGameRules(const char[] cPropName, const int iElement, const PropChangedCallback pCallback);
 
 #if !defined REQUIRE_EXTENSIONS
 public __ext_sendproxymanager_SetNTVOptional()
