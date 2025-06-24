@@ -29,9 +29,6 @@ jobs:
           - os: windows-latest
             os_short: win_latest
 
-          - os: windows-2019
-            os_short: win_2019
-
           - sm_version: latest
             sm_branch: master
             sm_short: sm_latest
