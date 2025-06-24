@@ -207,6 +207,9 @@ class ExtensionConfig(object):
       '-Wno-switch',
       '-Wno-array-bounds',
       '-fvisibility=hidden',
+      # /home/runner/work/Left4SendProxy/Left4SendProxy/alliedmodders/hl2sdk-l4d/public/mathlib/vector.h:207:49:
+      # note: expanded from macro 'USE_M64S' 207 | #define USE_M64S ( ( !defined( _X360 ) ) && ( ! defined( _LINUX) ) )
+      '-Wno-expansion-to-defined',  # Disable expansion-to-defined warning
     ]
 
     if cxx.target.arch in ['x86', 'x86_64']:
@@ -219,6 +222,7 @@ class ExtensionConfig(object):
       '-Wno-register',
       '-fvisibility-inlines-hidden',
       '-std=c++20',
+      '-Wno-expansion-to-defined',  # Disable expansion-to-defined warning
     ]
 
     have_gcc = cxx.family == 'gcc'
