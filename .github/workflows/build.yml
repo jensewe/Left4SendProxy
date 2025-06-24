@@ -160,13 +160,6 @@ jobs:
         with:
           path: src
 
-      - name: Setup SafetyHook
-        uses: actions/checkout@v4
-        with:
-          repository: alliedmodders/safetyhook
-          ref: main
-          path: src/extension/safetyhook
-
       - name: Get Extension version
         shell: bash
         working-directory: src/extension
