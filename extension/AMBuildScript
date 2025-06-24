@@ -420,7 +420,7 @@ class SafetyHookShim(object):
 
 SafetyHook = SafetyHookShim()
 SafetyHook.all_targets = Extension.all_targets
-builder.Build(os.path.join(ExtensionConfig.sm_root, 'public/safetyhook/AMBuilder'), {'SafetyHook': SafetyHook })
+builder.Build(os.path.join(Extension.sm_root, 'public/safetyhook/AMBuilder'), {'SafetyHook': SafetyHook })
 Extension.libsafetyhook = SafetyHook.libsafetyhook
 
 # This will clone the list and each cxx object as we recurse, preventing child
