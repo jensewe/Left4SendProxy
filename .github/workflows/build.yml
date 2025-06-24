@@ -3,31 +3,53 @@ on:
   push:
     branches:
      - master
+
   pull_request:
     branches:
      - master
+
   workflow_dispatch:
 
 jobs:
   build:
     strategy:
-      matrix:
-        os: [ubuntu-22.04, ubuntu-latest, windows-latest]
-        include:
-          - os: windows-latest
-            os_short: win
-            compiler_cc: msvc
-          - os: ubuntu-latest
-            os_short: linux
-            compiler_cc: clang
-            compiler_cxx: clang++
-          - os: ubuntu-22.04
-            os_short: oldlinux
-            compiler_cc: clang-8
-            compiler_cxx: clang++-8
       fail-fast: false
+      matrix:
+        os: [ubuntu-latest, ubuntu-22.04, windows-latest, windows-2019]
+        sm_version: [latest, "1.12", "1.11"]
+        target_arch: [x86]
 
-    name: Build Project ${{ matrix.os_short }}
+        include:
+          - os: ubuntu-latest
+            os_short: ubuntu_latest
+
+          - os: ubuntu-22.04
+            os_short: ubuntu_22_04
+
+          - os: windows-latest
+            os_short: win_latest
+
+          - os: windows-2019
+            os_short: win_2019
+
+          - sm_version: latest
+            sm_branch: master
+            sm_short: sm_latest
+
+          - sm_version: "1.12"
+            sm_branch: "1.12-dev"
+            sm_short: sm_1_12
+
+          - target_arch: x86
+            vs_dev_arch: x86
+
+          #- target_arch: x64
+          #  vs_dev_arch: x86_64
+
+        env: 
+          MMSOURCE_VERSION: '1.12'
+
+    name: Build Project on ${{ matrix.os_short }}-${{ matrix.sm_version }}-${{ matrix.target_arch }}
     runs-on: ${{ matrix.os }}
     env:
       SDKS: '["l4d","l4d2"]'
@@ -43,56 +65,45 @@ jobs:
         run: |
           sudo dpkg --add-architecture i386
           sudo apt-get update
-          sudo apt-get install -y g++-multilib ${{ matrix.compiler_cc }}
+          sudo apt-get install -y gcc g++ g++-multilib libstdc++6
+          echo "CC=gcc" >> $GITHUB_ENV
+          echo "CXX=g++" >> $GITHUB_ENV
 
-      - name: Select clang compiler
-        if: runner.os == 'Linux'
-        run: |
-          echo "CC=${{ matrix.compiler_cc }}" >> $GITHUB_ENV
-          echo "CXX=${{ matrix.compiler_cxx }}" >> $GITHUB_ENV
-          ${{ matrix.compiler_cc }} --version
-          ${{ matrix.compiler_cxx }} --version
-  
-      - name: Add msbuild to PATH
-        if: runner.os == 'Windows'
-        uses: microsoft/setup-msbuild@v2
-        
       - name: Install Windows Dependencies
         if: runner.os == 'Windows'
         shell: cmd
         run: |
           :: See https://github.com/microsoft/vswhere/wiki/Find-VC
           for /f "usebackq delims=*" %%i in (`vswhere -latest -property installationPath`) do (
-            call "%%i"\Common7\Tools\vsdevcmd.bat -arch=x86 -host_arch=x64
+            call "%%i"\Common7\Tools\vsdevcmd.bat -arch=${{ matrix.vs_dev_arch }} -host_arch=x64
           )
-          
+
           :: Loop over all environment variables and make them global.
           for /f "delims== tokens=1,2" %%a in ('set') do (
             echo>>"%GITHUB_ENV%" %%a=%%b
           )
-            
-      - uses: actions/setup-python@v5
-        name: Setup Python 3.8
-        with:
-          python-version: 3.8
-      - name: Install Python dependencies
-        run: |
-          python -m pip install --upgrade pip setuptools wheel
   
-      - name: Checkout Repository
+      - name: Add msbuild to PATH
+        if: runner.os == 'Windows'
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Setup AMBuild
+        run: |
+          python -m pip install wheel
+          pip install git+https://github.com/alliedmodders/ambuild
+
+      - name: Setup SourceMod-${{ matrix.sm_version }}
         uses: actions/checkout@v4
         with:
-          path: src
-  
-      - name: Prepare Alliedmodders Directory
-        shell: bash
-        run: |
-          mkdir alliedmodders
-
-      - name: Prepare Sourcemod
-        working-directory: alliedmodders
-        run: |
-          git clone --recursive https://github.com/alliedmodders/sourcemod -b 1.11-dev
+          repository: alliedmodders/sourcemod
+          ref: ${{ matrix.sm_branch }}
+          path: ${{ matrix.sm_short }}
+          submodules: recursive
 
       - name: Prepare L4D SDK
         working-directory: alliedmodders
@@ -101,16 +112,21 @@ jobs:
           git clone hl2sdk-proxy-repo hl2sdk-l4d2 -b l4d2
           git clone hl2sdk-proxy-repo hl2sdk-l4d -b l4d
           
-      - name: Prepare Metamod Source
+      - name: Prepare Metamod Source-${{ env.MMSOURCE_VERSION }}
         working-directory: alliedmodders
         run: |
-          git clone https://github.com/alliedmodders/metamod-source mmsource-1.10 -b 1.10-dev
+          git clone https://github.com/alliedmodders/metamod-source mmsource-${{ env.MMSOURCE_VERSION }} -b ${{ env.MMSOURCE_VERSION }}-dev
 
-      - name: Install AMBuild
-        working-directory: alliedmodders
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          path: src
+
+      - name: Get Extension version
+        shell: bash
+        working-directory: src/extension
         run: |
-          git clone https://github.com/alliedmodders/ambuild
-          pip install ./ambuild
+          echo "EXT_VERSION=$(grep -E 'SMEXT_CONF_VERSION' ./smsdk_config.h | grep -oE '[0-9]+\.[0-9]+\.[0-9]')" >> $GITHUB_ENV
 
       - name: Run AMBuild
         working-directory: src
@@ -122,7 +138,7 @@ jobs:
           python ../configure.py \
             --hl2sdk-root="${{ github.workspace }}/alliedmodders" \
             --sm-path="${{ github.workspace }}/alliedmodders/sourcemod" \
-            --mms-path="${{ github.workspace }}/alliedmodders/mmsource-1.10" \
+            --mms-path="${{ github.workspace }}/alliedmodders/mmsource-${{ env.MMSOURCE_VERSION }}" \
             --sdks=${{ join(fromJSON(env.SDKS)) }}
           ambuild
 
@@ -135,5 +151,5 @@ jobs:
       - name: Upload Binary (Package)
         uses: actions/upload-artifact@v4
         with:
-          name: sendproxy-${{ matrix.os_short }}
+          name: sendproxy-${{ env.EXT_VERSION }}.${{ env.GITHUB_SHA_SHORT }}-${{ matrix.os_short }}-${{ matrix.sm_version }}-${{ matrix.target_arch }}
           path: src/addons
