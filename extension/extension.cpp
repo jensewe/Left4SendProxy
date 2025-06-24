@@ -78,7 +78,7 @@ bool g_bSVComputePacksDone = false;
 IServer * g_pIServer = nullptr;
 
 SendProxyManager g_SendProxyManager;
-SendProxyManagerInterfaceImpl * g_pMyInterface = nullptr;
+SendProxyManagerInterfaceImpl g_pMyInterface;
 SMEXT_LINK(&g_SendProxyManager);
 
 CThreadFastMutex g_WorkMutex;
@@ -708,8 +708,8 @@ bool SendProxyManager::SDK_OnLoad(char *error, size_t maxlength, bool late)
 	sharesys->AddDependency(myself, "sdktools.ext", true, true);
 	sharesys->AddDependency(myself, "sdkhooks.ext", true, true);
 	
-	g_pMyInterface = new SendProxyManagerInterfaceImpl();
-	sharesys->AddInterface(myself, g_pMyInterface);
+	//g_pMyInterface = new SendProxyManagerInterfaceImpl();
+	sharesys->AddInterface(myself, &g_pMyInterface);
 	//we should not maintain compatibility with old plugins which uses earlier versions of sendproxy (< 1.3)
 	sharesys->RegisterLibrary(myself, "sendproxy13");
 	plsys->AddPluginsListener(&g_SendProxyManager);
@@ -762,7 +762,7 @@ void SendProxyManager::SDK_OnUnload()
 	{
 		g_pSDKHooks->RemoveEntityListener(this);
 	}
-	delete g_pMyInterface;
+	//delete g_pMyInterface;
 }
 
 void SendProxyManager::OnCoreMapEnd()
