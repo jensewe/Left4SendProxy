@@ -44,7 +44,6 @@
 	#endif
 #endif
 
-#include "CDetour/detours.h"
 #include "extension.h"
 #include "interfaceimpl.h"
 #include "natives.h"

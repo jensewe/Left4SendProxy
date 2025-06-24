@@ -50,6 +50,7 @@
 #include <ISDKHooks.h>
 #include <ISDKTools.h>
 #include "wrappers.h"
+#include "CDetour/detours.h"
 
 #define GET_CONVAR(name) \
 	name = g_pCVar->FindVar(#name); \
