@@ -380,9 +380,8 @@ class ExtensionConfig(object):
 
   def AddCDetour(self, binary):
     binary.sources += [ os.path.join(self.sm_root, 'public', 'CDetour', 'detours.cpp') ]
-    binary.compiler.cxxincludes += [ os.path.join(self.sm_root, 'public', 'safetyhook', 'include') ]
-    binary.compiler.cxxincludes += [ os.path.join(self.sm_root, 'public', 'safetyhook', 'zydis') ]
-    binary.compiler.includes += [ os.path.join(self.sm_root, 'public', 'safetyhook') ]
+    binary.compiler.cxxincludes += [ os.path.join(builder.sourcePath, 'safetyhook', 'include') ]
+    binary.compiler.includes += [ os.path.join(builder.sourcePath, 'safetyhook') ]
     for task in self.libsafetyhook:
       if task.target.arch == binary.compiler.target.arch:
         binary.compiler.linkflags += [task.binary]
@@ -419,7 +418,7 @@ class SafetyHookShim(object):
 
 SafetyHook = SafetyHookShim()
 SafetyHook.all_targets = Extension.all_targets
-builder.Build(os.path.join(Extension.sm_root, 'public/safetyhook/AMBuilder'), {'SafetyHook': SafetyHook })
+builder.Build('safetyhook/AMBuilder', {'SafetyHook': SafetyHook })
 Extension.libsafetyhook = SafetyHook.libsafetyhook
 
 # This will clone the list and each cxx object as we recurse, preventing child
