@@ -27,8 +27,8 @@ jobs:
 
           - os: ubuntu-22.04
             os_short: ubuntu_22_04
-            compiler_cc: clang-14
-            compiler_cxx: clang++-14
+            compiler_cc: clang-16
+            compiler_cxx: clang++-16
 
           - os: windows-latest
             os_short: win_latest
@@ -151,6 +151,13 @@ jobs:
         uses: actions/checkout@v4
         with:
           path: src
+
+      - name: Setup SafetyHook
+        uses: actions/checkout@v4
+        with:
+          repository: alliedmodders/safetyhook
+          ref: master
+          path: src/extension/safetyhook
 
       - name: Get Extension version
         shell: bash
