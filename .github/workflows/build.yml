@@ -16,7 +16,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, ubuntu-22.04, windows-latest, windows-2019]
-        sm_version: [latest, "1.12", "1.11"]
+        sm_version: [sm-latest, "1.12", "1.11"]
         target_arch: [x86]
 
         include:
@@ -94,6 +94,11 @@ jobs:
         run: |
           python -m pip install wheel
           pip install git+https://github.com/alliedmodders/ambuild
+
+      - name: Prepare Alliedmodders Directory
+        shell: bash
+        run: |
+          mkdir alliedmodders
 
       - name: Setup SourceMod-${{ matrix.sm_version }}
         uses: actions/checkout@v4
