@@ -695,7 +695,7 @@ bool SendProxyManager::SDK_OnLoad(char *error, size_t maxlength, bool late)
 	CDetourManager::Init(smutils->GetScriptingEngine(), nullptr);
 	
 	bool bDetoursInited = false;
-	static const struct {
+	static struct {
 		const char *name;
 		void *pFnCallback;
 	} detours[] = {
@@ -708,7 +708,7 @@ bool SendProxyManager::SDK_OnLoad(char *error, size_t maxlength, bool late)
 	};
 
 	for (auto &i : detours) {
-		if (!g_pGameConf->GetMemSig(i.name, &(i.pFnCallback))) {
+		if (!g_pGameConf->GetMemSig(i.name, &i.pFnCallback)) {
 			g_pSM->LogError(myself, "Signature for %s not found in gamedata", i.name);
 			return false;
 		}
