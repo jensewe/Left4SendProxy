@@ -46,7 +46,7 @@ jobs:
           #- target_arch: x64
           #  vs_dev_arch: x86_64
 
-    name: Build Project on ${{ matrix.os_short }}-${{ matrix.sm_version }}-${{ matrix.target_arch }}
+    name: Build Project on ${{ matrix.os_short }}-${{ matrix.sm_short }}-${{ matrix.target_arch }}
     runs-on: ${{ matrix.os }}
     env:
       SDKS: '["l4d","l4d2"]'
@@ -100,8 +100,9 @@ jobs:
         run: |
           mkdir alliedmodders
 
-      - name: Setup SourceMod-${{ matrix.sm_version }}
+      - name: Setup SourceMod-${{ matrix.sm_short }}
         uses: actions/checkout@v4
+        working-directory: alliedmodders
         with:
           repository: alliedmodders/sourcemod
           ref: ${{ matrix.sm_branch }}
