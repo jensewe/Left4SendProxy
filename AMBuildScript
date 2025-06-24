@@ -381,6 +381,7 @@ class ExtensionConfig(object):
   def AddCDetour(self, binary):
     binary.sources += [ os.path.join(self.sm_root, 'public', 'CDetour', 'detours.cpp') ]
     binary.compiler.cxxincludes += [ os.path.join(self.sm_root, 'public', 'safetyhook', 'include') ]
+    binary.compiler.cxxincludes += [ os.path.join(self.sm_root, 'public', 'safetyhook', 'zydis') ]
     binary.compiler.includes += [ os.path.join(self.sm_root, 'public', 'safetyhook') ]
     for task in self.libsafetyhook:
       if task.target.arch == binary.compiler.target.arch:
