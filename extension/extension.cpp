@@ -115,6 +115,13 @@ static CDetour *CGameServer_DTR_SendClientMessages = nullptr;
 static CDetour *CGameClient_DTR_ShouldSendMessages = nullptr;
 static CDetour *DTR_SV_ComputeClientPacks = nullptr;
 
+static void *pFnUsePreviouslySentPacket = nullptr;
+static void *pFnCreatePackedEntity = nullptr;
+static void *pFnGetPreviouslySentPacket = nullptr;
+static void *pFnSendClientMessages = nullptr;
+static void *pFnShouldSendMessages = nullptr;
+static void *pFnSV_ComputeClientPacks = nullptr;
+
 //detours
 
 /*Call stack:
@@ -671,6 +678,7 @@ bool SendProxyManager::SDK_OnLoad(char *error, size_t maxlength, bool late)
 	{
 		if (conf_error[0])
 			snprintf(error, maxlength, "Could not read config file sdktools.games.txt: %s", conf_error);
+			
 		return false;
 	}
 	
@@ -684,39 +692,80 @@ bool SendProxyManager::SDK_OnLoad(char *error, size_t maxlength, bool late)
 		return false;
 	}
 	
-	CDetourManager::Init(smutils->GetScriptingEngine(), g_pGameConf);
+	CDetourManager::Init(smutils->GetScriptingEngine(), nullptr);
 	
 	bool bDetoursInited = false;
 	static const struct {
 		const char *name;
 		void *pFnCallback;
-		CDetour *pDetour;
 	} detours[] = {
-		{ "CGameServer::SendClientMessages", CGameServer_SendClientMessages, CGameServer_DTR_SendClientMessages },
-		{ "CGameClient::ShouldSendMessages", CGameClient_ShouldSendMessages, CGameClient_DTR_ShouldSendMessages },
-		{ "CFrameSnapshotManager::UsePreviouslySentPacket", CFrameSnapshotManager_UsePreviouslySentPacket, CFrameSnapshotManager_DTR_UsePreviouslySentPacket },
-		{ "CFrameSnapshotManager::CreatePackedEntity", CFrameSnapshotManager_CreatePackedEntity, CFrameSnapshotManager_DTR_CreatePackedEntity },
-		{ "CFrameSnapshotManager::GetPreviouslySentPacket", CFrameSnapshotManager_GetPreviouslySentPacket, CFrameSnapshotManager_DTR_GetPreviouslySentPacket },
+		{ "CGameServer::SendClientMessages", pFnSendClientMessages },
+		{ "CGameClient::ShouldSendMessages", pFnShouldSendMessages },
+		{ "CFrameSnapshotManager::UsePreviouslySentPacket", pFnUsePreviouslySentPacket },
+		{ "CFrameSnapshotManager::CreatePackedEntity", pFnCreatePackedEntity },
+		{ "CFrameSnapshotManager::GetPreviouslySentPacket", pFnGetPreviouslySentPacket },
+		{ "SV_ComputeClientPacks", pFnSV_ComputeClientPacks }
 	}
 
 	for (auto &i : detours) {
-		i.pDetour = CDetourManager::CreateDetour(GET_MEMBER_CALLBACK(i.pFnCallback), GET_MEMBER_TRAMPOLINE(i.pFnCallback), i.name);
-		if (i.pDetour == nullptr)
-		{
-			smutils->LogError(myself, "Could not create detour for %s.", i.name);
+		if (!g_pGameConf->GetMemSig(i.name, &i.pFnCallback)) {
+			g_pSM->LogError(myself, "Signature for %s not found in gamedata", i.name);
 			return false;
 		}
 
-		i.pDetour->EnableDetour();
+		if (i.pFnCallback == nullptr) {
+			smutils->LogError(myself, "Sigscan for %s is null.", i.name);
+			return false;
+		}
 	}
 
-	DTR_SV_ComputeClientPacks = CDetourManager::CreateDetour(GET_STATIC_CALLBACK(SV_ComputeClientPacks), GET_MEMBER_TRAMPOLINE(SV_ComputeClientPacks), "SV_ComputeClientPacks");
+	CGameServer_DTR_SendClientMessages = DETOUR_CREATE_MEMBER(CGameServer_SendClientMessages, pFnSendClientMessages);
+	if (!CGameServer_DTR_SendClientMessages)
+	{
+		smutils->LogError(myself, "Could not create detour for CGameServer::SendClientMessages.");
+		return false;
+	}
+
+	CGameClient_DTR_ShouldSendMessages = DETOUR_CREATE_MEMBER(CGameClient_ShouldSendMessages, pFnShouldSendMessages);
+	if (!CGameClient_DTR_ShouldSendMessages)
+	{
+		smutils->LogError(myself, "Could not create detour for CGameClient::ShouldSendMessages.");
+		return false;
+	}
+
+	CFrameSnapshotManager_DTR_UsePreviouslySentPacket = DETOUR_CREATE_MEMBER(CFrameSnapshotManager_UsePreviouslySentPacket, pFnUsePreviouslySentPacket);
+	if (!CFrameSnapshotManager_DTR_UsePreviouslySentPacket)
+	{
+		smutils->LogError(myself, "Could not create detour for CFrameSnapshotManager::UsePreviouslySentPacket.");
+		return false;
+	}
+
+	CFrameSnapshotManager_DTR_CreatePackedEntity = DETOUR_CREATE_MEMBER(CFrameSnapshotManager_CreatePackedEntity, pFnCreatePackedEntity);
+	if (!CFrameSnapshotManager_DTR_CreatePackedEntity)
+	{
+		smutils->LogError(myself, "Could not create detour for CFrameSnapshotManager::CreatePackedEntity.");
+		return false;
+	}
+
+	CFrameSnapshotManager_DTR_GetPreviouslySentPacket = DETOUR_CREATE_MEMBER(CFrameSnapshotManager_GetPreviouslySentPacket, pFnGetPreviouslySentPacket);
+	if (!CFrameSnapshotManager_DTR_GetPreviouslySentPacket)
+	{
+		smutils->LogError(myself, "Could not create detour for CFrameSnapshotManager::GetPreviouslySentPacket.");
+		return false;
+	}
+
+	DTR_SV_ComputeClientPacks = DETOUR_CREATE_STATIC(SV_ComputeClientPacks, pFnSV_ComputeClientPacks);
 	if (!DTR_SV_ComputeClientPacks)
 	{
 		smutils->LogError(myself, "Could not create detour for SV_ComputeClientPacks.");
 		return false;
 	}
 
+	CGameServer_DTR_SendClientMessages->EnableDetour();
+	CGameClient_DTR_ShouldSendMessages->EnableDetour();
+	CFrameSnapshotManager_DTR_UsePreviouslySentPacket->EnableDetour();
+	CFrameSnapshotManager_DTR_CreatePackedEntity->EnableDetour();
+	CFrameSnapshotManager_DTR_GetPreviouslySentPacket->EnableDetour();
 	DTR_SV_ComputeClientPacks->EnableDetour();
 
 	if (late) //if we loaded late, we need manually to call that
