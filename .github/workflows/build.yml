@@ -100,28 +100,36 @@ jobs:
         run: |
           mkdir alliedmodders
 
-      - name: Setup SourceMod-${{ matrix.sm_short }}
+      - name: Checkout SourceMod-${{ matrix.sm_short }}
         uses: actions/checkout@v4
-        working-directory: alliedmodders
         with:
           repository: alliedmodders/sourcemod
           ref: ${{ matrix.sm_branch }}
-          path: ${{ matrix.sm_short }}
+          path: alliedmodders/sourcemod
           submodules: recursive
 
-      - name: Prepare L4D SDK
-        working-directory: alliedmodders
-        run: |
-          git clone --mirror https://github.com/alliedmodders/hl2sdk hl2sdk-proxy-repo
-          git clone hl2sdk-proxy-repo hl2sdk-l4d2 -b l4d2
-          git clone hl2sdk-proxy-repo hl2sdk-l4d -b l4d
-          
-      - name: Prepare Metamod Source-${{ env.MMSOURCE_VERSION }}
-        working-directory: alliedmodders
-        run: |
-          git clone https://github.com/alliedmodders/metamod-source mmsource-${{ env.MMSOURCE_VERSION }} -b ${{ env.MMSOURCE_VERSION }}-dev
+      - name: Checkout HL2SDK L4D2
+        uses: actions/checkout@v4
+        with:
+          repository: alliedmodders/hl2sdk
+          ref: l4d2
+          path: alliedmodders/hl2sdk-l4d2
 
-      - name: Checkout Repository
+      - name: Checkout HL2SDK L4D
+        uses: actions/checkout@v4
+        with:
+          repository: alliedmodders/hl2sdk
+          ref: l4d
+          path: alliedmodders/hl2sdk-l4d
+
+      - name: Checkout Metamod Source-${{ env.MMSOURCE_VERSION }}
+        uses: actions/checkout@v4
+        with:
+          repository: alliedmodders/metamod-source
+          ref: ${{ env.MMSOURCE_VERSION }}-dev
+          path: alliedmodders/mmsource-${{ env.MMSOURCE_VERSION }}
+
+      - name: Checkout Own Repository
         uses: actions/checkout@v4
         with:
           path: src
