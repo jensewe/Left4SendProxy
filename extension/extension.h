@@ -66,6 +66,7 @@ void GlobalProxy(const SendProp *pProp, const void *pStructBase, const void* pDa
 void GlobalProxyGamerules(const SendProp *pProp, const void *pStructBase, const void* pData, DVariant *pOut, int iElement, int objectID);
 bool IsPropValid(SendProp *, PropType);
 char * strncpynull(char * pDestination, const char * pSource, size_t szCount);
+void DestroyDetours(CDetour *pDetour);
 
 struct ListenerCallbackInfo
 {

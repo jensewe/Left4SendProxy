@@ -57,14 +57,6 @@ SH_DECL_HOOK1_void(IServerGameClients, ClientDisconnect, SH_NOATTRIB, false, edi
 SH_DECL_HOOK1_void(IServerGameDLL, GameFrame, SH_NOATTRIB, false, bool);
 SH_DECL_HOOK0(IServer, GetClientCount, const, false, int);
 
-DECL_DETOUR(CGameServer_SendClientMessages);
-DECL_DETOUR(CGameClient_ShouldSendMessages);
-DECL_DETOUR(CFrameSnapshotManager_UsePreviouslySentPacket);
-DECL_DETOUR(CFrameSnapshotManager_GetPreviouslySentPacket);
-DECL_DETOUR(CFrameSnapshotManager_CreatePackedEntity);
-// DECL_DETOUR(CFrameSnapshotManager_RemoveEntityReference);
-DECL_DETOUR(SV_ComputeClientPacks);
-
 class CGameClient;
 class CFrameSnapshot;
 class CGlobalEntityList;
@@ -116,6 +108,13 @@ static void CallChangeCallbacks(PropChangeHook * pInfo, void * pOldValue, void *
 static void CallChangeGamerulesCallbacks(PropChangeHookGamerules * pInfo, void * pOldValue, void * pNewValue);
 
 const char * g_szGameRulesProxy;
+
+static CDetour *CFrameSnapshotManager_DTR_UsePreviouslySentPacket = nullptr;
+static CDetour *CFrameSnapshotManager_DTR_CreatePackedEntity = nullptr;
+static CDetour *CFrameSnapshotManager_DTR_GetPreviouslySentPacket = nullptr;
+static CDetour *CGameServer_DTR_SendClientMessages = nullptr;
+static CDetour *CGameClient_DTR_ShouldSendMessages = nullptr;
+static CDetour *DTR_SV_ComputeClientPacks = nullptr;
 
 //detours
 
@@ -682,25 +681,44 @@ bool SendProxyManager::SDK_OnLoad(char *error, size_t maxlength, bool late)
 	{
 		if (conf_error[0])
 			snprintf(error, maxlength, "Could not read config file sendproxy.txt: %s", conf_error);
+
 		return false;
 	}
 	
 	CDetourManager::Init(smutils->GetScriptingEngine(), g_pGameConf);
 	
 	bool bDetoursInited = false;
-	CREATE_DETOUR(CGameServer_SendClientMessages, "CGameServer::SendClientMessages", bDetoursInited);
-	CREATE_DETOUR(CGameClient_ShouldSendMessages, "CGameClient::ShouldSendMessages", bDetoursInited);
-	CREATE_DETOUR(CFrameSnapshotManager_UsePreviouslySentPacket, "CFrameSnapshotManager::UsePreviouslySentPacket", bDetoursInited);
-	CREATE_DETOUR(CFrameSnapshotManager_GetPreviouslySentPacket, "CFrameSnapshotManager::GetPreviouslySentPacket", bDetoursInited);
-	CREATE_DETOUR(CFrameSnapshotManager_CreatePackedEntity, "CFrameSnapshotManager::CreatePackedEntity", bDetoursInited);
-	// CREATE_DETOUR(CFrameSnapshotManager_RemoveEntityReference, "CFrameSnapshotManager::RemoveEntityReference", bDetoursInited);
-	CREATE_DETOUR_STATIC(SV_ComputeClientPacks, "SV_ComputeClientPacks", bDetoursInited);
-	
-	if (!bDetoursInited)
+	static const struct {
+		const char *name;
+		void *pFnCallback;
+		CDetour *pDetour;
+	} detours[] = {
+		{ "CGameServer::SendClientMessages", CGameServer_SendClientMessages, CGameServer_DTR_SendClientMessages },
+		{ "CGameClient::ShouldSendMessages", CGameClient_ShouldSendMessages, CGameClient_DTR_ShouldSendMessages },
+		{ "CFrameSnapshotManager::UsePreviouslySentPacket", CFrameSnapshotManager_UsePreviouslySentPacket, CFrameSnapshotManager_DTR_UsePreviouslySentPacket },
+		{ "CFrameSnapshotManager::CreatePackedEntity", CFrameSnapshotManager_CreatePackedEntity, CFrameSnapshotManager_DTR_CreatePackedEntity },
+		{ "CFrameSnapshotManager::GetPreviouslySentPacket", CFrameSnapshotManager_GetPreviouslySentPacket, CFrameSnapshotManager_DTR_GetPreviouslySentPacket },
+	}
+
+	for (auto &i : detours) {
+		i.pDetour = CDetourManager::CreateDetour(GET_MEMBER_CALLBACK(i.pFnCallback), GET_MEMBER_TRAMPOLINE(i.pFnCallback), i.name);
+		if (i.pDetour == nullptr)
+		{
+			smutils->LogError(myself, "Could not create detour for %s.", i.name);
+			return false;
+		}
+
+		i.pDetour->EnableDetour();
+	}
+
+	DTR_SV_ComputeClientPacks = CDetourManager::CreateDetour(GET_STATIC_CALLBACK(SV_ComputeClientPacks), GET_MEMBER_TRAMPOLINE(SV_ComputeClientPacks), "SV_ComputeClientPacks");
+	if (!DTR_SV_ComputeClientPacks)
 	{
-		snprintf(error, maxlength, "Could not create detours, see error log!");
+		smutils->LogError(myself, "Could not create detour for SV_ComputeClientPacks.");
 		return false;
 	}
+
+	DTR_SV_ComputeClientPacks->EnableDetour();
 
 	if (late) //if we loaded late, we need manually to call that
 		OnCoreMapStart(nullptr, 0, 0);
@@ -746,13 +764,12 @@ void SendProxyManager::SDK_OnUnload()
 	if (!g_bFirstTimeCalled)
 		SH_REMOVE_HOOK(IServer, GetClientCount, g_pIServer, SH_MEMBER(this, &SendProxyManager::GetClientCount), false);
 
-	DESTROY_DETOUR(CGameServer_SendClientMessages);
-	DESTROY_DETOUR(CGameClient_ShouldSendMessages);
-	DESTROY_DETOUR(CFrameSnapshotManager_UsePreviouslySentPacket);
-	DESTROY_DETOUR(CFrameSnapshotManager_GetPreviouslySentPacket);
-	DESTROY_DETOUR(CFrameSnapshotManager_CreatePackedEntity);
-	// DESTROY_DETOUR(CFrameSnapshotManager_RemoveEntityReference);
-	DESTROY_DETOUR(SV_ComputeClientPacks);
+	DestroyDetours(CFrameSnapshotManager_DTR_UsePreviouslySentPacket);
+	DestroyDetours(CFrameSnapshotManager_DTR_CreatePackedEntity);
+	DestroyDetours(CFrameSnapshotManager_DTR_GetPreviouslySentPacket);
+	DestroyDetours(CGameServer_DTR_SendClientMessages);
+	DestroyDetours(CGameClient_DTR_ShouldSendMessages);
+	DestroyDetours(DTR_SV_ComputeClientPacks);
 	
 	gameconfs->CloseGameConfigFile(g_pGameConf);
 	gameconfs->CloseGameConfigFile(g_pGameConfSDKTools);
@@ -1865,4 +1882,18 @@ char * strncpynull(char * pDestination, const char * pSource, size_t szCount)
 	strncpy(pDestination, pSource, szCount);
 	pDestination[szCount - 1] = 0;
 	return pDestination;
+}
+
+void DestroyDetours(CDetour *pDetour)
+{
+	if (pDetour)
+	{
+		if (pDetour->IsEnabled())
+		{
+			pDetour->DisableDetour();
+		}
+
+		pDetour->Destroy();
+		pDetour = nullptr;
+	}
 }
