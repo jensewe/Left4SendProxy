@@ -171,6 +171,7 @@ methodmap SendProxyManager
 	 * Hooks/Unhooks a element of a SendProp array of an entity.
 	 * This hook will be removed automatically when extension unloaded or upon the destruction of entity.
 	 * Every element of the array is a single base SendProp. Meaning, every element will be need a single hook.
+	 * Use this only if the SendProp's type is DPT_Array or DPT_DataTable.
 	 *
 	 * @param iEntity		The entity to hook.
 	 * @param cPropName		The name of the SendProp.
@@ -187,6 +188,7 @@ methodmap SendProxyManager
 	 * Hooks/Unhooks a element of a SendProp array of GameRules.
 	 * This hook will be removed automatically when extension unloaded.
 	 * Every element of the array is a single base SendProp. Meaning, every element will be need a single hook.
+	 * Use this only if the SendProp's type is DPT_Array or DPT_DataTable.
 	 *
 	 * @param cPropName		The name of the SendProp.
 	 * @param iElement		The element number of the SendProp array.
