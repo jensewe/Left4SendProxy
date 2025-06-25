@@ -71,6 +71,9 @@ enum SendPropType
  * If a SendProp has its own SendProxy function (Or marked as SPROP_PROXY_ALWAYS_YES),
  * Your callback will be called before the original SendProxy function.
  * If your callback falied to call, the original SendProxy function will still be called.
+ * 
+ * In proxy callbacks, change the value dose not change the original and actual server-side value.
+ * But it dose change the value that will be sent to the client.
 */
 
 /**
@@ -88,7 +91,9 @@ typeset SendProxyCallback
 	 * @param iEntity		The entity you hooked with.
   	 * @param cPropName		The name of the SendProp.
 	 * @param iValue		The value of the SendProp that is about to be send. See PropType for type.
-  	 * @param iElement		The element number if this data is part of an array.
+  	 * @param iElement		The element number if this data is part of an array. 
+	 * 						Useful when the SendProp's type is DPT_Array or DPT_DataTable, or it has flag 'SPROP_INSIDEARRAY'.
+	 * 
   	 * @param iClient		The client index that this proxy send to.
 	 * 
 	 * @return				Plugin_Changed to use changed value, others otherwise.
@@ -106,7 +111,9 @@ typeset SendProxyCallbackGamerules
 	 * 
 	 * @param cPropName		The name of the SendProp.
 	 * @param iValue		The value of the SendProp that is about to be send. See PropType for type.
-  	 * @param iElement		The element number if this data is part of an array.
+  	 * @param iElement		The element number if this data is part of an array. 
+	 * 						Useful when the SendProp's type is DPT_Array or DPT_DataTable, or it has flag 'SPROP_INSIDEARRAY'.
+	 * 
   	 * @param iClient		The client index that this proxy send to.
 	 * 
 	 * @return 				Plugin_Changed to use changed value, others otherwise.
@@ -124,10 +131,10 @@ typeset SendProxyCallbackGamerules
 */
 typeset PropChangedCallback
 {
-	function void(int iEntity, const char[] cPropName, int iOldValue, int iNewValue, const int iElement);
-	function void(int iEntity, const char[] cPropName, float flOldValue, float flNewValue, const int iElement);
-	function void(int iEntity, const char[] cPropName, const char[] cOldValue, const char[] cNewValue, const int iElement);
-	function void(int iEntity, const char[] cPropName, const float vecOldValue[3], const float vecNewValue[3], const int iElement);
+	function void(int iEntity, const char[] cPropName, int iOldValue, int iNewValue, int iElement);
+	function void(int iEntity, const char[] cPropName, float flOldValue, float flNewValue, int iElement);
+	function void(int iEntity, const char[] cPropName, const char[] cOldValue, const char[] cNewValue, int iElement);
+	function void(int iEntity, const char[] cPropName, const float vecOldValue[3], const float vecNewValue[3], int iElement);
 };
 
 typeset GameRulesPropChangedCallback
@@ -144,7 +151,7 @@ methodmap SendProxyManager
 	 * Hooks/Unhooks a SendProp of entity.
 	 * This hook will be removed automatically when extension unloaded or upon the destruction of entity.
 	 *
-	 * @param iEntity		The entity to hook.
+	 * @param iEntity		The entity to hook/unhook.
 	 * @param cPropName		The name of the SendProp.
 	 * @param stType		The type of the SendProp.
 	 * @param pCallback		The callback function to linked to call / unlinked.
@@ -173,7 +180,7 @@ methodmap SendProxyManager
 	 * Every element of the array is a single base SendProp. Meaning, every element will be need a single hook.
 	 * Use this only if the SendProp's type is DPT_Array or DPT_DataTable.
 	 *
-	 * @param iEntity		The entity to hook.
+	 * @param iEntity		The entity to hook/unhook.
 	 * @param cPropName		The name of the SendProp.
 	 * @param iElement		The element number of the SendProp array.
 	 * @param stType		The type of the SendProp.
@@ -217,10 +224,10 @@ methodmap SendProxyManager
 	/*
 	 * Hooks/Unhooks a SendProp change of an entity.
 	 *
-	 * @param iEntity		The entity to check.
+	 * @param iEntity		The entity to hook/unhook.
 	 * @param cPropName		The name of the SendProp.
 	 * @param stType		The type of the SendProp.
-  	 * @param pCallback		The callback function to check.
+  	 * @param pCallback		The callback function to linked to call / unlinked.
 	 *
 	 * @return				true, if prop is hooked/unhooked, false otherwise
 	*/
@@ -232,7 +239,7 @@ methodmap SendProxyManager
 	 * 
 	 * @param cPropName		The name of the SendProp.
   	 * @param stType		The type of the SendProp.
-  	 * @param pCallback		The callback function to check.
+  	 * @param pCallback		The callback function to linked to call / unlinked.
 	 * 
 	 * @return				true, if prop is hooked/unhooked, false otherwise
 	*/
@@ -243,11 +250,11 @@ methodmap SendProxyManager
 	 * Hooks/Unhooks a SendProp change of an entity's array element.
   	 * Every element of the array is a single base SendProp. Meaning, every element will be need a single hook.
 	 * 
-  	 * @param iEntity		The entity to check.
+  	 * @param iEntity		The entity to hook/unhook.
   	 * @param cPropName		The name of the SendProp.
   	 * @param iElement		The element number of the SendProp array.
   	 * @param stType		The type of the SendProp.
-  	 * @param pCallback		The callback function to check.
+  	 * @param pCallback		The callback function to linked to call / unlinked.
 	 * 
 	 * @return				true, if prop is hooked/unhooked, false otherwise
 	*/
@@ -261,7 +268,7 @@ methodmap SendProxyManager
   	 * @param cPropName		The name of the SendProp.
   	 * @param iElement		The element number of the SendProp array.
   	 * @param stType		The type of the SendProp.
-  	 * @param pCallback		The callback function to check.
+  	 * @param pCallback		The callback function to linked to call / unlinked.
   	 *
   	 * @return				true, if prop is hooked/unhooked, false otherwise
 	*/
