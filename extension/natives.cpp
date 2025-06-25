@@ -955,12 +955,16 @@ static cell_t Native_UnhookChange(IPluginContext * pContext, const cell_t * para
 	bool bFound = false;
 	for (int i = 0; i < g_ChangeHooks.Count(); i++)
 	{
-		for (auto &iter : *g_ChangeHooks[i].vCallbacksInfo)
+		auto pCallBacks =  g_ChangeHooks[i].vCallbacksInfo;
+		if (pCallBacks->Count())
 		{
-			if (iter.pCallback == (void *)callback && iter.pOwner == (void *)pContext)
+			for (int j = 0; j < pCallBacks->Count(); j++)
 			{
-				bFoundCallBack = true;
-				break;
+				if ((*pCallBacks)[j].pCallback == (void *)callback && (*pCallBacks)[j].pOwner == (void *)pContext)
+				{
+					bFoundCallBack = true;
+					break;
+				}
 			}
 		}
 
@@ -1067,12 +1071,16 @@ static cell_t Native_UnhookGameRulesChange(IPluginContext * pContext, const cell
 	bool bFound = false;
 	for (int i = 0; i < g_ChangeHooksGamerules.Count(); i++)
 	{
-		for (auto &iter : *g_ChangeHooksGamerules[i].vCallbacksInfo)
+		auto pCallBacks =  g_ChangeHooksGamerules[i].vCallbacksInfo;
+		if (pCallBacks->Count())
 		{
-			if (iter.pCallback == (void *)callback && iter.pOwner == (void *)pContext)
+			for (int j = 0; j < pCallBacks->Count(); j++)
 			{
-				bFoundCallBack = true;
-				break;
+				if ((*pCallBacks)[j].pCallback == (void *)callback && (*pCallBacks)[j].pOwner == (void *)pContext)
+				{
+					bFoundCallBack = true;
+					break;
+				}
 			}
 		}
 
@@ -1270,12 +1278,16 @@ static cell_t Native_UnhookArrayChange(IPluginContext * pContext, const cell_t *
 	bool bFound = false;
 	for (int i = 0; i < g_ChangeHooks.Count(); i++)
 	{
-		for (auto &iter : *g_ChangeHooks[i].vCallbacksInfo)
+		auto pCallBacks =  g_ChangeHooks[i].vCallbacksInfo;
+		if (pCallBacks->Count())
 		{
-			if (iter.pCallback == (void *)callback && iter.pOwner == (void *)pContext)
+			for (int j = 0; j < pCallBacks->Count(); j++)
 			{
-				bFoundCallBack = true;
-				break;
+				if ((*pCallBacks)[j].pCallback == (void *)callback && (*pCallBacks)[j].pOwner == (void *)pContext)
+				{
+					bFoundCallBack = true;
+					break;
+				}
 			}
 		}
 
@@ -1447,12 +1459,16 @@ static cell_t Native_UnhookGameRulesArrayChange(IPluginContext * pContext, const
 	bool bFound = false;
 	for (int i = 0; i < g_ChangeHooksGamerules.Count(); i++)
 	{
-		for (auto &iter : *g_ChangeHooksGamerules[i].vCallbacksInfo)
+		auto pCallBacks =  g_ChangeHooksGamerules[i].vCallbacksInfo;
+		if (pCallBacks->Count())
 		{
-			if (iter.pCallback == (void *)callback && iter.pOwner == (void *)pContext)
+			for (int j = 0; j < pCallBacks->Count(); j++)
 			{
-				bFoundCallBack = true;
-				break;
+				if ((*pCallBacks)[j].pCallback == (void *)callback && (*pCallBacks)[j].pOwner == (void *)pContext)
+				{
+					bFoundCallBack = true;
+					break;
+				}
 			}
 		}
 
