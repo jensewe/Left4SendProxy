@@ -38,7 +38,11 @@ static cell_t Native_UnhookChange(IPluginContext * pContext, const cell_t * para
 
 	int entity = params[1];
 	char * name;
+
 	edict_t * pEnt = gamehelpers->EdictOfIndex(entity);
+	if (!pEnt)
+ 		return pContext->ThrowNativeError("Invalid Edict Index %d, edict_t is null.", entity);
+
 	pContext->LocalToString(params[2], &name);
 	ServerClass * sc = pEnt->GetNetworkable()->GetServerClass();
 
@@ -98,7 +102,11 @@ static cell_t Native_HookChange(IPluginContext * pContext, const cell_t * params
 
 	int entity = params[1];
 	char * name;
+
 	edict_t * pEnt = gamehelpers->EdictOfIndex(entity);
+	if (!pEnt)
+ 		return pContext->ThrowNativeError("Invalid Edict Index %d, edict_t is null.", entity);
+
 	pContext->LocalToString(params[2], &name);
 	ServerClass * sc = pEnt->GetNetworkable()->GetServerClass();
 
@@ -228,7 +236,11 @@ static cell_t Native_Hook(IPluginContext * pContext, const cell_t * params)
 	int entity = params[1];
 	char * name;
 	pContext->LocalToString(params[2], &name);
+
 	edict_t * pEnt = gamehelpers->EdictOfIndex(entity);
+	if (!pEnt)
+ 		return pContext->ThrowNativeError("Invalid Edict Index %d, edict_t is null.", entity);
+
 	ServerClass * sc = pEnt->GetNetworkable()->GetServerClass();
 	
 	if (!sc)
@@ -381,6 +393,9 @@ static cell_t Native_HookArray(IPluginContext * pContext, const cell_t * params)
 	pContext->LocalToString(params[2], &propName);
 	
 	edict_t * pEnt = gamehelpers->EdictOfIndex(entity);
+	if (!pEnt)
+ 		return pContext->ThrowNativeError("Invalid Edict Index %d, edict_t is null.", entity);
+
 	ServerClass * sc = pEnt->GetNetworkable()->GetServerClass();
 
 	if (!sc)
@@ -404,6 +419,7 @@ static cell_t Native_HookArray(IPluginContext * pContext, const cell_t * params)
 				return pContext->ThrowNativeError("Could not find element %d in %s", element, info.prop->GetName());
 			
 			if (!IsPropValid(pProp, propType))
+			{
 				switch (propType)
 				{
 					case PropType::Prop_Int: 
@@ -417,6 +433,7 @@ static cell_t Native_HookArray(IPluginContext * pContext, const cell_t * params)
 					default:
 						return pContext->ThrowNativeError("Unsupported prop type %d", propType);
 				}
+			}
 
 			break;
 		}
@@ -433,6 +450,7 @@ static cell_t Native_HookArray(IPluginContext * pContext, const cell_t * params)
 				return pContext->ThrowNativeError("Could not find element %d in %s", element, info.prop->GetName());
 
 			if (!IsPropValid(pProp, propType))
+			{
 				switch (propType)
 				{
 					case PropType::Prop_Int: 
@@ -446,6 +464,7 @@ static cell_t Native_HookArray(IPluginContext * pContext, const cell_t * params)
 					default:
 						return pContext->ThrowNativeError("Unsupported prop type %d", propType);
 				}
+			}
 
 			break;
 		}
@@ -611,6 +630,7 @@ static cell_t Native_HookGamerulesArray(IPluginContext * pContext, const cell_t 
 				return pContext->ThrowNativeError("Could not find element %d in %s", element, info.prop->GetName());
 			
 			if (!IsPropValid(pProp, propType))
+			{
 				switch (propType)
 				{
 					case PropType::Prop_Int: 
@@ -624,6 +644,7 @@ static cell_t Native_HookGamerulesArray(IPluginContext * pContext, const cell_t 
 					default:
 						return pContext->ThrowNativeError("Unsupported prop type %d", propType);
 				}
+			}
 
 			break;
 		}
@@ -640,6 +661,7 @@ static cell_t Native_HookGamerulesArray(IPluginContext * pContext, const cell_t 
 				return pContext->ThrowNativeError("Could not find element %d in %s", element, info.prop->GetName());
 
 			if (!IsPropValid(pProp, propType))
+			{
 				switch (propType)
 				{
 					case PropType::Prop_Int: 
@@ -653,6 +675,7 @@ static cell_t Native_HookGamerulesArray(IPluginContext * pContext, const cell_t 
 					default:
 						return pContext->ThrowNativeError("Unsupported prop type %d", propType);
 				}
+			}
 
 			break;
 		}
@@ -758,7 +781,11 @@ static cell_t Native_HookArrayChange(IPluginContext * pContext, const cell_t * p
 
 	int entity = params[1];
 	char * name;
+	
 	edict_t * pEnt = gamehelpers->EdictOfIndex(entity);
+	if (!pEnt)
+ 		return pContext->ThrowNativeError("Invalid Edict Index %d, edict_t is null.", entity);
+
 	pContext->LocalToString(params[2], &name);
 	ServerClass * sc = pEnt->GetNetworkable()->GetServerClass();
 
@@ -821,7 +848,11 @@ static cell_t Native_UnhookArrayChange(IPluginContext * pContext, const cell_t *
 	
 	int entity = params[1];
 	char * name;
+
 	edict_t * pEnt = gamehelpers->EdictOfIndex(entity);
+	if (!pEnt)
+ 		return pContext->ThrowNativeError("Invalid Edict Index %d, edict_t is null.", entity);
+
 	pContext->LocalToString(params[2], &name);
 	ServerClass * sc = pEnt->GetNetworkable()->GetServerClass();
 
@@ -1064,6 +1095,57 @@ static cell_t Native_IsGameRulesArrayChangeHooked(IPluginContext * pContext, con
 	return (cell_t)0;
 }
 
+static cell_t Native_GetEntSendPropFlag(IPluginContext * pContext, const cell_t * params)
+{
+	if (params[1] < 0 || params[1] >= g_iEdictCount)
+	{
+		pContext->ThrowNativeError("Invalid Edict Index %d", params[1]);
+		return (cell_t)-1;
+	}
+
+	int entity = params[1];
+	char * name;
+	pContext->LocalToString(params[2], &name);
+	edict_t * pEnt = gamehelpers->EdictOfIndex(entity);
+	ServerClass * sc = pEnt->GetNetworkable()->GetServerClass();
+	
+	if (!sc)
+	{
+		pContext->ThrowNativeError("Cannot find ServerClass for entity %d", entity);
+		return (cell_t)-1;
+	}
+
+	sm_sendprop_info_t info;
+	gamehelpers->FindSendPropInfo(sc->GetName(), name, &info);
+	SendProp * pProp = info.prop;
+
+	if (!pProp)
+	{
+		pContext->ThrowNativeError("Could not find prop %s", name);
+		return (cell_t)-1;
+	}
+		
+	return (cell_t)pProp->GetFlags();
+}
+
+static cell_t Native_GetGameRulesSendPropFlag(IPluginContext * pContext, const cell_t * params)
+{
+	char * name;
+	pContext->LocalToString(params[1], &name);
+	sm_sendprop_info_t info;
+
+	gamehelpers->FindSendPropInfo(g_szGameRulesProxy, name, &info);
+	SendProp * pProp = info.prop;
+
+	if (!pProp)
+	{
+		pContext->ThrowNativeError("Could not find prop %s", name);
+		return (cell_t)-1;
+	}
+
+	return (cell_t)pProp->GetFlags();
+}
+
 const sp_nativeinfo_t g_MyNatives[] = {
 	// methodmap syntax support.
 	{"SendProxyManager.Hook", Native_Hook},
@@ -1099,6 +1181,9 @@ const sp_nativeinfo_t g_MyNatives[] = {
 	{"SendProxyManager.IsGameRulesChangeHooked", Native_IsGameRulesChangeHooked},
 	{"SendProxyManager.IsArrayChangeHooked", Native_IsArrayChangeHooked},
 	{"SendProxyManager.IsGameRulesArrayChangeHooked", Native_IsGameRulesArrayChangeHooked},
+
+	{"GetEntSendPropFlag", Native_GetEntSendPropFlag},
+	{"GetGameRulesSendPropFlag", Native_GetGameRulesSendPropFlag},
 
 	// traditional syntax.
 	{"SendProxy_Hook", Native_Hook},

@@ -578,31 +578,53 @@ void Hook_GameFrame(bool simulating)
 				case PropType::Prop_Int:
 				{
 					edict_t * pEnt = gamehelpers->EdictOfIndex(g_ChangeHooks[i].objectID);
+					if (!pEnt)
+						break;
+
 					CBaseEntity * pEntity = gameents->EdictToBaseEntity(pEnt);
+					if (!pEntity)
+	  					break;
+
 					int iCurrent = *(int *)((unsigned char *)pEntity + g_ChangeHooks[i].Offset);
 					if (iCurrent != g_ChangeHooks[i].iLastValue)
 					{
 						CallChangeCallbacks(&g_ChangeHooks[i], (void *)&g_ChangeHooks[i].iLastValue, (void *)&iCurrent);
 						g_ChangeHooks[i].iLastValue = iCurrent;
 					}
+
 					break;
 				}
+
 				case PropType::Prop_Float:
 				{
 					edict_t * pEnt = gamehelpers->EdictOfIndex(g_ChangeHooks[i].objectID);
+					if (!pEnt)
+						break;
+
 					CBaseEntity * pEntity = gameents->EdictToBaseEntity(pEnt);
+					if (!pEntity)
+	  					break;
+
 					float flCurrent = *(float *)((unsigned char *)pEntity + g_ChangeHooks[i].Offset);
 					if (flCurrent != g_ChangeHooks[i].flLastValue)
 					{
 						CallChangeCallbacks(&g_ChangeHooks[i], (void *)&g_ChangeHooks[i].flLastValue, (void *)&flCurrent);
 						g_ChangeHooks[i].flLastValue = flCurrent;
 					}
+					
 					break;
 				}
+
 				case PropType::Prop_String:
 				{
 					edict_t * pEnt = gamehelpers->EdictOfIndex(g_ChangeHooks[i].objectID);
+					if (!pEnt)
+						break;
+
 					CBaseEntity * pEntity = gameents->EdictToBaseEntity(pEnt);
+					if (!pEntity)
+	  					break;
+
 					const char * szCurrent = (const char *)((unsigned char *)pEntity + g_ChangeHooks[i].Offset);
 					if (strcmp(szCurrent, g_ChangeHooks[i].cLastValue) != 0)
 					{
@@ -610,23 +632,34 @@ void Hook_GameFrame(bool simulating)
 						memset(g_ChangeHooks[i].cLastValue, 0, sizeof(g_ChangeHooks[i].cLastValue));
 						strncpynull(g_ChangeHooks[i].cLastValue, szCurrent, sizeof(g_ChangeHooks[i].cLastValue));
 					}
+
 					break;
 				}
+
 				case PropType::Prop_Vector:
 				{
 					edict_t * pEnt = gamehelpers->EdictOfIndex(g_ChangeHooks[i].objectID);
+					if (!pEnt)
+						break;
+
 					CBaseEntity * pEntity = gameents->EdictToBaseEntity(pEnt);
+					if (!pEntity)
+	  					break;
+
 					Vector * pVec = (Vector *)((unsigned char *)pEntity + g_ChangeHooks[i].Offset);
 					if (*pVec != g_ChangeHooks[i].vecLastValue)
 					{
 						CallChangeCallbacks(&g_ChangeHooks[i], (void *)&g_ChangeHooks[i].vecLastValue, (void *)pVec);
 						g_ChangeHooks[i].vecLastValue = *pVec;
 					}
+
 					break;
 				}
+
 				default: rootconsole->ConsolePrint("%s: SendProxy report: Unknown prop type (%s).", __func__, g_ChangeHooks[i].pVar->GetName());
 			}
 		}
+		
 		if (!g_pGameRules && g_pSDKTools)
 		{
 			g_pGameRules = g_pSDKTools->GetGameRules();
@@ -636,6 +669,7 @@ void Hook_GameFrame(bool simulating)
 				return;
 			}
 		}
+
 		//Gamerules hooks
 		for (int i = 0; i < g_ChangeHooksGamerules.Count(); i++)
 		{
@@ -649,8 +683,10 @@ void Hook_GameFrame(bool simulating)
 						CallChangeGamerulesCallbacks(&g_ChangeHooksGamerules[i], (void *)&g_ChangeHooksGamerules[i].iLastValue, (void *)&iCurrent);
 						g_ChangeHooksGamerules[i].iLastValue = iCurrent;
 					}
+
 					break;
 				}
+
 				case PropType::Prop_Float:
 				{
 					float flCurrent = *(float *)((unsigned char *)g_pGameRules + g_ChangeHooksGamerules[i].Offset);
@@ -659,8 +695,10 @@ void Hook_GameFrame(bool simulating)
 						CallChangeGamerulesCallbacks(&g_ChangeHooksGamerules[i], (void *)&g_ChangeHooksGamerules[i].flLastValue, (void *)&flCurrent);
 						g_ChangeHooksGamerules[i].flLastValue = flCurrent;
 					}
+
 					break;
 				}
+
 				case PropType::Prop_String:
 				{
 					const char * szCurrent = (const char *)((unsigned char *)g_pGameRules + g_ChangeHooksGamerules[i].Offset);
@@ -670,8 +708,10 @@ void Hook_GameFrame(bool simulating)
 						memset(g_ChangeHooks[i].cLastValue, 0, sizeof(g_ChangeHooks[i].cLastValue));
 						strncpynull(g_ChangeHooks[i].cLastValue, szCurrent, sizeof(g_ChangeHooks[i].cLastValue));
 					}
+
 					break;
 				}
+
 				case PropType::Prop_Vector:
 				{
 					Vector * pVec = (Vector *)((unsigned char *)g_pGameRules + g_ChangeHooksGamerules[i].Offset);
@@ -680,8 +720,10 @@ void Hook_GameFrame(bool simulating)
 						CallChangeGamerulesCallbacks(&g_ChangeHooksGamerules[i], (void *)&g_ChangeHooksGamerules[i].vecLastValue, (void *)pVec);
 						g_ChangeHooksGamerules[i].vecLastValue = *pVec;
 					}
+
 					break;
 				}
+
 				default: rootconsole->ConsolePrint("%s: SendProxy report: Unknown prop type (%s).", __func__, g_ChangeHooksGamerules[i].pVar->GetName());
 			}
 		}
