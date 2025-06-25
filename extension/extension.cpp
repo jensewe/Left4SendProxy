@@ -659,7 +659,7 @@ void Hook_GameFrame(bool simulating)
 				default: rootconsole->ConsolePrint("%s: SendProxy report: Unknown prop type (%s).", __func__, g_ChangeHooks[i].pVar->GetName());
 			}
 		}
-		
+
 		if (!g_pGameRules && g_pSDKTools)
 		{
 			g_pGameRules = g_pSDKTools->GetGameRules();
@@ -1156,13 +1156,13 @@ bool SendProxyManager::AddChangeHookToListGamerules(PropChangeHookGamerules sHoo
 
 void SendProxyManager::UnhookProxy(int i)
 {
-	//if there are other hooks for this prop, don't change the proxy, just remove it from our list
+	// if there are other hooks for this prop, don't change the proxy, just remove it from our list
 	for (int j = 0; j < g_Hooks.Count(); j++)
 	{
 		if (g_Hooks[j].pVar == g_Hooks[i].pVar && i != j)
 		{
 			CallListenersForHookID(i);
-			g_Hooks.Remove(i); //for others: this not a mistake
+			g_Hooks.Remove(i); // for others: this not a mistake
 			return;
 		}
 	}
@@ -1837,7 +1837,10 @@ void GlobalProxy(const SendProp *pProp, const void *pStructBase, const void * pD
 	bool bHandled = false;
 	for (int i = 0; i < g_Hooks.Count(); i++)
 	{
-		if (g_Hooks[i].objectID == objectID && g_Hooks[i].pVar == pProp && pEnt == g_Hooks[i].pEnt && (!pProp->IsInsideArray() || g_Hooks[i].Element == iElement))
+		if (g_Hooks[i].objectID == objectID && 
+			g_Hooks[i].pVar == pProp && 
+			pEnt == g_Hooks[i].pEnt && 
+			(!pProp->IsInsideArray() || g_Hooks[i].Element == iElement))
 		{
 			switch (g_Hooks[i].PropType)
 			{

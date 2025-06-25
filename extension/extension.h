@@ -144,6 +144,7 @@ struct PropChangeHook
 	};
 	SendProp *								pVar;
 	PropType								PropType;
+	SendPropType							SendPropType;
 	unsigned int							Offset;
 	int										objectID;
 	int										Element{0};
@@ -169,6 +170,7 @@ struct PropChangeHookGamerules
 	};
 	SendProp *								pVar;
 	PropType								PropType;
+	SendPropType							SendPropType;
 	unsigned int							Offset;
 	int										Element{0};
 	CUtlVector<CallBackInfo> *				vCallbacksInfo;
