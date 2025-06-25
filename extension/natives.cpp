@@ -30,6 +30,7 @@
  */
 
 #include "natives.h"
+#include "wrappers.h"
 
 static cell_t Native_Hook(IPluginContext * pContext, const cell_t * params)
 {
