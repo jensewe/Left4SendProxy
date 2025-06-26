@@ -68,6 +68,8 @@ static cell_t Native_Hook(IPluginContext * pContext, const cell_t * params)
 				return pContext->ThrowNativeError("Prop %s is not a float!", pProp->GetName());
 			case PropType::Prop_String:
 				return pContext->ThrowNativeError("Prop %s is not a string!", pProp->GetName());
+			case PropType::Prop_Bool:
+				return pContext->ThrowNativeError("Prop %s is not a bool!", pProp->GetName());
 			case PropType::Prop_Vector:
 				return pContext->ThrowNativeError("Prop %s is not a vector!", pProp->GetName());
 			default:
@@ -183,6 +185,8 @@ static cell_t Native_HookGameRules(IPluginContext * pContext, const cell_t * par
 				return pContext->ThrowNativeError("Prop %s is not a float!", pProp->GetName());
 			case PropType::Prop_String:
 				return pContext->ThrowNativeError("Prop %s is not a string!", pProp->GetName());
+			case PropType::Prop_Bool:
+				return pContext->ThrowNativeError("Prop %s is not a bool!", pProp->GetName());
 			case PropType::Prop_Vector:
 				return pContext->ThrowNativeError("Prop %s is not a vector!", pProp->GetName());
 			default:
@@ -305,6 +309,8 @@ static cell_t Native_HookArray(IPluginContext * pContext, const cell_t * params)
 						return pContext->ThrowNativeError("Prop %s is not a float!", pProp->GetName());
 					case PropType::Prop_String:
 						return pContext->ThrowNativeError("Prop %s is not a string!", pProp->GetName());
+					case PropType::Prop_Bool:
+						return pContext->ThrowNativeError("Prop %s is not a bool!", pProp->GetName());
 					case PropType::Prop_Vector:
 						return pContext->ThrowNativeError("Prop %s is not a vector!", pProp->GetName());
 					default:
@@ -336,6 +342,8 @@ static cell_t Native_HookArray(IPluginContext * pContext, const cell_t * params)
 						return pContext->ThrowNativeError("Prop %s is not a float!", pProp->GetName());
 					case PropType::Prop_String:
 						return pContext->ThrowNativeError("Prop %s is not a string!", pProp->GetName());
+					case PropType::Prop_Bool:
+						return pContext->ThrowNativeError("Prop %s is not a bool!", pProp->GetName());
 					case PropType::Prop_Vector:
 						return pContext->ThrowNativeError("Prop %s is not a vector!", pProp->GetName());
 					default:
@@ -505,6 +513,8 @@ static cell_t Native_HookGamerulesArray(IPluginContext * pContext, const cell_t 
 						return pContext->ThrowNativeError("Prop %s is not a float!", pProp->GetName());
 					case PropType::Prop_String:
 						return pContext->ThrowNativeError("Prop %s is not a string!", pProp->GetName());
+					case PropType::Prop_Bool:
+						return pContext->ThrowNativeError("Prop %s is not a bool!", pProp->GetName());
 					case PropType::Prop_Vector:
 						return pContext->ThrowNativeError("Prop %s is not a vector!", pProp->GetName());
 					default:
@@ -536,6 +546,8 @@ static cell_t Native_HookGamerulesArray(IPluginContext * pContext, const cell_t 
 						return pContext->ThrowNativeError("Prop %s is not a float!", pProp->GetName());
 					case PropType::Prop_String:
 						return pContext->ThrowNativeError("Prop %s is not a string!", pProp->GetName());
+					case PropType::Prop_Bool:
+						return pContext->ThrowNativeError("Prop %s is not a bool!", pProp->GetName());
 					case PropType::Prop_Vector:
 						return pContext->ThrowNativeError("Prop %s is not a vector!", pProp->GetName());
 					default:
@@ -902,6 +914,8 @@ static cell_t Native_HookChange(IPluginContext * pContext, const cell_t * params
 			return pContext->ThrowNativeError("Prop %s is not a float!", pProp->GetName());
 		case PropType::Prop_String:
 			return pContext->ThrowNativeError("Prop %s is not a string!", pProp->GetName());
+		case PropType::Prop_Bool:
+			return pContext->ThrowNativeError("Prop %s is not a bool!", pProp->GetName());
 		case PropType::Prop_Vector:
 			return pContext->ThrowNativeError("Prop %s is not a vector!", pProp->GetName());
 		default:
@@ -1024,6 +1038,8 @@ static cell_t Native_HookGameRulesChange(IPluginContext * pContext, const cell_t
 			return pContext->ThrowNativeError("Prop %s is not a float!", pProp->GetName());
 		case PropType::Prop_String:
 			return pContext->ThrowNativeError("Prop %s is not a string!", pProp->GetName());
+		case PropType::Prop_Bool:
+			return pContext->ThrowNativeError("Prop %s is not a bool!", pProp->GetName());
 		case PropType::Prop_Vector:
 			return pContext->ThrowNativeError("Prop %s is not a vector!", pProp->GetName());
 		default:
@@ -1152,6 +1168,8 @@ static cell_t Native_HookArrayChange(IPluginContext * pContext, const cell_t * p
 						return pContext->ThrowNativeError("Prop %s is not a float!", pProp->GetName());
 					case PropType::Prop_String:
 						return pContext->ThrowNativeError("Prop %s is not a string!", pProp->GetName());
+					case PropType::Prop_Bool:
+						return pContext->ThrowNativeError("Prop %s is not a bool!", pProp->GetName());
 					case PropType::Prop_Vector:
 						return pContext->ThrowNativeError("Prop %s is not a vector!", pProp->GetName());
 					default:
@@ -1183,6 +1201,8 @@ static cell_t Native_HookArrayChange(IPluginContext * pContext, const cell_t * p
 						return pContext->ThrowNativeError("Prop %s is not a float!", pProp->GetName());
 					case PropType::Prop_String:
 						return pContext->ThrowNativeError("Prop %s is not a string!", pProp->GetName());
+					case PropType::Prop_Bool:
+						return pContext->ThrowNativeError("Prop %s is not a bool!", pProp->GetName());
 					case PropType::Prop_Vector:
 						return pContext->ThrowNativeError("Prop %s is not a vector!", pProp->GetName());
 					default:
@@ -1348,6 +1368,8 @@ static cell_t Native_HookGameRulesArrayChange(IPluginContext * pContext, const c
 						return pContext->ThrowNativeError("Prop %s is not a float!", pProp->GetName());
 					case PropType::Prop_String:
 						return pContext->ThrowNativeError("Prop %s is not a string!", pProp->GetName());
+					case PropType::Prop_Bool:
+						return pContext->ThrowNativeError("Prop %s is not a bool!", pProp->GetName());
 					case PropType::Prop_Vector:
 						return pContext->ThrowNativeError("Prop %s is not a vector!", pProp->GetName());
 					default:
@@ -1379,6 +1401,8 @@ static cell_t Native_HookGameRulesArrayChange(IPluginContext * pContext, const c
 						return pContext->ThrowNativeError("Prop %s is not a float!", pProp->GetName());
 					case PropType::Prop_String:
 						return pContext->ThrowNativeError("Prop %s is not a string!", pProp->GetName());
+					case PropType::Prop_Bool:
+						return pContext->ThrowNativeError("Prop %s is not a bool!", pProp->GetName());
 					case PropType::Prop_Vector:
 						return pContext->ThrowNativeError("Prop %s is not a vector!", pProp->GetName());
 					default:

@@ -62,6 +62,7 @@ enum SendPropType
 	Prop_Int,
 	Prop_Float,
 	Prop_String,
+	Prop_Bool,
 	Prop_Vector = 4,
 	Prop_Max
 };
