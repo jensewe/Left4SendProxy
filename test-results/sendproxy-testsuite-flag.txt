@@ -1,0 +1,8 @@
+m_flFriction flag: 8, 1
+m_isFallingFromLedge flag: 1, 1
+m_hangNormal flag: 4096, 1
+m_pounceVictim flag: 1048581, 1, 1, 1
+m_hangNormal flag: 512, 1
+m_iVersusTeam flag: 0
+m_iSurvivorScore flag: 512, 1
+m_nScavengeItemsRemaining flag: 0

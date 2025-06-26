@@ -13,7 +13,8 @@ public void OnPluginStart()
 Action Cmd_TestFlag(int client, int args)
 {
 
-// CTerrorPlayer
+// CTerrorPlayer as example.
+
 /*
     <property name='m_flFriction'>
         <type>float</type>
@@ -48,6 +49,7 @@ Action Cmd_TestFlag(int client, int args)
     PrintToServer("m_hangNormal flag: %d, %d", a3, (a3 & SPROP_COORD_MP) != 0);
 
 // multiple flags.
+
 /*
    <property name='m_pounceVictim'>
     <type>integer</type>
@@ -59,7 +61,8 @@ Action Cmd_TestFlag(int client, int args)
     int a4 = GetEntSendPropFlag(client, "m_pounceVictim");
     PrintToServer("m_pounceVictim flag: %d, %d, %d, %d", a4, (a4 & SPROP_UNSIGNED) != 0, (a4 & SPROP_NOSCALE) != 0, ((a4 & SPROP_UNSIGNED) && (a4 & SPROP_NOSCALE)));
 
-// Always Proxy.
+// Always Proxy. / the type is array or datatable.
+
 /*
    <property name='m_vocalizationSubjectTimer'>
     <type>datatable</type>
@@ -69,15 +72,44 @@ Action Cmd_TestFlag(int client, int args)
 */
     int a5 = GetEntSendPropFlag(client, "m_vocalizationSubjectTimer");
     PrintToServer("m_hangNormal flag: %d, %d", a5, (a5 & SPROP_PROXY_ALWAYS_YES) != 0);
-    return Plugin_Handled;
-}
+
+// no flags at all
 
 /*
-Result:
-m_flFriction flag: 8, 1
-m_isFallingFromLedge flag: 1, 1
-m_hangNormal flag: 4096, 1
-m_pounceVictim flag: 1048581, 1, 1, 1
-m_hangNormal flag: 512, 1
-
+   <property name='m_iVersusTeam'>
+    <type>integer</type>
+    <offset>16308</offset>
+    <bits>3</bits>
+    <flags></flags>
+   </property>
 */
+    int a6 = GetEntSendPropFlag(client, "m_iVersusTeam");
+    PrintToServer("m_iVersusTeam flag: %d", a6);
+
+// CTerrorGameRulesProxy
+
+/*
+      <property name='m_iSurvivorScore'>
+       <type>datatable</type>
+       <offset>908</offset>
+       <bits>0</bits>
+       <flags>AlwaysProxy</flags>
+*/
+    int a7 = GetGameRulesSendPropFlag("m_iSurvivorScore");
+    PrintToServer("m_iSurvivorScore flag: %d, %d", a7, (a7 & SPROP_PROXY_ALWAYS_YES) != 0);
+
+// no flags at all.
+
+/*
+      <property name='m_nScavengeItemsRemaining'>
+       <type>integer</type>
+       <offset>1144</offset>
+       <bits>32</bits>
+       <flags></flags>
+      </property>
+*/
+
+    int a8 = GetGameRulesSendPropFlag("m_nScavengeItemsRemaining");
+    PrintToServer("m_nScavengeItemsRemaining flag: %d", a8);
+    return Plugin_Handled;
+}

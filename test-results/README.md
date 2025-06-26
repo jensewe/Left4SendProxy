@@ -1,0 +1,1 @@
+Here lies the test result of the testsuite sourcepawn scripts.
