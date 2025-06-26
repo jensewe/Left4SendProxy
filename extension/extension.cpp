@@ -115,13 +115,6 @@ static CDetour *CGameServer_DTR_SendClientMessages = nullptr;
 static CDetour *CGameClient_DTR_ShouldSendMessages = nullptr;
 static CDetour *DTR_SV_ComputeClientPacks = nullptr;
 
-static void *pFnUsePreviouslySentPacket = nullptr;
-static void *pFnCreatePackedEntity = nullptr;
-static void *pFnGetPreviouslySentPacket = nullptr;
-static void *pFnSendClientMessages = nullptr;
-static void *pFnShouldSendMessages = nullptr;
-static void *pFnSV_ComputeClientPacks = nullptr;
-
 //detours
 
 /*Call stack:
@@ -748,7 +741,7 @@ bool SendProxyManager::SDK_OnLoad(char *error, size_t maxlength, bool late)
 	if (!gameconfs->LoadGameConfigFile("sdktools.games", &g_pGameConfSDKTools, conf_error, sizeof(conf_error)))
 	{
 		if (conf_error[0])
-			snprintf(error, maxlength, "Could not read config file sdktools.games.txt: %s", conf_error);
+			V_snprintf(error, maxlength, "Could not read config file sdktools.games.txt: %s", conf_error);
 
 		return false;
 	}
@@ -758,77 +751,52 @@ bool SendProxyManager::SDK_OnLoad(char *error, size_t maxlength, bool late)
 	if (!gameconfs->LoadGameConfigFile("sendproxy", &g_pGameConf, conf_error, sizeof(conf_error)))
 	{
 		if (conf_error[0])
-			snprintf(error, maxlength, "Could not read config file sendproxy.txt: %s", conf_error);
+			V_snprintf(error, maxlength, "Could not read config file sendproxy.txt: %s", conf_error);
 
 		return false;
 	}
 	
-	CDetourManager::Init(smutils->GetScriptingEngine(), nullptr);
-	
-	bool bDetoursInited = false;
-	static struct {
-		const char *name;
-		void *pFnCallback;
-	} detours[] = {
-		{"CGameServer::SendClientMessages", pFnSendClientMessages},
-		{"CGameClient::ShouldSendMessages", pFnShouldSendMessages},
-		{"CFrameSnapshotManager::UsePreviouslySentPacket", pFnUsePreviouslySentPacket},
-		{"CFrameSnapshotManager::CreatePackedEntity", pFnCreatePackedEntity},
-		{"CFrameSnapshotManager::GetPreviouslySentPacket", pFnGetPreviouslySentPacket},
-		{"SV_ComputeClientPacks", pFnSV_ComputeClientPacks}
-	};
+	CDetourManager::Init(smutils->GetScriptingEngine(), g_pGameConf);
 
-	for (auto &i : detours) {
-		if (!g_pGameConf->GetMemSig(i.name, &i.pFnCallback)) {
-			g_pSM->LogError(myself, "Signature for %s not found in gamedata", i.name);
-			return false;
-		}
-
-		if (i.pFnCallback == nullptr) {
-			smutils->LogError(myself, "Sigscan for %s is null.", i.name);
-			return false;
-		}
-	}
-
-	CGameServer_DTR_SendClientMessages = DETOUR_CREATE_MEMBER(CGameServer_SendClientMessages, pFnSendClientMessages);
+	CGameServer_DTR_SendClientMessages = DETOUR_CREATE_MEMBER(CGameServer_SendClientMessages, "CGameServer::SendClientMessages");
 	if (!CGameServer_DTR_SendClientMessages)
 	{
-		smutils->LogError(myself, "Could not create detour for CGameServer::SendClientMessages.");
+		V_snprintf(error, maxlength, "Could not create detour for CGameServer::SendClientMessages.");
 		return false;
 	}
 
-	CGameClient_DTR_ShouldSendMessages = DETOUR_CREATE_MEMBER(CGameClient_ShouldSendMessages, pFnShouldSendMessages);
+	CGameClient_DTR_ShouldSendMessages = DETOUR_CREATE_MEMBER(CGameClient_ShouldSendMessages, "CGameClient::ShouldSendMessages");
 	if (!CGameClient_DTR_ShouldSendMessages)
 	{
-		smutils->LogError(myself, "Could not create detour for CGameClient::ShouldSendMessages.");
+		V_snprintf(error, maxlength, "Could not create detour for CGameClient::ShouldSendMessages.");
 		return false;
 	}
 
-	CFrameSnapshotManager_DTR_UsePreviouslySentPacket = DETOUR_CREATE_MEMBER(CFrameSnapshotManager_UsePreviouslySentPacket, pFnUsePreviouslySentPacket);
+	CFrameSnapshotManager_DTR_UsePreviouslySentPacket = DETOUR_CREATE_MEMBER(CFrameSnapshotManager_UsePreviouslySentPacket, "CFrameSnapshotManager::UsePreviouslySentPacket");
 	if (!CFrameSnapshotManager_DTR_UsePreviouslySentPacket)
 	{
-		smutils->LogError(myself, "Could not create detour for CFrameSnapshotManager::UsePreviouslySentPacket.");
+		V_snprintf(error, maxlength, "Could not create detour for CFrameSnapshotManager::UsePreviouslySentPacket.");
 		return false;
 	}
 
-	CFrameSnapshotManager_DTR_CreatePackedEntity = DETOUR_CREATE_MEMBER(CFrameSnapshotManager_CreatePackedEntity, pFnCreatePackedEntity);
+	CFrameSnapshotManager_DTR_CreatePackedEntity = DETOUR_CREATE_MEMBER(CFrameSnapshotManager_CreatePackedEntity, "CFrameSnapshotManager::CreatePackedEntity");
 	if (!CFrameSnapshotManager_DTR_CreatePackedEntity)
 	{
-		smutils->LogError(myself, "Could not create detour for CFrameSnapshotManager::CreatePackedEntity.");
+		V_snprintf(error, maxlength, "Could not create detour for CFrameSnapshotManager::CreatePackedEntity.");
 		return false;
 	}
 
-	CFrameSnapshotManager_DTR_GetPreviouslySentPacket = DETOUR_CREATE_MEMBER(CFrameSnapshotManager_GetPreviouslySentPacket, pFnGetPreviouslySentPacket);
+	CFrameSnapshotManager_DTR_GetPreviouslySentPacket = DETOUR_CREATE_MEMBER(CFrameSnapshotManager_GetPreviouslySentPacket, "CFrameSnapshotManager::GetPreviouslySentPacket");
 	if (!CFrameSnapshotManager_DTR_GetPreviouslySentPacket)
 	{
-		smutils->LogError(myself, "Could not create detour for CFrameSnapshotManager::GetPreviouslySentPacket.");
+		V_snprintf(error, maxlength, "Could not create detour for CFrameSnapshotManager::GetPreviouslySentPacket.");
 		return false;
 	}
 
-	DTR_SV_ComputeClientPacks = DETOUR_CREATE_STATIC(SV_ComputeClientPacks, pFnSV_ComputeClientPacks);
+	DTR_SV_ComputeClientPacks = DETOUR_CREATE_STATIC(SV_ComputeClientPacks, "SV_ComputeClientPacks");
 	if (!DTR_SV_ComputeClientPacks)
 	{
-		smutils->LogError(myself, "Could not create detour for SV_ComputeClientPacks.");
+		V_snprintf(error, maxlength, "Could not create detour for SV_ComputeClientPacks.");
 		return false;
 	}
 

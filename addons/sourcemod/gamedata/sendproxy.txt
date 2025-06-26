@@ -1,101 +1,78 @@
 "Games"
 {
-	"#default"
+	"left4dead2"
 	{
-		"#supported"
-		{
-			"game"	"tf"
-			"game"	"left4dead2"
-		}
-
 		"Signatures"
 		{
+			// win sig:
+			// search for "%s overflowed reliable buffer\n" to find CBaseClient::ShouldSendMessage
+			// it has two xref, one of them is CGameClient::ShouldSendMessages.
 			"CGameClient::ShouldSendMessages"
 			{
 				"library"			"engine"
 				"linux"				"@_ZN11CGameClient18ShouldSendMessagesEv"
-				"windows"			"\x55\x8B\xEC\x51\x56\x8B\xF1\x80\xBE\xBC\x00\x00\x00\x00"
+				"windows"			"\x55\x8B\xEC\x51\x56\x8B\xF1\x80\xBE\x2A\x2A\x2A\x2A\x2A\x74\x2A\x83\x3D"
+				/* 55 8B EC 51 56 8B F1 80 BE ? ? ? ? ? 74 ? 83 3D */
 			}
+
+			// win sig:
+			// search for string "SendClientMessages".
 			"CGameServer::SendClientMessages"
 			{
 				"library"			"engine"
 				"linux"				"@_ZN11CGameServer18SendClientMessagesEb"
-				"windows"			"\x55\x8B\xEC\x81\xEC\xB4\x00\x00\x00\xA1\x2A\x2A\x2A\x2A\x53"
+				"windows"			"\x55\x8B\xEC\x81\xEC\x2A\x2A\x2A\x2A\xA1\x2A\x2A\x2A\x2A\x53\x33\xDB"
+				/* 55 8B EC 81 EC ? ? ? ? A1 ? ? ? ? 53 33 DB */
 			}
+
+			// win sig: 
+			// search string "SV_ComputeClientPacks"
 			"SV_ComputeClientPacks"
 			{
 				"library"			"engine"
 				"linux"				"@_Z21SV_ComputeClientPacksiPP11CGameClientP14CFrameSnapshot"
-				"windows"			"\x55\x8B\xEC\x83\xEC\x44\xA1\x2A\x2A\x2A\x2A\x53"
+				"windows"			"\x55\x8B\xEC\x83\xEC\x2A\xA1\x2A\x2A\x2A\x2A\x53\x56\x33\xF6\x89\x75\x2A\x89\x75\x2A\x57\x39\x70\x2A\x74\x2A\x8B\x40\x2A\x68\x2A\x2A\x2A\x2A\x8B\x50\x2A\x68\x2A\x2A\x2A\x2A\x68\x2A\x2A\x2A\x2A\x68\x2A\x2A\x2A\x2A\x68\x2A\x2A\x2A\x2A\x68\x2A\x2A\x2A\x2A\x56\x56\x56\x56\x8D\x4D\x2A\x51\x50\xFF\xD2\xA1\x2A\x2A\x2A\x2A\x83\xC4\x2A\x8B\x4D\x2A\x8B\x40\x2A\x8B\x55\x2A\x6A\x2A\x56\x68\x2A\x2A\x2A\x2A\x56\x89\x4D\x2A\x8B\x0D\x2A\x2A\x2A\x2A\x68\x2A\x2A\x2A\x2A\x89\x45\x2A\x89\x55\x2A\xFF\x15\x2A\x2A\x2A\x2A\xA1"
+				/* 55 8B EC 83 EC ? A1 ? ? ? ? 53 56 33 F6 89 75 ? 89 75 ? 57 39 70 ? 74 ? 8B 40 ? 68 ? ? ? ? 8B 50 ? 68 ? ? ? ? 68 ? ? ? ? 68 ? ? ? ? 68 ? ? ? ? 68 ? ? ? ? 56 56 56 56 8D 4D ? 51 50 FF D2 A1 ? ? ? ? 83 C4 ? 8B 4D ? 8B 40 ? 8B 55 ? 6A ? 56 68 ? ? ? ? 56 89 4D ? 8B 0D ? ? ? ? 68 ? ? ? ? 89 45 ? 89 55 ? FF 15 ? ? ? ? A1 */
 			}
+
+			// win sig:
+			// search for string "SV_PackEntity->writeBuf", find SV_PackEntity.
+			// at the beginning of the function calls CFrameSnapshotManager::UsePreviouslySentPacket.
 			"CFrameSnapshotManager::UsePreviouslySentPacket"
 			{
 				"library"			"engine"
 				"linux"				"@_ZN21CFrameSnapshotManager23UsePreviouslySentPacketEP14CFrameSnapshotii"
-				"windows"			"\x55\x8B\xEC\x56\x8B\x75\x0C\x57\x8B\xBC\xB1\x9C\x00\x00\x00"
+				"windows"			"\x55\x8B\xEC\x56\x8B\x75\x2A\x57\x8B\xBC\xB1"
+				/* 55 8B EC 56 8B 75 ? 57 8B BC B1 */
 			}
+
+			// win sig:
+			// same as above, find SV_PackEntity.
+			// below the string "writebuf" this func geyt caalled.
 			"CFrameSnapshotManager::GetPreviouslySentPacket"
 			{
 				"library"			"engine"
 				"linux"				"@_ZN21CFrameSnapshotManager23GetPreviouslySentPacketEii"
-				"windows"			"\x55\x8B\xEC\x8B\x55\x08\x8B\x84\x91\x9C\x00\x00\x00"
+				"windows"			"\x55\x8B\xEC\x8B\x55\x2A\x8B\x84\x91"
+				/* 55 8B EC 8B 55 ? 8B 84 91 */
 			}
+
+			// win sig:
+			// same as above, find SV_PackEntity.
+			// below the string "SV_PackEntity: SnagChangeFrameList mismatched number of props[%d vs %d]" this func get called.
 			"CFrameSnapshotManager::CreatePackedEntity"
 			{
 				"library"			"engine"
 				"linux"				"@_ZN21CFrameSnapshotManager18CreatePackedEntityEP14CFrameSnapshoti"
-				"windows"			"\x55\x8B\xEC\x83\xEC\x0C\x53\x8B\xD9\x56"
+				"windows"			"\x55\x8B\xEC\x83\xEC\x2A\x53\x8B\xD9\x56\x8D\xB3"
+				/* 55 8B EC 83 EC ? 53 8B D9 56 8D B3 */
 			}
+
 			"CFrameSnapshotManager::RemoveEntityReference"
 			{
 				"library"			"engine"
 				"linux"				"@_ZN21CFrameSnapshotManager21RemoveEntityReferenceEi"
 				"windows"			"\x55\x8B\xEC\x51\x8B\x45\x08\x53\x8B\x18"
-			}
-		}
-	}
-	"tf"
-	{
-		"Signatures"
-		{
-			"CGameClient::ShouldSendMessages"
-			{
-				"library"			"engine"
-				"windows"			"\x55\x8B\xEC\x51\x56\x8B\xF1\x80\xBE\x94\x00\x00\x00\x00"
-			}
-			"CGameServer::SendClientMessages"
-			{
-				"library"			"engine"
-				"windows"			"\x55\x8B\xEC\x81\xEC\x30\x04\x00\x00\x53\x56\x57\x33\xDB"
-			}
-			"SV_ComputeClientPacks"
-			{
-				"library"			"engine"
-				"windows"			"\x55\x8B\xEC\x83\xEC\x38\x8B\x0D\x2A\x2A\x2A\x2A\x53\x33\xDB"
-			}
-		}
-	}
-	"csgo"
-	{
-		"Signatures"
-		{
-			"CGameClient::ShouldSendMessages"
-			{
-				"library"			"engine"
-				"windows"			"\x55\x8B\xEC\x51\x57\x8B\xF9\x80\xBF\xEC\x01\x00\x00\x00"
-				"linux"				"\x55\x89\xE5\x83\xEC\x28\x89\x5D\xF8\x8B\x5D\x08\x89\x75\xFC\x80\xBB\xD8\x01\x00\x00\x00"
-			}
-			"CGameServer::SendClientMessages"
-			{
-				"library"			"engine"
-				"windows"			"\x55\x8B\xEC\x83\xE4\xF8\x81\xEC\xFC\x07\x00\x00"
-				"linux"				"\x55\x89\xE5\x57\x56\x53\x81\xEC\x1C\x08\x00\x00"
-			}
-			"SV_ComputeClientPacks"
-			{
-				"library"			"engine"
-				"windows"			"\x55\x8B\xEC\x83\xEC\x10\x53\x8B\xD9\x89\x55\xFC"
-				"linux"				"\x55\x89\xE5\x57\x56\x53\x83\xEC\x3C\x8B\x0D\x2A\x2A\x2A\x2A\x8B\x75\x0C"
 			}
 		}
 	}
