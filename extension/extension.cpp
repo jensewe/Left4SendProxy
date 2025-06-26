@@ -1850,7 +1850,7 @@ void GlobalProxy(const SendProp *pProp, const void *pStructBase, const void * pD
 				{
 					int result = *(int *)pData;
 
-					if (CallInt(g_Hooks[i], result, iElement, g_Hooks[i].PropType))
+					if (CallInt(g_Hooks[i], &result, iElement, g_Hooks[i].PropType))
 					{
 						long data = result;
 						g_Hooks[i].pRealProxy(pProp, pStructBase, &data, pOut, iElement, objectID);
