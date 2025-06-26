@@ -1271,6 +1271,16 @@ void CallChangeCallbacks(PropChangeHook * pInfo, void * pOldValue, void * pNewVa
 			}
 			break;
 
+			case PropType::Prop_Bool:
+			{
+				pCallBack->PushCell(pInfo->objectID);
+				pCallBack->PushString(pInfo->pVar->GetName());
+				pCallBack->PushCell(pInfo->iLastValue);
+				pCallBack->PushCell(static_cast<cell_t>(*(bool *)pNewValue));
+				pCallBack->PushCell(pInfo->Element);
+				pCallBack->Execute(0);
+			}
+
 			case PropType::Prop_Vector:
 			{
 				cell_t vector[2][3];
@@ -1347,6 +1357,15 @@ void CallChangeGamerulesCallbacks(PropChangeHookGamerules * pInfo, void * pOldVa
 			}
 			break;
 
+			case PropType::Prop_Bool:
+			{
+				pCallBack->PushString(pInfo->pVar->GetName());
+				pCallBack->PushCell(pInfo->iLastValue);
+				pCallBack->PushCell(static_cast<cell_t>(*(bool *)pNewValue));
+				pCallBack->PushCell(pInfo->Element);
+				pCallBack->Execute(0);
+			}
+
 			case PropType::Prop_Vector:
 			{
 				cell_t vector[2][3];
@@ -1375,7 +1394,8 @@ void CallChangeGamerulesCallbacks(PropChangeHookGamerules * pInfo, void * pOldVa
 
 //Proxy
 
-bool CallInt(SendPropHook &hook, int *ret, int iElement)
+// workaround for bool-cell_t conversion.
+bool CallInt(SendPropHook &hook, int *ret, int iElement, PropType type)
 {
 	if (!g_bSVComputePacksDone)
 		return false;
@@ -1390,7 +1410,14 @@ bool CallInt(SendPropHook &hook, int *ret, int iElement)
 		case CallBackType::Callback_PluginFunction:
 		{
 			IPluginFunction *callback = (IPluginFunction *)hook.sCallbackInfo.pCallback;
-			cell_t value = *ret;
+
+			cell_t value;
+			switch (type)
+			{
+				case PropType::Prop_Int: value = *ret;
+				case PropType::Prop_Bool: value = (*ret) ? 1 : 0;
+			}
+
 			cell_t result = Pl_Continue;
 			callback->PushCell(hook.objectID);
 			callback->PushString(hook.pVar->GetName());
@@ -1424,7 +1451,7 @@ bool CallInt(SendPropHook &hook, int *ret, int iElement)
 	return false;
 }
 
-bool CallIntGamerules(SendPropHookGamerules &hook, int *ret, int iElement)
+bool CallIntGamerules(SendPropHookGamerules &hook, int *ret, int iElement, PropType type)
 {
 	if (!g_bSVComputePacksDone)
 		return false;
@@ -1439,7 +1466,14 @@ bool CallIntGamerules(SendPropHookGamerules &hook, int *ret, int iElement)
 		case CallBackType::Callback_PluginFunction:
 		{
 			IPluginFunction *callback = (IPluginFunction *)hook.sCallbackInfo.pCallback;
-			cell_t value = *ret;
+
+			cell_t value;
+			switch (type)
+			{
+				case PropType::Prop_Int: value = *ret;
+				case PropType::Prop_Bool: value = (*ret) ? 1 : 0;
+			}
+
 			cell_t result = Pl_Continue;
 			callback->PushString(hook.pVar->GetName());
 			callback->PushCellByRef(&value);
@@ -1816,7 +1850,7 @@ void GlobalProxy(const SendProp *pProp, const void *pStructBase, const void * pD
 				{
 					int result = *(int *)pData;
 
-					if (CallInt(g_Hooks[i], &result, iElement))
+					if (CallInt(g_Hooks[i], result, iElement, g_Hooks[i].PropType))
 					{
 						long data = result;
 						g_Hooks[i].pRealProxy(pProp, pStructBase, &data, pOut, iElement, objectID);
@@ -1858,6 +1892,25 @@ void GlobalProxy(const SendProp *pProp, const void *pStructBase, const void * pD
 					if (CallString(g_Hooks[i], const_cast<char **>(&result), iElement))
 					{
 						g_Hooks[i].pRealProxy(pProp, pStructBase, result, pOut, iElement, objectID);
+						return; // If somebody already handled this call, do not call other hooks for this entity & prop
+					}
+					else
+					{
+						g_Hooks[i].pRealProxy(pProp, pStructBase, pData, pOut, iElement, objectID);
+					}
+
+					bHandled = true;
+					continue;
+				}
+
+				case PropType::Prop_Bool:
+				{
+					int result = *(int *)pData;
+
+					if (CallInt(g_Hooks[i], &result, iElement, g_Hooks[i].PropType))
+					{
+						long data = result;
+						g_Hooks[i].pRealProxy(pProp, pStructBase, &data, pOut, iElement, objectID);
 						return; // If somebody already handled this call, do not call other hooks for this entity & prop
 					}
 					else
@@ -1924,7 +1977,7 @@ void GlobalProxyGamerules(const SendProp *pProp, const void *pStructBase, const 
 				{
 					int result = *(int *)pData;
 
-					if (CallIntGamerules(g_HooksGamerules[i], &result, iElement))
+					if (CallIntGamerules(g_HooksGamerules[i], &result, iElement, g_HooksGamerules[i].PropType))
 					{
 						long data = result;
 						g_HooksGamerules[i].pRealProxy(pProp, pStructBase, &data, pOut, iElement, objectID);
@@ -1966,6 +2019,25 @@ void GlobalProxyGamerules(const SendProp *pProp, const void *pStructBase, const 
 					if (CallStringGamerules(g_HooksGamerules[i], const_cast<char **>(&result), iElement))
 					{
 						g_HooksGamerules[i].pRealProxy(pProp, pStructBase, result, pOut, iElement, objectID);
+						return; // If somebody already handled this call, do not call other hooks for this entity & prop
+					}
+					else
+					{
+						g_HooksGamerules[i].pRealProxy(pProp, pStructBase, pData, pOut, iElement, objectID);
+					}
+
+					bHandled = true;
+					continue;
+				}
+
+				case PropType::Prop_Bool:
+				{
+					int result = *(int *)pData;
+
+					if (CallIntGamerules(g_HooksGamerules[i], &result, iElement, g_HooksGamerules[i].PropType))
+					{
+						long data = result;
+						g_HooksGamerules[i].pRealProxy(pProp, pStructBase, &data, pOut, iElement, objectID);
 						return; // If somebody already handled this call, do not call other hooks for this entity & prop
 					}
 					else
@@ -2064,6 +2136,17 @@ bool IsPropValid(SendProp * pProp, PropType iType)
 		case PropType::Prop_String:
 		{
 			if (pProp->GetType() != DPT_String)
+				return false;
+
+			return true;
+		}
+
+		case PropType::Prop_Bool:
+		{
+			if (pProp->GetType() != DPT_Int)
+				return false;
+
+			if (pProp->m_nBits != 1)
 				return false;
 
 			return true;

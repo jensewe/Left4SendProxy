@@ -53,6 +53,7 @@ enum class PropType : uint8_t
 	Prop_Int = 0,
 	Prop_Float, 
 	Prop_String,
+	Prop_Bool,
 	Prop_Vector = 4,
 	Prop_Max
 };
