@@ -194,7 +194,7 @@ methodmap SendProxyManager
 	 * @return				true, if prop hooked/unhooked, false otherwise
 	*/
 	public static native bool HookArray(int iEntity, const char[] cPropName, int iElement, SendPropType stType, SendProxyCallback pCallback);
-	public static native bool UnhookArray(int iEntity, const char[] cPropName, int iElement, SendPropType stType, SendProxyCallback pCallback);
+	public static native bool UnhookArray(int iEntity, const char[] cPropName, int iElement, SendProxyCallback pCallback);
 	
 	/*
 	 * Hooks/Unhooks a element of a SendProp array of GameRules.
@@ -209,8 +209,8 @@ methodmap SendProxyManager
 	 *
 	 * @return				true, if prop hooked/unhooked, false otherwise
 	*/
-	public static native bool HookGamerulesArray(const char[] cPropName, int iElement, SendPropType stType, SendProxyCallbackGamerules pCallback);
-	public static native bool UnhookGamerulesArray(const char[] cPropName, int iElement, SendPropType stType, SendProxyCallbackGamerules pCallback);
+	public static native bool HookGameRulesArray(const char[] cPropName, int iElement, SendPropType stType, SendProxyCallbackGamerules pCallback);
+	public static native bool UnhookGameRulesArray(const char[] cPropName, int iElement, SendProxyCallbackGamerules pCallback);
 
 	/*
 	 * Checks if a SendProp is hooked.
@@ -311,45 +311,6 @@ methodmap SendProxyManager
 native int GetEntSendPropFlag(int iEntity, const char[] cPropName);
 native int GetGameRulesSendPropFlag(const char[] cPropName);
 
-/**
- * For backwards compatibility.
- */
-
-//Returns true upon success, false upon failure
-native bool SendProxy_Hook(const int iEntity, const char[] cPropName, const SendPropType stType, const SendProxyCallback pCallback);
-native bool SendProxy_HookGameRules(const char[] cPropName, const SendPropType stType, const SendProxyCallbackGamerules pCallback);
-native bool SendProxy_HookArrayProp(const int iEntity, const char[] cPropName, const int iElement, const SendPropType stType, const SendProxyCallback pCallback);
-native bool SendProxy_UnhookArrayProp(const int iEntity, const char[] cPropName, const int iElement, const SendPropType stType, const SendProxyCallback pCallback);
-native bool SendProxy_Unhook(const int iEntity, const char[] cPropName, const SendProxyCallback pCallback);
-native bool SendProxy_UnhookGameRules(const char[] cPropName, const SendProxyCallbackGamerules pCallback);
-native bool SendProxy_IsHooked(const int iEntity, const char[] cPropName);
-native bool SendProxy_IsHookedGameRules(const char[] cPropName);
-native bool SendProxy_HookArrayPropGamerules(const char[] cPropName, const int iElement, const SendPropType stType, const SendProxyCallbackGamerules pCallback);
-native bool SendProxy_UnhookArrayPropGamerules(const char[] cPropName, const int iElement, const SendPropType stType, const SendProxyCallbackGamerules pCallback);
-native bool SendProxy_IsHookedArrayProp(const int iEntity, const char[] cPropName, const int iElement);
-native bool SendProxy_IsHookedArrayPropGamerules(const char[] cPropName, const int iElement);
-
-//Deprecated functions
-//here SendPropType is autodetected, this may be unsafe now
-#pragma deprecated Use SendProxy_HookPropChangeSafe instead.
-native bool SendProxy_HookPropChange(const int iEntity, const char[] cPropName, const PropChangedCallback pCallback);
-#pragma deprecated Use SendProxy_HookPropChangeGameRulesSafe instead.
-native bool SendProxy_HookPropChangeGameRules(const char[] cPropName, const GameRulesPropChangedCallback pCallback);
-
-native bool SendProxy_HookPropChangeSafe(const int iEntity, const char[] cPropName, const SendPropType stType, const PropChangedCallback pCallback);
-native bool SendProxy_HookPropChangeGameRulesSafe(const char[] cPropName, const SendPropType stType, const GameRulesPropChangedCallback pCallback);
-native bool SendProxy_HookPropChangeArray(const int iEntity, const char[] cPropName, const int iElement, const SendPropType stType, const PropChangedCallback pCallback);
-native bool SendProxy_HookPropChangeArrayGameRules(const char[] cPropName, const int iElement, const SendPropType stType, const PropChangedCallback pCallback);
-native bool SendProxy_IsPropChangeHooked(const int iEntity, const char[] cPropName);
-native bool SendProxy_IsPropChangeHookedGameRules(const char[] cPropName);
-native bool SendProxy_IsPropChangeArrayHooked(const int iEntity, const char[] cPropName, const int iElement);
-native bool SendProxy_IsPropChangeArrayHookedGameRules(const char[] cPropName, const int iElement);
-// always true, unless throw error.
-native bool SendProxy_UnhookPropChange(const int iEntity, const char[] cPropName, const PropChangedCallback pCallback);
-native bool SendProxy_UnhookPropChangeGameRules(const char[] cPropName, const GameRulesPropChangedCallback pCallback);
-native bool SendProxy_UnhookPropChangeArray(const int iEntity, const char[] cPropName, const int iElement, const PropChangedCallback pCallback);
-native bool SendProxy_UnhookPropChangeArrayGameRules(const char[] cPropName, const int iElement, const PropChangedCallback pCallback);
-
 #if !defined REQUIRE_EXTENSIONS
 public __ext_sendproxymanager_SetNTVOptional()
 {
@@ -362,8 +323,8 @@ public __ext_sendproxymanager_SetNTVOptional()
 	MarkNativeAsOptional("SendProxyManager.HookArray");
 	MarkNativeAsOptional("SendProxyManager.UnhookArray");
 
-	MarkNativeAsOptional("SendProxyManager.HookGamerulesArray");
-	MarkNativeAsOptional("SendProxyManager.UnhookGamerulesArray");
+	MarkNativeAsOptional("SendProxyManager.HookGameRulesArray");
+	MarkNativeAsOptional("SendProxyManager.UnhookGameRulesArray");
 	
 	MarkNativeAsOptional("SendProxyManager.IsHooked");
 	MarkNativeAsOptional("SendProxyManager.IsGameRulesHooked");
@@ -389,33 +350,6 @@ public __ext_sendproxymanager_SetNTVOptional()
 
 	MarkNativeAsOptional("GetEntPropFlag");
 	MarkNativeAsOptional("GetGameRulesSendPropFlag");
-
-    MarkNativeAsOptional("SendProxy_Hook");
-    MarkNativeAsOptional("SendProxy_HookGameRules");
-    MarkNativeAsOptional("SendProxy_HookArrayProp");
-    MarkNativeAsOptional("SendProxy_UnhookArrayProp");
-    MarkNativeAsOptional("SendProxy_Unhook");
-    MarkNativeAsOptional("SendProxy_UnhookGameRules");
-    MarkNativeAsOptional("SendProxy_IsHooked");
-    MarkNativeAsOptional("SendProxy_IsHookedGameRules");
-    MarkNativeAsOptional("SendProxy_HookPropChange");
-    MarkNativeAsOptional("SendProxy_HookPropChangeGameRules");
-    MarkNativeAsOptional("SendProxy_UnhookPropChange");
-    MarkNativeAsOptional("SendProxy_UnhookPropChangeGameRules");
-    MarkNativeAsOptional("SendProxy_HookArrayPropGamerules");
-    MarkNativeAsOptional("SendProxy_UnhookArrayPropGamerules");
-    MarkNativeAsOptional("SendProxy_IsHookedArrayProp");
-    MarkNativeAsOptional("SendProxy_IsHookedArrayPropGamerules");
-    MarkNativeAsOptional("SendProxy_HookPropChangeArray");
-    MarkNativeAsOptional("SendProxy_UnhookPropChangeArray");
-    MarkNativeAsOptional("SendProxy_HookPropChangeArrayGameRules");
-    MarkNativeAsOptional("SendProxy_UnhookPropChangeArrayGameRules");
-    MarkNativeAsOptional("SendProxy_IsPropChangeHooked");
-    MarkNativeAsOptional("SendProxy_IsPropChangeHookedGameRules");
-    MarkNativeAsOptional("SendProxy_IsPropChangeArrayHooked");
-    MarkNativeAsOptional("SendProxy_IsPropChangeArrayHookedGameRules");
-    MarkNativeAsOptional("SendProxy_HookPropChangeSafe");
-    MarkNativeAsOptional("SendProxy_HookPropChangeGameRulesSafe");
 }
 #endif  
 

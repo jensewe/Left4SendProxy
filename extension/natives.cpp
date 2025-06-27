@@ -425,7 +425,6 @@ static cell_t Native_UnhookArray(IPluginContext * pContext, const cell_t * param
 		return pContext->ThrowNativeError("Could not find prop %s", propName);
 
 	int element = params[3];
-	PropType propType = static_cast<PropType>(params[4]);
 	SendProp *pProp = NULL;
 	switch (info.prop->GetType())
 	{
@@ -459,7 +458,7 @@ static cell_t Native_UnhookArray(IPluginContext * pContext, const cell_t * param
 		return pContext->ThrowNativeError("Prop %s does not contain any elements", propName);
 	}
 
-	IPluginFunction * callback = pContext->GetFunctionById(params[5]);
+	IPluginFunction * callback = pContext->GetFunctionById(params[4]);
 	for (int i = 0; i < g_Hooks.Count(); i++)
 	{
 		// we check callback here, so, we do not need to check owner
@@ -480,7 +479,7 @@ static cell_t Native_UnhookArray(IPluginContext * pContext, const cell_t * param
 	return (cell_t)0;
 }
 
-static cell_t Native_HookGamerulesArray(IPluginContext * pContext, const cell_t * params)
+static cell_t Native_HookGameRulesArray(IPluginContext * pContext, const cell_t * params)
 {
 	char * propName;
 	pContext->LocalToString(params[1], &propName);
@@ -603,7 +602,7 @@ static cell_t Native_HookGamerulesArray(IPluginContext * pContext, const cell_t 
 	return (cell_t)0;
 }
 
-static cell_t Native_UnhookGamerulesArray(IPluginContext * pContext, const cell_t * params)
+static cell_t Native_UnhookGameRulesArray(IPluginContext * pContext, const cell_t * params)
 {
 	char * propName;
 	pContext->LocalToString(params[1], &propName);
@@ -614,7 +613,6 @@ static cell_t Native_UnhookGamerulesArray(IPluginContext * pContext, const cell_
 		return pContext->ThrowNativeError("Could not find prop %s", propName);
 
 	int element = params[2];
-	PropType propType = static_cast<PropType>(params[3]);
 	SendProp *pProp = NULL;
 	switch (info.prop->GetType())
 	{
@@ -648,8 +646,7 @@ static cell_t Native_UnhookGamerulesArray(IPluginContext * pContext, const cell_
 		return pContext->ThrowNativeError("Prop %s does not contain any elements", propName);
 	}
 
-	PropType iPropType = static_cast<PropType>(params[3]);
-	IPluginFunction * pFunction = pContext->GetFunctionById(params[4]);
+	IPluginFunction * pFunction = pContext->GetFunctionById(params[3]);
 	for (int i = 0; i < g_HooksGamerules.Count(); i++)
 	{
 		if (g_HooksGamerules[i].Element == element && 
@@ -1828,8 +1825,8 @@ const sp_nativeinfo_t g_MyNatives[] = {
 	{"SendProxyManager.HookArray", Native_HookArray},
 	{"SendProxyManager.UnhookArray", Native_UnhookArray},
 
-	{"SendProxyManager.HookGamerulesArray", Native_HookGamerulesArray},
-	{"SendProxyManager.UnhookGamerulesArray", Native_UnhookGamerulesArray},
+	{"SendProxyManager.HookGameRulesArray", Native_HookGameRulesArray},
+	{"SendProxyManager.UnhookGameRulesArray", Native_UnhookGameRulesArray},
 	
 	{"SendProxyManager.IsHooked", Native_IsHooked},
 	{"SendProxyManager.IsGameRulesHooked", Native_IsGameRulesHooked},
@@ -1856,33 +1853,6 @@ const sp_nativeinfo_t g_MyNatives[] = {
 	{"GetEntSendPropFlag", Native_GetEntSendPropFlag},
 	{"GetGameRulesSendPropFlag", Native_GetGameRulesSendPropFlag},
 
-	// traditional syntax.
-	{"SendProxy_Hook", Native_Hook},
-	{"SendProxy_HookGameRules", Native_HookGameRules},
-	{"SendProxy_HookArrayProp", Native_HookArray},
-	{"SendProxy_UnhookArrayProp", Native_UnhookArray},
-	{"SendProxy_Unhook", Native_Unhook},
-	{"SendProxy_UnhookGameRules", Native_UnhookGameRules},
-	{"SendProxy_IsHooked", Native_IsHooked},
-	{"SendProxy_IsHookedGameRules", Native_IsGameRulesHooked},
-	{"SendProxy_HookPropChange", Native_HookChange},
-	{"SendProxy_HookPropChangeGameRules", Native_HookGameRulesChange},
-	{"SendProxy_UnhookPropChange", Native_UnhookChange},
-	{"SendProxy_UnhookPropChangeGameRules", Native_UnhookGameRulesChange},
-	{"SendProxy_HookArrayPropGamerules", Native_HookGamerulesArray},
-	{"SendProxy_UnhookArrayPropGamerules", Native_UnhookGamerulesArray},
-	{"SendProxy_IsHookedArrayProp", Native_IsArrayHooked},
-	{"SendProxy_IsHookedArrayPropGamerules", Native_IsGameRulesArrayHooked},
-	{"SendProxy_HookPropChangeArray", Native_HookArrayChange},
-	{"SendProxy_UnhookPropChangeArray", Native_UnhookArrayChange},
-	{"SendProxy_HookPropChangeArrayGameRules", Native_HookGameRulesArrayChange},
-	{"SendProxy_UnhookPropChangeArrayGameRules", Native_UnhookGameRulesArrayChange},
-	{"SendProxy_IsPropChangeHooked", Native_IsChangeHooked},
-	{"SendProxy_IsPropChangeHookedGameRules", Native_IsGameRulesChangeHooked},
-	{"SendProxy_IsPropChangeArrayHooked", Native_IsArrayChangeHooked},
-	{"SendProxy_IsPropChangeArrayHookedGameRules", Native_IsGameRulesArrayChangeHooked},
-	{"SendProxy_HookPropChangeSafe", Native_HookChange},
-	{"SendProxy_HookPropChangeGameRulesSafe", Native_HookGameRulesChange},
 	//Probably add listeners for plugins?
 	{NULL,	NULL}
 };
