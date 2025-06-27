@@ -128,7 +128,7 @@ typeset SendProxyCallbackGamerules
 /**
  * Notice: 
  * Changed Callbacks is just literally hooks GameFrame.
- * Use this only if you do not might take actions in every frames.
+ * Use this only if you do not mind take actions in every frames.
 */
 typeset PropChangedCallback
 {
