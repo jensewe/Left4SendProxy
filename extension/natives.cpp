@@ -1814,6 +1814,92 @@ static cell_t Native_GetGameRulesSendPropFlag(IPluginContext * pContext, const c
 	return (cell_t)pProp->GetFlags();
 }
 
+static cell_t Native_GetEntSendPropNumElements(IPluginContext * pContext, const cell_t * params)
+{
+	if (params[1] < 0 || params[1] >= g_iEdictCount)
+		return pContext->ThrowNativeError("Invalid Edict Index %d", params[1]);
+
+	int entity = params[1];
+	char * propName;
+	pContext->LocalToString(params[2], &propName);
+
+	edict_t * pEnt = gamehelpers->EdictOfIndex(entity);
+	if (!pEnt)
+ 		return pContext->ThrowNativeError("Invalid Edict Index %d, edict_t is null.", entity);
+
+	ServerClass * sc = pEnt->GetNetworkable()->GetServerClass();
+
+	if (!sc)
+		return pContext->ThrowNativeError("Cannot find ServerClass for entity %d", entity);
+
+	sm_sendprop_info_t info;
+	gamehelpers->FindSendPropInfo(sc->GetName(), propName, &info);
+
+	if (!info.prop)
+		return pContext->ThrowNativeError("Could not find prop %s", propName);
+
+	SendProp *pProp = NULL;
+	switch (info.prop->GetType())
+	{
+	case DPT_Array:
+		{
+			pProp = info.prop->GetArrayProp();
+			if (!pProp)
+				return (cell_t)-1;
+
+			return (cell_t)info.prop->GetNumElements();
+		}
+	
+	case DPT_DataTable:
+		{
+			SendTable * st = info.prop->GetDataTable();
+
+			if (!st)
+				return (cell_t)-1;
+
+			return (cell_t)st->GetNumProps();
+		}
+	}
+
+	return (cell_t)-1;
+}
+
+static cell_t Native_GetGameRulesSendPropNumElements(IPluginContext * pContext, const cell_t * params)
+{
+	char * propName;
+	pContext->LocalToString(params[1], &propName);
+
+	sm_sendprop_info_t info;
+	gamehelpers->FindSendPropInfo(g_szGameRulesProxy, propName, &info);
+	if (!info.prop)
+		return pContext->ThrowNativeError("Could not find prop %s", propName);
+
+	SendProp *pProp = NULL;
+	switch (info.prop->GetType())
+	{
+	case DPT_Array:
+		{
+			pProp = info.prop->GetArrayProp();
+			if (!pProp)
+				return (cell_t)-1;
+
+			return (cell_t)info.prop->GetNumElements();
+		}
+	
+	case DPT_DataTable:
+		{
+			SendTable * st = info.prop->GetDataTable();
+
+			if (!st)
+				return (cell_t)-1;
+
+			return (cell_t)st->GetNumProps();
+		}
+	}
+
+	return (cell_t)-1;
+}
+
 const sp_nativeinfo_t g_MyNatives[] = {
 	// methodmap syntax support.
 	{"SendProxyManager.Hook", Native_Hook},
@@ -1852,6 +1938,9 @@ const sp_nativeinfo_t g_MyNatives[] = {
 
 	{"GetEntSendPropFlag", Native_GetEntSendPropFlag},
 	{"GetGameRulesSendPropFlag", Native_GetGameRulesSendPropFlag},
+
+	{"GetEntSendPropNumElements", Native_GetEntSendPropNumElements},
+	{"GetGameRulesSendPropNumElements", Native_GetGameRulesSendPropNumElements},
 
 	//Probably add listeners for plugins?
 	{NULL,	NULL}

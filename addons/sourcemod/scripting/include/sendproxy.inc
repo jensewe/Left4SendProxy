@@ -304,12 +304,22 @@ methodmap SendProxyManager
  * 
  *  @param iEntity		The entity to check.
  *  @param cPropName	The name of the SendProp.
- *  @param stType		The type of the SendProp.
  * 
  *  @return				The SendProp flag bit of the SendProp, or -1 if not found.
  */
 native int GetEntSendPropFlag(int iEntity, const char[] cPropName);
 native int GetGameRulesSendPropFlag(const char[] cPropName);
+
+/**
+ * Returns the total number of elements a DPT_Array or DPT_Datatable SendProp has.
+ * 
+ *  @param iEntity		The entity to check.
+ *  @param cPropName	The name of the SendProp.
+ * 
+ * @return				The total number of elements the SendProp has, or -1 if not found.
+*/
+native int GetEntSendPropNumElements(int iEntity, const char[] cPropName);
+native int GetGameRulesSendPropNumElements(const char[] cPropName);
 
 #if !defined REQUIRE_EXTENSIONS
 public __ext_sendproxymanager_SetNTVOptional()
