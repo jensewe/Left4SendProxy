@@ -748,10 +748,10 @@ bool SendProxyManager::SDK_OnLoad(char *error, size_t maxlength, bool late)
 	
 	g_szGameRulesProxy = g_pGameConfSDKTools->GetKeyValue("GameRulesProxy");
 	
-	if (!gameconfs->LoadGameConfigFile("sendproxy", &g_pGameConf, conf_error, sizeof(conf_error)))
+	if (!gameconfs->LoadGameConfigFile("sendproxy.games", &g_pGameConf, conf_error, sizeof(conf_error)))
 	{
 		if (conf_error[0])
-			V_snprintf(error, maxlength, "Could not read config file sendproxy.txt: %s", conf_error);
+			V_snprintf(error, maxlength, "Could not read config file sendproxy.games: %s", conf_error);
 
 		return false;
 	}
