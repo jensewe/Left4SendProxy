@@ -224,7 +224,7 @@ methodmap SendProxyManager
 	public static native bool IsHooked(int iEntity, const char[] cPropName);
 	public static native bool IsGameRulesHooked(const char[] cPropName);
 	public static native bool IsArrayHooked(int iEntity, const char[] cPropName, int iElement);
-	public static native bool IsGamerulesArrayHooked(const char[] cPropName, int iElement);
+	public static native bool IsGameRulesArrayHooked(const char[] cPropName, int iElement);
 
 	/** 
 	 * Hooks/Unhooks a SendProp change of an entity.
@@ -329,7 +329,7 @@ public __ext_sendproxymanager_SetNTVOptional()
 	MarkNativeAsOptional("SendProxyManager.IsHooked");
 	MarkNativeAsOptional("SendProxyManager.IsGameRulesHooked");
 	MarkNativeAsOptional("SendProxyManager.IsArrayHooked");
-	MarkNativeAsOptional("SendProxyManager.IsGamerulesArrayHooked");
+	MarkNativeAsOptional("SendProxyManager.IsGameRulesArrayHooked");
 
 	MarkNativeAsOptional("SendProxyManager.HookChange");
 	MarkNativeAsOptional("SendProxyManager.UnhookPropChange");
