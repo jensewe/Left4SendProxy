@@ -40,7 +40,7 @@
 /* Basic information exposed publicly */
 #define SMEXT_CONF_NAME			"[L4D & L4D2] SendProxy Manager"
 #define SMEXT_CONF_DESCRIPTION	"Change stuff without actually changing stuff!"
-#define SMEXT_CONF_VERSION		"1.4.2"
+#define SMEXT_CONF_VERSION		"1.5.0"
 #define SMEXT_CONF_AUTHOR		"AlliedModders Community."
 #define SMEXT_CONF_URL			"https://forums.alliedmods.net/showthread.php?t=169795"
 #define SMEXT_CONF_LOGTAG		"SENDPROXY"
