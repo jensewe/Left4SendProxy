@@ -1419,6 +1419,7 @@ static cell_t Native_HookGameRulesArrayChange(IPluginContext * pContext, const c
 	hook.Offset = info.actual_offset + pProp->GetOffset();
 	hook.pVar = pProp;
 	hook.PropType = propType;
+	hook.Element = element;
 	hook.SendPropType = info.prop->GetType();
 	CallBackInfo sCallInfo;
 	sCallInfo.iCallbackType = CallBackType::Callback_PluginFunction;
