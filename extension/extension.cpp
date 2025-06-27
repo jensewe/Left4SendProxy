@@ -629,6 +629,26 @@ void Hook_GameFrame(bool simulating)
 					break;
 				}
 
+				case PropType::Prop_Bool:
+				{
+					edict_t * pEnt = gamehelpers->EdictOfIndex(g_ChangeHooks[i].objectID);
+					if (!pEnt)
+						break;
+
+					CBaseEntity * pEntity = gameents->EdictToBaseEntity(pEnt);
+					if (!pEntity)
+	  					break;
+
+					int iCurrent = *(int *)((unsigned char *)pEntity + g_ChangeHooks[i].Offset);
+					if (iCurrent != g_ChangeHooks[i].iLastValue)
+					{
+						CallChangeCallbacks(&g_ChangeHooks[i], (void *)&g_ChangeHooks[i].iLastValue, (void *)&iCurrent);
+						g_ChangeHooks[i].iLastValue = iCurrent;
+					}
+
+					break;
+				}
+
 				case PropType::Prop_Vector:
 				{
 					edict_t * pEnt = gamehelpers->EdictOfIndex(g_ChangeHooks[i].objectID);
@@ -700,6 +720,18 @@ void Hook_GameFrame(bool simulating)
 						CallChangeGamerulesCallbacks(&g_ChangeHooksGamerules[i], (void *)g_ChangeHooksGamerules[i].cLastValue, (void *)szCurrent);
 						memset(g_ChangeHooks[i].cLastValue, 0, sizeof(g_ChangeHooks[i].cLastValue));
 						strncpynull(g_ChangeHooks[i].cLastValue, szCurrent, sizeof(g_ChangeHooks[i].cLastValue));
+					}
+
+					break;
+				}
+
+				case PropType::Prop_Bool:
+				{
+					int iCurrent = *(int *)((unsigned char *)g_pGameRules + g_ChangeHooksGamerules[i].Offset);
+					if (iCurrent != g_ChangeHooksGamerules[i].iLastValue)
+					{
+						CallChangeGamerulesCallbacks(&g_ChangeHooksGamerules[i], (void *)&g_ChangeHooksGamerules[i].iLastValue, (void *)&iCurrent);
+						g_ChangeHooksGamerules[i].iLastValue = iCurrent;
 					}
 
 					break;
@@ -1042,8 +1074,10 @@ bool SendProxyManager::AddChangeHookToList(PropChangeHook sHook, CallBackInfo * 
 		case PropType::Prop_Int:
 		case PropType::Prop_Float:
 		case PropType::Prop_String:
+		case PropType::Prop_Bool:
 		case PropType::Prop_Vector:
 			break;
+
 		default: return false;
 		}
 
@@ -1064,6 +1098,7 @@ bool SendProxyManager::AddChangeHookToList(PropChangeHook sHook, CallBackInfo * 
 		case PropType::Prop_Int: sHook.iLastValue = *(int *)((unsigned char *)pEntity + sHook.Offset); break;
 		case PropType::Prop_Float: sHook.flLastValue = *(float *)((unsigned char*)pEntity + sHook.Offset); break;
 		case PropType::Prop_String: strncpynull(sHook.cLastValue, (const char *)((unsigned char *)pEntity + sHook.Offset), sizeof(sHook.cLastValue)); break;
+		case PropType::Prop_Bool: sHook.iLastValue = *(int *)((unsigned char *)pEntity + sHook.Offset); break;
 		case PropType::Prop_Vector: sHook.vecLastValue = *(Vector *)((unsigned char *)pEntity + sHook.Offset); break;
 		default: return false;
 		}
@@ -1096,8 +1131,10 @@ bool SendProxyManager::AddChangeHookToListGamerules(PropChangeHookGamerules sHoo
 		case PropType::Prop_Int:
 		case PropType::Prop_Float:
 		case PropType::Prop_String:
+		case PropType::Prop_Bool:
 		case PropType::Prop_Vector:
 			break;
+
 		default: return false;
 		}
 
@@ -1110,6 +1147,7 @@ bool SendProxyManager::AddChangeHookToListGamerules(PropChangeHookGamerules sHoo
 		case PropType::Prop_Int: sHook.iLastValue = *(int *)((unsigned char *)g_pGameRules + sHook.Offset); break;
 		case PropType::Prop_Float: sHook.flLastValue = *(float *)((unsigned char*)g_pGameRules + sHook.Offset); break;
 		case PropType::Prop_String: strncpynull(sHook.cLastValue, (const char *)((unsigned char *)g_pGameRules + sHook.Offset), sizeof(sHook.cLastValue)); break;
+		case PropType::Prop_Bool: sHook.iLastValue = *(int *)((unsigned char *)g_pGameRules + sHook.Offset); break;
 		case PropType::Prop_Vector: sHook.vecLastValue = *(Vector *)((unsigned char *)g_pGameRules + sHook.Offset); break;
 		default: return false;
 		}
