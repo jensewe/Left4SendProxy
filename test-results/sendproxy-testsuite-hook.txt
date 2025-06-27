@@ -1,0 +1,10 @@
+Started hook. 1, 1, 1, 1, 1, 1
+OnSendProxy__m_iAmmo: 1, 000, 0, 0, 1
+OnSendProxy__m_checkpointBoomerBilesUsed: 1, m_checkpointBoomerBilesUsed, 0, 0, 1
+OnSendProxy__m_usingMountedGun: 1, m_usingMountedGun, 0, 0, 1
+OnSendProxy__m_bIsDedicatedServer: m_bIsDedicatedServer, 1, 0, 1
+OnSendProxy__m_szScriptedHUDStringSet_2: m_szScriptedHUDStringSet, apapap, 0, 1
+OnSendProxy__m_szScriptedHUDStringSet_2: m_szScriptedHUDStringSet, , 1, 1
+Hooked? 1, 1, 1, 1, 1, 1
+Ended hook. 1, 1, 1, 1, 1, 1
+Hooked? 0, 0, 0, 0, 0, 0
