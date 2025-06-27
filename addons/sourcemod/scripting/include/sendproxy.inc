@@ -93,7 +93,7 @@ typeset SendProxyCallback
   	 * @param cPropName		The name of the SendProp.
 	 * @param iValue		The value of the SendProp that is about to be send. See PropType for type.
   	 * @param iElement		The element number if this data is part of an array. 
-	 * 						Useful when the SendProp's type is DPT_Array or DPT_DataTable, or it has flag 'SPROP_INSIDEARRAY'.
+	 * 						Useful when the SendProp's type is DPT_Array or DPT_DataTable.
 	 * 
   	 * @param iClient		The client index that this proxy send to.
 	 * 
@@ -113,7 +113,7 @@ typeset SendProxyCallbackGamerules
 	 * @param cPropName		The name of the SendProp.
 	 * @param iValue		The value of the SendProp that is about to be send. See PropType for type.
   	 * @param iElement		The element number if this data is part of an array. 
-	 * 						Useful when the SendProp's type is DPT_Array or DPT_DataTable, or it has flag 'SPROP_INSIDEARRAY'.
+	 * 						Useful when the SendProp's type is DPT_Array or DPT_DataTable.
 	 * 
   	 * @param iClient		The client index that this proxy send to.
 	 * 
@@ -151,6 +151,8 @@ methodmap SendProxyManager
 	/*
 	 * Hooks/Unhooks a SendProp of entity.
 	 * This hook will be removed automatically when extension unloaded or upon the destruction of entity.
+	 * 
+	 * @note Do not use this on a SendProp marked as SPROP_INSIDEARRAY. Use HookArray* instead.
 	 *
 	 * @param iEntity		The entity to hook/unhook.
 	 * @param cPropName		The name of the SendProp.
@@ -165,6 +167,8 @@ methodmap SendProxyManager
 	/*
 	 * Hooks/Unhooks a SendProp of GameRules.
 	 * This hook will be removed automatically when extension unloaded.
+	 * 
+	 * @note Do not use this on a SendProp marked as SPROP_INSIDEARRAY. Use HookArray* instead.
 	 *
 	 * @param cPropName		The name of the SendProp.
 	 * @param stType		The type of the SendProp.
@@ -190,7 +194,7 @@ methodmap SendProxyManager
 	 * @return				true, if prop hooked/unhooked, false otherwise
 	*/
 	public static native bool HookArray(int iEntity, const char[] cPropName, int iElement, SendPropType stType, SendProxyCallback pCallback);
-	public static native bool UnhookArray(int iEntity, const char[] cPropName, int iElement, SendPropType stType, SendProxyCallback pCallback);
+	public static native bool UnhookArray(int iEntity, const char[] cPropName, int iElement, SendProxyCallback pCallback);
 	
 	/*
 	 * Hooks/Unhooks a element of a SendProp array of GameRules.
@@ -206,7 +210,7 @@ methodmap SendProxyManager
 	 * @return				true, if prop hooked/unhooked, false otherwise
 	*/
 	public static native bool HookGamerulesArray(const char[] cPropName, int iElement, SendPropType stType, SendProxyCallbackGamerules pCallback);
-	public static native bool UnhookGamerulesArray(const char[] cPropName, int iElement, SendPropType stType, SendProxyCallbackGamerules pCallback);
+	public static native bool UnhookGamerulesArray(const char[] cPropName, int iElement, SendProxyCallbackGamerules pCallback);
 
 	/*
 	 * Checks if a SendProp is hooked.
@@ -222,8 +226,10 @@ methodmap SendProxyManager
 	public static native bool IsArrayHooked(int iEntity, const char[] cPropName, int iElement);
 	public static native bool IsGamerulesArrayHooked(const char[] cPropName, int iElement);
 
-	/*
+	/** 
 	 * Hooks/Unhooks a SendProp change of an entity.
+	 * 
+	 * @note Do not use this on a SendProp marked as SPROP_INSIDEARRAY. Use HookArray* instead.
 	 *
 	 * @param iEntity		The entity to hook/unhook.
 	 * @param cPropName		The name of the SendProp.
@@ -237,6 +243,8 @@ methodmap SendProxyManager
 
 	/**
 	 * Hooks/Unhooks a SendProp change of GameRules.
+	 * 
+	 * @note Do not use this on a SendProp marked as SPROP_INSIDEARRAY. Use HookArray* instead.
 	 * 
 	 * @param cPropName		The name of the SendProp.
   	 * @param stType		The type of the SendProp.

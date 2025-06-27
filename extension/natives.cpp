@@ -465,11 +465,12 @@ static cell_t Native_UnhookArray(IPluginContext * pContext, const cell_t * param
 		// we check callback here, so, we do not need to check owner
 		if (g_Hooks[i].Element == element && 
 			g_Hooks[i].sCallbackInfo.iCallbackType == CallBackType::Callback_PluginFunction && 
-			g_Hooks[i].PropType == propType && 
 			g_Hooks[i].sCallbackInfo.pCallback == (void *)callback && 
 			//g_Hooks[i].sCallbackInfo.pOwner == (void *)pContext && 
-			!strcmp(g_Hooks[i].pVar->GetName(), pProp->GetName()) && 
-			g_Hooks[i].objectID == entity)
+			!strcmp(g_Hooks[i].pVar->GetName(), pProp->GetName()) &&
+			g_Hooks[i].pVar == pProp &&
+			g_Hooks[i].objectID == entity &&
+			g_Hooks[i].pEnt == pEnt)
 		{
 			g_SendProxyManager.UnhookProxy(i);
 			return (cell_t)1;
@@ -649,13 +650,13 @@ static cell_t Native_UnhookGamerulesArray(IPluginContext * pContext, const cell_
 
 	PropType iPropType = static_cast<PropType>(params[3]);
 	IPluginFunction * pFunction = pContext->GetFunctionById(params[4]);
-	for (int i = 0; i < g_Hooks.Count(); i++)
+	for (int i = 0; i < g_HooksGamerules.Count(); i++)
 	{
 		if (g_HooksGamerules[i].Element == element && 
 			g_HooksGamerules[i].pVar == pProp && 
 			g_HooksGamerules[i].sCallbackInfo.iCallbackType == CallBackType::Callback_PluginFunction && 
-			g_HooksGamerules[i].PropType == iPropType && 
 			g_HooksGamerules[i].sCallbackInfo.pCallback == (void *)pFunction && 
+			g_HooksGamerules[i].sCallbackInfo.pOwner == (void *)pContext &&
 			!strcmp(g_HooksGamerules[i].pVar->GetName(), pProp->GetName()))
 		{
 			g_SendProxyManager.UnhookProxyGamerules(i);
