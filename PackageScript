@@ -40,7 +40,7 @@ CopyFiles('addons/sourcemod/scripting/include', 'addons/sourcemod/scripting/incl
 
 # GameData files
 CopyFiles('addons/sourcemod/gamedata', 'addons/sourcemod/gamedata',
-  ['sendproxy.txt']
+  ['sendproxy.games.txt']
 )
 
 # Autoload extension
