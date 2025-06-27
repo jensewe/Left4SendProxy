@@ -194,7 +194,7 @@ methodmap SendProxyManager
 	 * @return				true, if prop hooked/unhooked, false otherwise
 	*/
 	public static native bool HookArray(int iEntity, const char[] cPropName, int iElement, SendPropType stType, SendProxyCallback pCallback);
-	public static native bool UnhookArray(int iEntity, const char[] cPropName, int iElement, SendProxyCallback pCallback);
+	public static native bool UnhookArray(int iEntity, const char[] cPropName, int iElement, SendPropType stType, SendProxyCallback pCallback);
 	
 	/*
 	 * Hooks/Unhooks a element of a SendProp array of GameRules.
@@ -210,7 +210,7 @@ methodmap SendProxyManager
 	 * @return				true, if prop hooked/unhooked, false otherwise
 	*/
 	public static native bool HookGamerulesArray(const char[] cPropName, int iElement, SendPropType stType, SendProxyCallbackGamerules pCallback);
-	public static native bool UnhookGamerulesArray(const char[] cPropName, int iElement, SendProxyCallbackGamerules pCallback);
+	public static native bool UnhookGamerulesArray(const char[] cPropName, int iElement, SendPropType stType, SendProxyCallbackGamerules pCallback);
 
 	/*
 	 * Checks if a SendProp is hooked.
