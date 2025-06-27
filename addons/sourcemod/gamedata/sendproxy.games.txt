@@ -1,0 +1,163 @@
+"Games"
+{
+	"#default"
+	{
+		"#supported"
+		{
+			"game"	"left4dead2"
+			"game"	"left4dead"
+		}
+
+		"Signatures"
+		{
+			// win sig:
+			// search for "%s overflowed reliable buffer\n" to find CBaseClient::ShouldSendMessage
+			// it has two xref, one of them is CGameClient::ShouldSendMessages.
+			"CGameClient::ShouldSendMessages"
+			{
+				"library"			"engine"
+				"linux"				"@_ZN11CGameClient18ShouldSendMessagesEv"
+			}
+
+			// win sig:
+			// search for string "SendClientMessages".
+			// in l4d1: the one with string "%c00000000000000".
+			"CGameServer::SendClientMessages"
+			{
+				"library"			"engine"
+				"linux"				"@_ZN11CGameServer18SendClientMessagesEb"
+			}
+
+			// win sig: 
+			// search string "SV_ComputeClientPacks"
+			"SV_ComputeClientPacks"
+			{
+				"library"			"engine"
+				"linux"				"@_Z21SV_ComputeClientPacksiPP11CGameClientP14CFrameSnapshot"
+			}
+
+			// win sig:
+			// search for string "SV_PackEntity->writeBuf", find SV_PackEntity.
+			// at the beginning of the function calls CFrameSnapshotManager::UsePreviouslySentPacket.
+			"CFrameSnapshotManager::UsePreviouslySentPacket"
+			{
+				"library"			"engine"
+				"linux"				"@_ZN21CFrameSnapshotManager23UsePreviouslySentPacketEP14CFrameSnapshotii"
+			}
+
+			// win sig:
+			// same as above, find SV_PackEntity.
+			// below the string "writebuf" this func geyt caalled.
+			"CFrameSnapshotManager::GetPreviouslySentPacket"
+			{
+				"library"			"engine"
+				"linux"				"@_ZN21CFrameSnapshotManager23GetPreviouslySentPacketEii"
+			}
+
+			// win sig:
+			// same as above, find SV_PackEntity.
+			// below the string "SV_PackEntity: SnagChangeFrameList mismatched number of props[%d vs %d]" this func get called.
+			"CFrameSnapshotManager::CreatePackedEntity"
+			{
+				"library"			"engine"
+				"linux"				"@_ZN21CFrameSnapshotManager18CreatePackedEntityEP14CFrameSnapshoti"
+			}
+		}
+	}
+
+	"left4dead2"
+	{
+		"Signatures"
+		{
+			"CGameClient::ShouldSendMessages"
+			{
+				"library"			"engine"
+				"windows"			"\x55\x8B\xEC\x51\x56\x8B\xF1\x80\xBE\x2A\x2A\x2A\x2A\x2A\x74\x2A\x83\x3D"
+				/* 55 8B EC 51 56 8B F1 80 BE ? ? ? ? ? 74 ? 83 3D */
+			}
+
+			"CGameServer::SendClientMessages"
+			{
+				"library"			"engine"
+				"windows"			"\x55\x8B\xEC\x81\xEC\x2A\x2A\x2A\x2A\xA1\x2A\x2A\x2A\x2A\x53\x33\xDB"
+				/* 55 8B EC 81 EC ? ? ? ? A1 ? ? ? ? 53 33 DB */
+			}
+
+			"SV_ComputeClientPacks"
+			{
+				"library"			"engine"
+				"windows"			"\x55\x8B\xEC\x83\xEC\x2A\xA1\x2A\x2A\x2A\x2A\x53\x56\x33\xF6\x89\x75\x2A\x89\x75\x2A\x57\x39\x70\x2A\x74\x2A\x8B\x40\x2A\x68\x2A\x2A\x2A\x2A\x8B\x50\x2A\x68\x2A\x2A\x2A\x2A\x68\x2A\x2A\x2A\x2A\x68\x2A\x2A\x2A\x2A\x68\x2A\x2A\x2A\x2A\x68\x2A\x2A\x2A\x2A\x56\x56\x56\x56\x8D\x4D\x2A\x51\x50\xFF\xD2\xA1\x2A\x2A\x2A\x2A\x83\xC4\x2A\x8B\x4D\x2A\x8B\x40\x2A\x8B\x55\x2A\x6A\x2A\x56\x68\x2A\x2A\x2A\x2A\x56\x89\x4D\x2A\x8B\x0D\x2A\x2A\x2A\x2A\x68\x2A\x2A\x2A\x2A\x89\x45\x2A\x89\x55\x2A\xFF\x15\x2A\x2A\x2A\x2A\xA1"
+				/* 55 8B EC 83 EC ? A1 ? ? ? ? 53 56 33 F6 89 75 ? 89 75 ? 57 39 70 ? 74 ? 8B 40 ? 68 ? ? ? ? 8B 50 ? 68 ? ? ? ? 68 ? ? ? ? 68 ? ? ? ? 68 ? ? ? ? 68 ? ? ? ? 56 56 56 56 8D 4D ? 51 50 FF D2 A1 ? ? ? ? 83 C4 ? 8B 4D ? 8B 40 ? 8B 55 ? 6A ? 56 68 ? ? ? ? 56 89 4D ? 8B 0D ? ? ? ? 68 ? ? ? ? 89 45 ? 89 55 ? FF 15 ? ? ? ? A1 */
+			}
+
+			"CFrameSnapshotManager::UsePreviouslySentPacket"
+			{
+				"library"			"engine"
+				"windows"			"\x55\x8B\xEC\x56\x8B\x75\x2A\x57\x8B\xBC\xB1"
+				/* 55 8B EC 56 8B 75 ? 57 8B BC B1 */
+			}
+
+			"CFrameSnapshotManager::GetPreviouslySentPacket"
+			{
+				"library"			"engine"
+				"windows"			"\x55\x8B\xEC\x8B\x55\x2A\x8B\x84\x91"
+				/* 55 8B EC 8B 55 ? 8B 84 91 */
+			}
+
+			"CFrameSnapshotManager::CreatePackedEntity"
+			{
+				"library"			"engine"
+				"windows"			"\x55\x8B\xEC\x83\xEC\x2A\x53\x8B\xD9\x56\x8D\xB3"
+				/* 55 8B EC 83 EC ? 53 8B D9 56 8D B3 */
+			}
+		}
+	}
+
+	"left4deaad"
+	{
+		"Signatures"
+		{
+			"CGameClient::ShouldSendMessages"
+			{
+				"library"			"engine"
+				"windows"			"\x51\x56\x8B\xF1\x80\xBE\x2A\x2A\x2A\x2A\x2A\x74\x2A\x83\x3D"
+				/* 51 56 8B F1 80 BE ? ? ? ? ? 74 ? 83 3D */
+			}
+
+			"CGameServer::SendClientMessages"
+			{
+				"library"			"engine"
+				"windows"			"\x81\xEC\x2A\x2A\x2A\x2A\x53\x55\x57\x6A"
+				/* 81 EC ? ? ? ? 53 55 57 6A */
+			}
+
+			"SV_ComputeClientPacks"
+			{
+				"library"			"engine"
+				"windows"			"\x83\xEC\x2A\x8B\x0D\x2A\x2A\x2A\x2A\x53\x55\x56"
+				/* 83 EC ? 8B 0D ? ? ? ? 53 55 56 */
+			}
+
+			"CFrameSnapshotManager::UsePreviouslySentPacket"
+			{
+				"library"			"engine"
+				"windows"			"\x56\x8B\x74\x24\x2A\x57\x8B\xBC\xB1"
+				/* 56 8B 74 24 ? 57 8B BC B1 */
+			}
+
+			"CFrameSnapshotManager::GetPreviouslySentPacket"
+			{
+				"library"			"engine"
+				"windows"			"\x8B\x54\x24\x2A\x8B\x84\x91"
+				/* 8B 54 24 ? 8B 84 91 */
+			}
+
+			"CFrameSnapshotManager::CreatePackedEntity"
+			{
+				"library"			"engine"
+				"windows"			"\x83\xEC\x2A\x53\x55\x56\x8B\xE9\x57\x8D\xBD"
+				/* 83 EC ? 53 55 56 8B E9 57 8D BD */
+			}
+		}
+	}
+}
