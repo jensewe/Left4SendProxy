@@ -1278,44 +1278,44 @@ void CallChangeCallbacks(PropChangeHook * pInfo, void * pOldValue, void * pNewVa
 			{
 			case PropType::Prop_Int:
 			{
-				pCallBack->PushCell(pInfo->objectID);
+				pCallBack->PushCell(static_cast<cell_t>(pInfo->objectID));
 				pCallBack->PushString(pInfo->pVar->GetName());
-				pCallBack->PushCell(pInfo->iLastValue);
-				pCallBack->PushCell(*(int *)pNewValue);
-				pCallBack->PushCell(pInfo->Element);
+				pCallBack->PushCell(static_cast<cell_t>(pInfo->iLastValue));
+				pCallBack->PushCell(static_cast<cell_t>(*(int *)pNewValue));
+				pCallBack->PushCell(static_cast<cell_t>(pInfo->Element));
 				pCallBack->Execute(0);
 			}
 			break;
 
 			case PropType::Prop_Float:
 			{
-				pCallBack->PushCell(pInfo->objectID);
+				pCallBack->PushCell(static_cast<cell_t>(pInfo->objectID));
 				pCallBack->PushString(pInfo->pVar->GetName());
 				pCallBack->PushFloat(pInfo->flLastValue);
 				pCallBack->PushFloat(*(float *)pNewValue);
-				pCallBack->PushCell(pInfo->Element);
+				pCallBack->PushCell(static_cast<cell_t>(pInfo->Element));
 				pCallBack->Execute(0);
 			}
 			break;
 
 			case PropType::Prop_String:
 			{
-				pCallBack->PushCell(pInfo->objectID);
+				pCallBack->PushCell(static_cast<cell_t>(pInfo->objectID));
 				pCallBack->PushString(pInfo->pVar->GetName());
 				pCallBack->PushString(pInfo->cLastValue);
 				pCallBack->PushString((char *)pNewValue);
-				pCallBack->PushCell(pInfo->Element);
+				pCallBack->PushCell(static_cast<cell_t>(pInfo->Element));
 				pCallBack->Execute(0);
 			}
 			break;
 
 			case PropType::Prop_Bool:
 			{
-				pCallBack->PushCell(pInfo->objectID);
+				pCallBack->PushCell(static_cast<cell_t>(pInfo->objectID));
 				pCallBack->PushString(pInfo->pVar->GetName());
-				pCallBack->PushCell(pInfo->iLastValue);
+				pCallBack->PushCell(static_cast<cell_t>(pInfo->iLastValue));
 				pCallBack->PushCell(static_cast<cell_t>(*(bool *)pNewValue));
-				pCallBack->PushCell(pInfo->Element);
+				pCallBack->PushCell(static_cast<cell_t>(pInfo->Element));
 				pCallBack->Execute(0);
 			}
 
@@ -1329,11 +1329,11 @@ void CallChangeCallbacks(PropChangeHook * pInfo, void * pOldValue, void * pNewVa
 				vector[1][0] = sp_ftoc(pInfo->vecLastValue.x);
 				vector[1][1] = sp_ftoc(pInfo->vecLastValue.y);
 				vector[1][2] = sp_ftoc(pInfo->vecLastValue.z);
-				pCallBack->PushCell(pInfo->objectID);
+				pCallBack->PushCell(static_cast<cell_t>(pInfo->objectID));
 				pCallBack->PushString(pInfo->pVar->GetName());
 				pCallBack->PushArray(vector[1], 3);
 				pCallBack->PushArray(vector[0], 3);
-				pCallBack->PushCell(pInfo->Element);
+				pCallBack->PushCell(static_cast<cell_t>(pInfo->Element));
 				pCallBack->Execute(0);
 			}
 			break;
@@ -1368,9 +1368,9 @@ void CallChangeGamerulesCallbacks(PropChangeHookGamerules * pInfo, void * pOldVa
 			case PropType::Prop_Int:
 			{
 				pCallBack->PushString(pInfo->pVar->GetName());
-				pCallBack->PushCell(pInfo->iLastValue);
-				pCallBack->PushCell(*(int *)pNewValue);
-				pCallBack->PushCell(pInfo->Element);
+				pCallBack->PushCell(static_cast<cell_t>(pInfo->iLastValue));
+				pCallBack->PushCell(static_cast<cell_t>(*(int *)pNewValue));
+				pCallBack->PushCell(static_cast<cell_t>(pInfo->Element));
 				pCallBack->Execute(0);
 			}
 			break;
@@ -1380,7 +1380,7 @@ void CallChangeGamerulesCallbacks(PropChangeHookGamerules * pInfo, void * pOldVa
 				pCallBack->PushString(pInfo->pVar->GetName());
 				pCallBack->PushFloat(pInfo->flLastValue);
 				pCallBack->PushFloat(*(float *)pNewValue);
-				pCallBack->PushCell(pInfo->Element);
+				pCallBack->PushCell(static_cast<cell_t>(pInfo->Element));
 				pCallBack->Execute(0);
 			}
 			break;
@@ -1390,7 +1390,7 @@ void CallChangeGamerulesCallbacks(PropChangeHookGamerules * pInfo, void * pOldVa
 				pCallBack->PushString(pInfo->pVar->GetName());
 				pCallBack->PushString(pInfo->cLastValue);
 				pCallBack->PushString((char *)pNewValue);
-				pCallBack->PushCell(pInfo->Element);
+				pCallBack->PushCell(static_cast<cell_t>(pInfo->Element));
 				pCallBack->Execute(0);
 			}
 			break;
@@ -1398,9 +1398,9 @@ void CallChangeGamerulesCallbacks(PropChangeHookGamerules * pInfo, void * pOldVa
 			case PropType::Prop_Bool:
 			{
 				pCallBack->PushString(pInfo->pVar->GetName());
-				pCallBack->PushCell(pInfo->iLastValue);
+				pCallBack->PushCell(static_cast<cell_t>(pInfo->iLastValue));
 				pCallBack->PushCell(static_cast<cell_t>(*(bool *)pNewValue));
-				pCallBack->PushCell(pInfo->Element);
+				pCallBack->PushCell(static_cast<cell_t>(pInfo->Element));
 				pCallBack->Execute(0);
 			}
 
@@ -1417,7 +1417,7 @@ void CallChangeGamerulesCallbacks(PropChangeHookGamerules * pInfo, void * pOldVa
 				pCallBack->PushString(pInfo->pVar->GetName());
 				pCallBack->PushArray(vector[1], 3);
 				pCallBack->PushArray(vector[0], 3);
-				pCallBack->PushCell(pInfo->Element);
+				pCallBack->PushCell(static_cast<cell_t>(pInfo->Element));
 				pCallBack->Execute(0);
 			}
 			break;
@@ -1457,11 +1457,11 @@ bool CallInt(SendPropHook &hook, int *ret, int iElement, PropType type)
 			}
 
 			cell_t result = Pl_Continue;
-			callback->PushCell(hook.objectID);
+			callback->PushCell(static_cast<cell_t>(hook.objectID));
 			callback->PushString(hook.pVar->GetName());
 			callback->PushCellByRef(&value);
-			callback->PushCell(iElement);
-			callback->PushCell(g_iCurrentClientIndexInLoop + 1);
+			callback->PushCell(static_cast<cell_t>(iElement));
+			callback->PushCell(static_cast<cell_t>(g_iCurrentClientIndexInLoop + 1));
 			callback->Execute(&result);
 			if (result == Pl_Changed)
 			{
@@ -1515,8 +1515,8 @@ bool CallIntGamerules(SendPropHookGamerules &hook, int *ret, int iElement, PropT
 			cell_t result = Pl_Continue;
 			callback->PushString(hook.pVar->GetName());
 			callback->PushCellByRef(&value);
-			callback->PushCell(iElement);
-			callback->PushCell(g_iCurrentClientIndexInLoop + 1);
+			callback->PushCell(static_cast<cell_t>(iElement));
+			callback->PushCell(static_cast<cell_t>(g_iCurrentClientIndexInLoop + 1));
 			callback->Execute(&result);
 			if (result == Pl_Changed)
 			{
@@ -1565,8 +1565,8 @@ bool CallFloat(SendPropHook &hook, float *ret, int iElement)
 			callback->PushCell(hook.objectID);
 			callback->PushString(hook.pVar->GetName());
 			callback->PushFloatByRef(&value);
-			callback->PushCell(iElement);
-			callback->PushCell(g_iCurrentClientIndexInLoop + 1);
+			callback->PushCell(static_cast<cell_t>(iElement));
+			callback->PushCell(static_cast<cell_t>(g_iCurrentClientIndexInLoop + 1));
 			callback->Execute(&result);
 			if (result == Pl_Changed)
 			{
@@ -1614,8 +1614,8 @@ bool CallFloatGamerules(SendPropHookGamerules &hook, float *ret, int iElement)
 			cell_t result = Pl_Continue;
 			callback->PushString(hook.pVar->GetName());
 			callback->PushFloatByRef(&value);
-			callback->PushCell(iElement);
-			callback->PushCell(g_iCurrentClientIndexInLoop + 1);
+			callback->PushCell(static_cast<cell_t>(iElement));
+			callback->PushCell(static_cast<cell_t>(g_iCurrentClientIndexInLoop + 1));
 			callback->Execute(&result);
 			if (result == Pl_Changed)
 			{
@@ -1662,11 +1662,11 @@ bool CallString(SendPropHook &hook, char **ret, int iElement)
 			IPluginFunction *callback = (IPluginFunction *)hook.sCallbackInfo.pCallback;
 			strncpynull(value, *ret, 4096);
 			cell_t result = Pl_Continue;
-			callback->PushCell(hook.objectID);
+			callback->PushCell(static_cast<cell_t>(hook.objectID));
 			callback->PushString(hook.pVar->GetName());
 			callback->PushStringEx(value, 4096, SM_PARAM_STRING_UTF8 | SM_PARAM_STRING_COPY, SM_PARAM_COPYBACK);
-			callback->PushCell(iElement);
-			callback->PushCell(g_iCurrentClientIndexInLoop + 1);
+			callback->PushCell(static_cast<cell_t>(iElement));
+			callback->PushCell(static_cast<cell_t>(g_iCurrentClientIndexInLoop + 1));
 			callback->Execute(&result);
 			if (result == Pl_Changed)
 			{
@@ -1721,8 +1721,8 @@ bool CallStringGamerules(SendPropHookGamerules &hook, char **ret, int iElement)
 			cell_t result = Pl_Continue;
 			callback->PushString(hook.pVar->GetName());
 			callback->PushStringEx(value, 4096, SM_PARAM_STRING_UTF8 | SM_PARAM_STRING_COPY, SM_PARAM_COPYBACK);
-			callback->PushCell(iElement);
-			callback->PushCell(g_iCurrentClientIndexInLoop + 1);
+			callback->PushCell(static_cast<cell_t>(iElement));
+			callback->PushCell(static_cast<cell_t>(g_iCurrentClientIndexInLoop + 1));
 			callback->Execute(&result);
 			if (result == Pl_Changed)
 			{
@@ -1776,11 +1776,11 @@ bool CallVector(SendPropHook &hook, Vector &vec, int iElement)
 			vector[2] = sp_ftoc(vec.z);
 
 			cell_t result = Pl_Continue;
-			callback->PushCell(hook.objectID);
+			callback->PushCell(static_cast<cell_t>(hook.objectID));
 			callback->PushString(hook.pVar->GetName());
 			callback->PushArray(vector, 3, SM_PARAM_COPYBACK);
-			callback->PushCell(iElement);
-			callback->PushCell(g_iCurrentClientIndexInLoop + 1);
+			callback->PushCell(static_cast<cell_t>(iElement));
+			callback->PushCell(static_cast<cell_t>(g_iCurrentClientIndexInLoop + 1));
 			callback->Execute(&result);
 			if (result == Pl_Changed)
 			{
@@ -1837,8 +1837,8 @@ bool CallVectorGamerules(SendPropHookGamerules &hook, Vector &vec, int iElement)
 			cell_t result = Pl_Continue;
 			callback->PushString(hook.pVar->GetName());
 			callback->PushArray(vector, 3, SM_PARAM_COPYBACK);
-			callback->PushCell(iElement);
-			callback->PushCell(g_iCurrentClientIndexInLoop + 1);
+			callback->PushCell(static_cast<cell_t>(iElement));
+			callback->PushCell(static_cast<cell_t>(g_iCurrentClientIndexInLoop + 1));
 			callback->Execute(&result);
 			if (result == Pl_Changed)
 			{
