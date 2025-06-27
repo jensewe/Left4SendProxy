@@ -141,6 +141,7 @@ struct PropChangeHook
 		float								flLastValue;
 		Vector								vecLastValue;
 		char								cLastValue[4096];
+		bool 								bLastValue;
 	};
 	SendProp *								pVar;
 	PropType								PropType;
@@ -167,6 +168,7 @@ struct PropChangeHookGamerules
 		float								flLastValue;
 		Vector								vecLastValue;
 		char								cLastValue[4096];
+		bool 								bLastValue;
 	};
 	SendProp *								pVar;
 	PropType								PropType;
