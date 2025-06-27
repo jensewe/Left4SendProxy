@@ -281,8 +281,8 @@ methodmap SendProxyManager
   	 *
   	 * @return				true, if prop is hooked/unhooked, false otherwise
 	*/
-	public static native bool HookGameRulesArrayChange(const char[] cPropName, int iElement, SendPropType stType, PropChangedCallback pCallback);
- 	public static native bool UnhookGameRulesArrayChange(const char[] cPropName, int iElement, PropChangedCallback pCallback);
+	public static native bool HookGameRulesArrayChange(const char[] cPropName, int iElement, SendPropType stType, GameRulesPropChangedCallback pCallback);
+ 	public static native bool UnhookGameRulesArrayChange(const char[] cPropName, int iElement, GameRulesPropChangedCallback pCallback);
 
 	/**
 	 * Checks if a SendProp change is hooked.

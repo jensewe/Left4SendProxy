@@ -1920,7 +1920,7 @@ const sp_nativeinfo_t g_MyNatives[] = {
 	{"SendProxyManager.IsGameRulesArrayHooked", Native_IsGameRulesArrayHooked},
 
 	{"SendProxyManager.HookChange", Native_HookChange},
-	{"SendProxyManager.UnhookPropChange", Native_UnhookChange},
+	{"SendProxyManager.UnhookChange", Native_UnhookChange},
 
 	{"SendProxyManager.HookGameRulesChange", Native_HookGameRulesChange},
 	{"SendProxyManager.UnhookGameRulesChange", Native_UnhookGameRulesChange},
