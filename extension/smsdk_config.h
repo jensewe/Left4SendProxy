@@ -38,14 +38,31 @@
  */
 
 /* Basic information exposed publicly */
-#define SMEXT_CONF_NAME			"SendProxy Manager"
+#define SMEXT_CONF_NAME			"[L4D & L4D2] SendProxy Manager"
 #define SMEXT_CONF_DESCRIPTION	"Change stuff without actually changing stuff!"
-#define SMEXT_CONF_VERSION		"1.4.0"
-#define SMEXT_CONF_AUTHOR		"afronanny, Forgetest, blueblur, AlliedModders community."
+#define SMEXT_CONF_VERSION		"1.4.2"
+#define SMEXT_CONF_AUTHOR		"AlliedModders Community."
 #define SMEXT_CONF_URL			"https://forums.alliedmods.net/showthread.php?t=169795"
 #define SMEXT_CONF_LOGTAG		"SENDPROXY"
 #define SMEXT_CONF_LICENSE		"GPL"
 #define SMEXT_CONF_DATESTRING	__DATE__
+
+/**
+ * The author and contributor to this forked project, listed by time order:
+ * 
+ * Afronanny (Author), 
+ * voided, 
+ * powerlord, 
+ * Kenzzer, 
+ * akowald, 
+ * Bara & SlidyBat, 
+ * CurTInq, 
+ * TheByKotik, 
+ * hydrogen-mvm, 
+ * szGabu, 
+ * Forgetest, 
+ * blueblur.
+*/
 
 /** 
  * @brief Exposes plugin's main interface.
