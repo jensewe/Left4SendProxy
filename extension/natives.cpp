@@ -918,7 +918,7 @@ static cell_t Native_IsGameRulesArrayChangeHooked(IPluginContext * pContext, con
 	CHECK_VALID_GAMERULES_SENDPROP(name)
 	
 	int element = params[2];
-	SendProp *pProp = NULL;
+	pProp = NULL;
 	CHECK_ARRAYPROP_NO_BASE_TYPE(element, name)
 
 	for (int i = 0; i < g_ChangeHooksGamerules.Count(); i++)
