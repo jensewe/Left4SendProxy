@@ -1320,6 +1320,7 @@ void CallChangeCallbacks(PropChangeHook * pInfo, void * pOldValue, void * pNewVa
 				pCallBack->PushCell(pInfo->Element);
 				pCallBack->Execute(0);
 			}
+			break;
 
 			case PropType::Prop_Vector:
 			{
@@ -1407,6 +1408,7 @@ void CallChangeGamerulesCallbacks(PropChangeHookGamerules * pInfo, void * pOldVa
 				pCallBack->PushCell(pInfo->Element);
 				pCallBack->Execute(0);
 			}
+			break;
 
 			case PropType::Prop_Vector:
 			{
