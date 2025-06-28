@@ -566,7 +566,7 @@ void Hook_GameFrame(bool simulating)
 	{
 		for (int i = 0; i < g_ChangeHooks.Count(); i++)
 		{
-			switch(g_ChangeHooks[i].PropType)
+			switch (g_ChangeHooks[i].PropType)
 			{
 				case PropType::Prop_Int:
 				{
@@ -718,8 +718,8 @@ void Hook_GameFrame(bool simulating)
 					if (strcmp(szCurrent, g_ChangeHooksGamerules[i].cLastValue) != 0)
 					{
 						CallChangeGamerulesCallbacks(&g_ChangeHooksGamerules[i], (void *)g_ChangeHooksGamerules[i].cLastValue, (void *)szCurrent);
-						memset(g_ChangeHooks[i].cLastValue, 0, sizeof(g_ChangeHooks[i].cLastValue));
-						strncpynull(g_ChangeHooks[i].cLastValue, szCurrent, sizeof(g_ChangeHooks[i].cLastValue));
+						memset(g_ChangeHooksGamerules[i].cLastValue, 0, sizeof(g_ChangeHooksGamerules[i].cLastValue));
+						strncpynull(g_ChangeHooksGamerules[i].cLastValue, szCurrent, sizeof(g_ChangeHooksGamerules[i].cLastValue));
 					}
 
 					break;
