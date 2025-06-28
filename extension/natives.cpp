@@ -753,8 +753,6 @@ static cell_t Native_IsChangeHooked(IPluginContext * pContext, const cell_t * pa
 					}
 				}
 			}
-
-			break;
 		}
 	}
 	
@@ -785,7 +783,6 @@ static cell_t Native_IsGameRulesChangeHooked(IPluginContext * pContext, const ce
 					}
 				}
 			}
-			break;
 		}
 	}
 
@@ -827,7 +824,6 @@ static cell_t Native_IsArrayChangeHooked(IPluginContext * pContext, const cell_t
 					}
 				}
 			}
-			break;
 		}
 	}
 
@@ -863,7 +859,6 @@ static cell_t Native_IsGameRulesArrayChangeHooked(IPluginContext * pContext, con
 					}
 				}
 			}
-			break;
 		}
 	}
 
