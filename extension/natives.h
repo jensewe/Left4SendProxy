@@ -35,4 +35,102 @@
 #include "extension.h"
 extern const sp_nativeinfo_t g_MyNatives[];
 
+#define CHECK_VALID_ENTITY_SENDPROP(entity, propName) \
+	edict_t * pEnt = gamehelpers->EdictOfIndex(entity);\
+	if (!pEnt)\
+ 		return pContext->ThrowNativeError("Invalid Edict Index %d, edict_t is null.", entity);\
+	ServerClass * sc = pEnt->GetNetworkable()->GetServerClass();\
+	if (!sc)\
+		return pContext->ThrowNativeError("Cannot find ServerClass for entity %d", entity);\
+	sm_sendprop_info_t info;\
+	gamehelpers->FindSendPropInfo(sc->GetName(), propName, &info);\
+	if (!info.prop)\
+		return pContext->ThrowNativeError("Could not find prop %s", propName);
+
+#define CHECK_VALID_GAMERULES_SENDPROP(propName)\
+	pContext->LocalToString(params[1], &propName);\
+	sm_sendprop_info_t info;\
+	gamehelpers->FindSendPropInfo(g_szGameRulesProxy, propName, &info);\
+	SendProp * pProp = info.prop;\
+	if (!pProp)\
+		return pContext->ThrowNativeError("Could not find prop %s", propName);
+
+#define CHECK_PROP_BASE_DATA_TYPE(pProp, propType) \
+	if (!IsPropValid(pProp, propType)) \
+	{ \
+		switch (propType) \
+		{ \
+			case PropType::Prop_Int: \
+				return pContext->ThrowNativeError("Prop %s is not an int!", pProp->GetName());\
+			case PropType::Prop_Float:\
+				return pContext->ThrowNativeError("Prop %s is not a float!", pProp->GetName());\
+			case PropType::Prop_String:\
+				return pContext->ThrowNativeError("Prop %s is not a string!", pProp->GetName());\
+			case PropType::Prop_Bool:\
+				return pContext->ThrowNativeError("Prop %s is not a bool!", pProp->GetName());\
+			case PropType::Prop_Vector:\
+				return pContext->ThrowNativeError("Prop %s is not a vector!", pProp->GetName());\
+			default:\
+				return pContext->ThrowNativeError("Unsupported prop type %d", propType);\
+		}\
+	}
+
+#define CHECK_ARRAYPROP_WITH_BASE_TYPE(element, propName) \
+    switch (info.prop->GetType()) \
+	{ \
+	case DPT_Array:\
+		{\
+			pProp = info.prop->GetArrayProp(); \
+			if (!pProp) \
+				return pContext->ThrowNativeError("Prop %s does not contain any elements", propName); \
+			if (element > info.prop->GetNumElements() - 1 || element < 0) \
+				return pContext->ThrowNativeError("Could not find element %d in %s", element, info.prop->GetName()); \
+			CHECK_PROP_BASE_DATA_TYPE(pProp, propType) \
+			break; \
+		}\
+	case DPT_DataTable:\
+		{\
+			SendTable * st = info.prop->GetDataTable();\
+			if (!st)\
+				return pContext->ThrowNativeError("Prop %s does not contain any elements", propName);\
+			if (element > st->GetNumProps() - 1 || element < 0)\
+				return pContext->ThrowNativeError("Could not find element %d in %s", element, info.prop->GetName());\
+			pProp = st->GetProp(element);\
+			if (!pProp)\
+				return pContext->ThrowNativeError("Could not find element %d in %s", element, info.prop->GetName());\
+			CHECK_PROP_BASE_DATA_TYPE(pProp, propType)\
+			break;\
+		}\
+	default:\
+		return pContext->ThrowNativeError("Prop %s does not contain any elements", propName);\
+	}
+
+#define CHECK_ARRAYPROP_NO_BASE_TYPE(element, propName)\
+	switch (info.prop->GetType())\
+	{\
+	case DPT_Array:\
+		{\
+			pProp = info.prop->GetArrayProp();\
+			if (!pProp)\
+				return pContext->ThrowNativeError("Prop %s does not contain any elements", propName);\
+			if (element > info.prop->GetNumElements() - 1 || element < 0)\
+				return pContext->ThrowNativeError("Could not find element %d in %s", element, info.prop->GetName());\
+			break;\
+		}\
+	case DPT_DataTable:\
+		{\
+			SendTable * st = info.prop->GetDataTable();\
+			if (!st)\
+				return pContext->ThrowNativeError("Prop %s does not contain any elements", propName);\
+			if (element > st->GetNumProps() - 1 || element < 0)\
+				return pContext->ThrowNativeError("Could not find element %d in %s", element, info.prop->GetName());\
+			pProp = st->GetProp(element);\
+			if (!pProp)\
+				return pContext->ThrowNativeError("Could not find element %d in %s", element, info.prop->GetName());\
+			break;\
+		}\
+	default:\
+		return pContext->ThrowNativeError("Prop %s does not contain any elements", propName);\
+	}
+
 #endif
