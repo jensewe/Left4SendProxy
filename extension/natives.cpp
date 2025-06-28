@@ -865,8 +865,6 @@ static cell_t Native_IsGameRulesArrayHooked(IPluginContext * pContext, const cel
 
 static cell_t Native_HookChange(IPluginContext * pContext, const cell_t * params)
 {
-	bool bSafeCheck = params[0] >= 4;
-
 	if (params[1] < 0 || params[1] >= g_iEdictCount)
 		return pContext->ThrowNativeError("Invalid Edict Index %d", params[1]);
 
@@ -892,17 +890,11 @@ static cell_t Native_HookChange(IPluginContext * pContext, const cell_t * params
 
 	IPluginFunction * callback = nullptr;
 	PropType propType = PropType::Prop_Max;
-	if (bSafeCheck)
-	{
-		propType = static_cast<PropType>(params[3]);
-		callback = pContext->GetFunctionById(params[4]);
-	}
-	else
-	{
-		callback = pContext->GetFunctionById(params[3]);
-	}
 
-	if (bSafeCheck && !IsPropValid(pProp, propType))
+	propType = static_cast<PropType>(params[3]);
+	callback = pContext->GetFunctionById(params[4]);
+
+	if (!IsPropValid(pProp, propType))
 	{
 		switch (propType)
 		{
@@ -1003,9 +995,7 @@ static cell_t Native_UnhookChange(IPluginContext * pContext, const cell_t * para
 
 static cell_t Native_HookGameRulesChange(IPluginContext * pContext, const cell_t * params)
 {
-	bool bSafeCheck = params[0] >= 3;
 	char * name;
-
 	pContext->LocalToString(params[1], &name);
 	sm_sendprop_info_t info;
 	gamehelpers->FindSendPropInfo(g_szGameRulesProxy, name, &info);
@@ -1016,17 +1006,11 @@ static cell_t Native_HookGameRulesChange(IPluginContext * pContext, const cell_t
 	
 	IPluginFunction * callback = nullptr;
 	PropType propType = PropType::Prop_Max;
-	if (bSafeCheck)
-	{
-		propType = static_cast<PropType>(params[2]);
-		callback = pContext->GetFunctionById(params[3]);
-	}
-	else
-	{
-		callback = pContext->GetFunctionById(params[2]);
-	}
 
-	if (bSafeCheck && !IsPropValid(pProp, propType))
+	propType = static_cast<PropType>(params[2]);
+	callback = pContext->GetFunctionById(params[3]);
+
+	if (!IsPropValid(pProp, propType))
 	{
 		switch (propType)
 		{
