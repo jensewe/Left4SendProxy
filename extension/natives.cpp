@@ -506,29 +506,9 @@ static cell_t Native_UnhookChange(IPluginContext * pContext, const cell_t * para
 	CHECK_VALID_ENTITY_SENDPROP(entity, name)
 
 	IPluginFunction * callback = pContext->GetFunctionById(params[3]);
-
-	bool bFoundCallBack = false;
 	bool bFound = false;
 	for (int i = 0; i < g_ChangeHooks.Count(); i++)
 	{
-		auto pCallBacks =  g_ChangeHooks[i].vCallbacksInfo;
-		if (pCallBacks->Count())
-		{
-			for (int j = 0; j < pCallBacks->Count(); j++)
-			{
-				if ((*pCallBacks)[j].iCallbackType == CallBackType::Callback_PluginFunction && 
-					(*pCallBacks)[j].pCallback == (void *)callback && 
-					(*pCallBacks)[j].pOwner == (void *)pContext)
-				{
-					bFoundCallBack = true;
-					break;
-				}
-			}
-		}
-
-		if (!bFoundCallBack)
-   			continue;
-
 		if (g_ChangeHooks[i].objectID == entity && 
 			g_ChangeHooks[i].pVar == info.prop &&
 			g_ChangeHooks[i].Offset == info.actual_offset &&
@@ -591,28 +571,10 @@ static cell_t Native_UnhookGameRulesChange(IPluginContext * pContext, const cell
 	CHECK_VALID_GAMERULES_SENDPROP(name)
 
 	IPluginFunction * callback = pContext->GetFunctionById(params[2]);
-	bool bFoundCallBack = false;
 	bool bFound = false;
+
 	for (int i = 0; i < g_ChangeHooksGamerules.Count(); i++)
 	{
-		auto pCallBacks =  g_ChangeHooksGamerules[i].vCallbacksInfo;
-		if (pCallBacks->Count())
-		{
-			for (int j = 0; j < pCallBacks->Count(); j++)
-			{
-				if ((*pCallBacks)[j].iCallbackType == CallBackType::Callback_PluginFunction && 
-					(*pCallBacks)[j].pCallback == (void *)callback && 
-					(*pCallBacks)[j].pOwner == (void *)pContext)
-				{
-					bFoundCallBack = true;
-					break;
-				}
-			}
-		}
-
-		if (!bFoundCallBack)
-			continue;
-
 		if (g_ChangeHooksGamerules[i].pVar == info.prop &&
 			g_ChangeHooksGamerules[i].Offset == info.actual_offset &&
    			g_ChangeHooksGamerules[i].SendPropType == info.prop->GetType() &&
@@ -679,29 +641,9 @@ static cell_t Native_UnhookArrayChange(IPluginContext * pContext, const cell_t *
 	CHECK_ARRAYPROP_NO_BASE_TYPE(element, name)
 
 	IPluginFunction *callback = pContext->GetFunctionById(params[4]);
-
-	bool bFoundCallBack = false;
 	bool bFound = false;
 	for (int i = 0; i < g_ChangeHooks.Count(); i++)
 	{
-		auto pCallBacks =  g_ChangeHooks[i].vCallbacksInfo;
-		if (pCallBacks->Count())
-		{
-			for (int j = 0; j < pCallBacks->Count(); j++)
-			{
-				if ((*pCallBacks)[j].iCallbackType == CallBackType::Callback_PluginFunction && 
-					(*pCallBacks)[j].pCallback == (void *)callback && 
-					(*pCallBacks)[j].pOwner == (void *)pContext)
-				{
-					bFoundCallBack = true;
-					break;
-				}
-			}
-		}
-
-		if (!bFoundCallBack)
-			continue;
-
 		if (g_ChangeHooks[i].objectID == entity && 
 			g_ChangeHooks[i].Element == element && 
 			g_ChangeHooks[i].SendPropType == info.prop->GetType() &&
@@ -760,29 +702,9 @@ static cell_t Native_UnhookGameRulesArrayChange(IPluginContext * pContext, const
 	CHECK_ARRAYPROP_NO_BASE_TYPE(element, name)
 	
 	IPluginFunction * callback = pContext->GetFunctionById(params[3]);
-
-	bool bFoundCallBack = false;
 	bool bFound = false;
 	for (int i = 0; i < g_ChangeHooksGamerules.Count(); i++)
 	{
-		auto pCallBacks =  g_ChangeHooksGamerules[i].vCallbacksInfo;
-		if (pCallBacks->Count())
-		{
-			for (int j = 0; j < pCallBacks->Count(); j++)
-			{
-				if ((*pCallBacks)[j].iCallbackType == CallBackType::Callback_PluginFunction && 
-					(*pCallBacks)[j].pCallback == (void *)callback && 
-					(*pCallBacks)[j].pOwner == (void *)pContext)
-				{
-					bFoundCallBack = true;
-					break;
-				}
-			}
-		}
-
-		if (!bFoundCallBack)
-   			continue;
-
 		if (g_ChangeHooksGamerules[i].Element == element &&
 			g_ChangeHooksGamerules[i].Offset == info.actual_offset + pProp->GetOffset() &&
 			g_ChangeHooksGamerules[i].pVar == pProp &&
@@ -934,7 +856,8 @@ static cell_t Native_IsGameRulesArrayChangeHooked(IPluginContext * pContext, con
 			{
 				for (int j = 0; j < pCallbacks->Count(); j++)
 				{
-					if ((*pCallbacks)[j].iCallbackType == CallBackType::Callback_PluginFunction && (*pCallbacks)[j].pOwner == (void *)pContext)
+					if ((*pCallbacks)[j].iCallbackType == CallBackType::Callback_PluginFunction && 
+						(*pCallbacks)[j].pOwner == (void *)pContext)
 					{
 						return (cell_t)1;
 					}
