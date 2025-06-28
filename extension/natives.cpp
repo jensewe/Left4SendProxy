@@ -490,7 +490,7 @@ static cell_t Native_HookChange(IPluginContext * pContext, const cell_t * params
 	sCallInfo.pOwner = (void *)pContext;
 
 	if (!g_SendProxyManager.AddChangeHookToList(hook, &sCallInfo))
-		return pContext->ThrowNativeError("Entity %d isn't valid", entity);
+		return pContext->ThrowNativeError("Failed to hook entity %d with prop %s on this callback: this combination may already hooked.", entity, name);
 
 	return (cell_t)1;
 }
@@ -540,15 +540,6 @@ static cell_t Native_HookGameRulesChange(IPluginContext * pContext, const cell_t
 	callback = pContext->GetFunctionById(params[3]);
 	CHECK_PROP_BASE_DATA_TYPE(pProp, propType)
 
-	if (!g_pGameRules)
-	{
-		g_pGameRules = g_pSDKTools->GetGameRules();
-		if (!g_pGameRules)
-		{
-			return pContext->ThrowNativeError("CRITICAL ERROR: Could not get gamerules pointer!");
-		}
-	}
-
 	PropChangeHookGamerules hook;
 	hook.Offset = info.actual_offset;
 	hook.pVar = pProp;
@@ -560,7 +551,7 @@ static cell_t Native_HookGameRulesChange(IPluginContext * pContext, const cell_t
 	sCallInfo.pOwner = (void *)pContext;
 
 	if (!g_SendProxyManager.AddChangeHookToListGamerules(hook, &sCallInfo))
-		return pContext->ThrowNativeError("Prop type %d isn't valid", pProp->GetType()); //should never happen
+		return pContext->ThrowNativeError("Failed to hook prop %s with this callback: This combination may already hooked.", name);
 
 	return (cell_t)1;
 }
@@ -621,7 +612,7 @@ static cell_t Native_HookArrayChange(IPluginContext * pContext, const cell_t * p
 	sCallInfo.pOwner = (void *)pContext;
 
 	if (!g_SendProxyManager.AddChangeHookToList(hook, &sCallInfo))
-		return pContext->ThrowNativeError("Entity %d isn't valid", entity);
+		return pContext->ThrowNativeError("Failed to hook entity %d with prop %s on this callback: this combination may already hooked.", entity, name);
 
 	return (cell_t)1;
 }
@@ -687,7 +678,7 @@ static cell_t Native_HookGameRulesArrayChange(IPluginContext * pContext, const c
 	sCallInfo.pOwner = (void *)pContext;
 
 	if (!g_SendProxyManager.AddChangeHookToListGamerules(hook, &sCallInfo))
-		return pContext->ThrowNativeError("Prop type %d isn't valid", pProp->GetType()); //should never happen
+		return pContext->ThrowNativeError("Failed to hook prop %s with this callback: This combination may already hooked.", name);
 
 	return (cell_t)1;
 }

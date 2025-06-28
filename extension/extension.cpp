@@ -1056,106 +1056,157 @@ bool SendProxyManager::AddHookToListGamerules(SendPropHookGamerules hook)
 
 bool SendProxyManager::AddChangeHookToList(PropChangeHook sHook, CallBackInfo * pInfo)
 {
+	// just validate it
+	switch (sHook.PropType)
+	{
+	case PropType::Prop_Int:
+	case PropType::Prop_Float:
+	case PropType::Prop_String:
+	case PropType::Prop_Bool:
+	case PropType::Prop_Vector:
+		break;
+
+	default: return false;
+	}
+
+	edict_t * pEnt = gamehelpers->EdictOfIndex(sHook.objectID);
+	if (!pEnt || pEnt->IsFree()) 
+		return false; //should never happen
+
+	CBaseEntity * pEntity = gameents->EdictToBaseEntity(pEnt);
+	if (!pEntity) 
+		return false; //should never happen
+
+	switch (sHook.PropType)
+	{
+	case PropType::Prop_Int: sHook.iLastValue = *(int *)((unsigned char *)pEntity + sHook.Offset); break;
+	case PropType::Prop_Float: sHook.flLastValue = *(float *)((unsigned char*)pEntity + sHook.Offset); break;
+	case PropType::Prop_String: strncpynull(sHook.cLastValue, (const char *)((unsigned char *)pEntity + sHook.Offset), sizeof(sHook.cLastValue)); break;
+	case PropType::Prop_Bool: sHook.bLastValue = *(bool *)((unsigned char *)pEntity + sHook.Offset); break;
+	case PropType::Prop_Vector: sHook.vecLastValue = *(Vector *)((unsigned char *)pEntity + sHook.Offset); break;
+	default: return false;
+	}
+
 	decltype(&g_ChangeHooks[0]) pHookInfo = nullptr;
 	for (int i = 0; i < g_ChangeHooks.Count(); i++)
 	{
-		if (g_ChangeHooks[i].pVar == sHook.pVar)
+		// happens on a same entity and a same prop.
+		if (g_ChangeHooks[i].pVar == sHook.pVar && g_ChangeHooks[i].objectID == sHook.objectID)
 		{
+			// case: hook an DPT_Array.
+			// if the incoming element differs.
+			// this presume that you have already hook this DPT_Array with any element.
+			if (sHook.Element != g_ChangeHooks[i].Element)
+			{
+				CallBackInfo sCallInfo = *pInfo;
+				sHook.vCallbacksInfo->AddToTail(sCallInfo);
+				g_ChangeHooks.AddToTail(sHook);
+				return true;
+			}
+
+			// case: hook a same prop, with different callback.
 			pHookInfo = &g_ChangeHooks[i];
-			break;
+			auto pCallBacks = pHookInfo->vCallbacksInfo;
+			for (int j = 0; j < pHookInfo->Count(); j++)
+			{
+				// dose not need to ccheck the owner, as other plugins may hook the same prop on a same entity with a different callback.
+				if ((pInfo->pCallback != (*pCallBacks)[j].pCallBack))
+				{
+					CallBackInfo sCallInfo = *pInfo;
+					sHook.vCallbacksInfo->AddToTail(sCallInfo);
+					g_ChangeHooks.AddToTail(sHook);
+					return true;
+				}
+			}
+
+			// else, this is already hooked.
+			return false;
 		}
 	}
 
-	if (pHookInfo)
-	{
-		//just validate it
-		switch (sHook.PropType)
-		{
-		case PropType::Prop_Int:
-		case PropType::Prop_Float:
-		case PropType::Prop_String:
-		case PropType::Prop_Bool:
-		case PropType::Prop_Vector:
-			break;
-
-		default: return false;
-		}
-
-		pHookInfo->vCallbacksInfo->AddToTail(*pInfo);
-	}
-	else
-	{
-		edict_t * pEnt = gamehelpers->EdictOfIndex(sHook.objectID);
-		if (!pEnt || pEnt->IsFree()) 
-			return false; //should never happen
-
-		CBaseEntity * pEntity = gameents->EdictToBaseEntity(pEnt);
-		if (!pEntity) 
-			return false; //should never happen
-
-		switch (sHook.PropType)
-		{
-		case PropType::Prop_Int: sHook.iLastValue = *(int *)((unsigned char *)pEntity + sHook.Offset); break;
-		case PropType::Prop_Float: sHook.flLastValue = *(float *)((unsigned char*)pEntity + sHook.Offset); break;
-		case PropType::Prop_String: strncpynull(sHook.cLastValue, (const char *)((unsigned char *)pEntity + sHook.Offset), sizeof(sHook.cLastValue)); break;
-		case PropType::Prop_Bool: sHook.bLastValue = *(bool *)((unsigned char *)pEntity + sHook.Offset); break;
-		case PropType::Prop_Vector: sHook.vecLastValue = *(Vector *)((unsigned char *)pEntity + sHook.Offset); break;
-		default: return false;
-		}
-
-		CallBackInfo sCallInfo = *pInfo;
-		sHook.vCallbacksInfo->AddToTail(sCallInfo);
-		g_ChangeHooks.AddToTail(sHook);
-	}
-
+	// else, this is a new prop/new entity.
+	CallBackInfo sCallInfo = *pInfo;
+	sHook.vCallbacksInfo->AddToTail(sCallInfo);
+	g_ChangeHooks.AddToTail(sHook);
+	
 	return true;
 }
 
 bool SendProxyManager::AddChangeHookToListGamerules(PropChangeHookGamerules sHook, CallBackInfo * pInfo)
 {
+	if (!g_pGameRules && g_pSDKTools)
+	{
+		g_pGameRules = g_pSDKTools->GetGameRules();
+		if (!g_pGameRules)
+		{
+			g_pSM->LogError(myself, "CRITICAL ERROR: Could not get gamerules pointer!");
+			return false;
+		}
+	}
+
+	// just validate it
+	switch (sHook.PropType)
+	{
+	case PropType::Prop_Int:
+	case PropType::Prop_Float:
+	case PropType::Prop_String:
+	case PropType::Prop_Bool:
+	case PropType::Prop_Vector:
+		break;
+
+	default: return false;
+	}
+
+	switch (sHook.PropType)
+	{
+	case PropType::Prop_Int: sHook.iLastValue = *(int *)((unsigned char *)g_pGameRules + sHook.Offset); break;
+	case PropType::Prop_Float: sHook.flLastValue = *(float *)((unsigned char*)g_pGameRules + sHook.Offset); break;
+	case PropType::Prop_String: strncpynull(sHook.cLastValue, (const char *)((unsigned char *)g_pGameRules + sHook.Offset), sizeof(sHook.cLastValue)); break;
+	case PropType::Prop_Bool: sHook.bLastValue = *(bool *)((unsigned char *)g_pGameRules + sHook.Offset); break;
+	case PropType::Prop_Vector: sHook.vecLastValue = *(Vector *)((unsigned char *)g_pGameRules + sHook.Offset); break;
+	default: return false;
+	}
+
 	decltype(&g_ChangeHooksGamerules[0]) pHookInfo = nullptr;
 	for (int i = 0; i < g_ChangeHooksGamerules.Count(); i++)
 	{
+		// happens on a same prop.
 		if (g_ChangeHooksGamerules[i].pVar == sHook.pVar)
 		{
-			pHookInfo = &g_ChangeHooksGamerules[i];
-			break;
+			// case: hook an DPT_Array.
+			// if the incoming element differs.
+			// this presume that you have already hook this DPT_Array with any element.
+			if (sHook.Element != g_ChangeHooksGamerules[i].Element)
+			{
+				CallBackInfo sCallInfo = *pInfo;
+				sHook.vCallbacksInfo->AddToTail(sCallInfo);
+				g_ChangeHooksGamerules.AddToTail(sHook);
+				return true;
+			}
+
+			// case: hook a same prop, with different callback.
+			auto pCallBacks = pHookInfo->vCallbacksInfo;
+			for (int j = 0; j < pHookInfo->Count(); j++)
+			{
+				// dose not need to ccheck the owner, as other plugins may hook the same prop on a same entity with a different callback.
+				if ((pInfo->pCallback != (*pCallBacks)[j].pCallBack))
+				{
+					CallBackInfo sCallInfo = *pInfo;
+					sHook.vCallbacksInfo->AddToTail(sCallInfo);
+					g_ChangeHooksGamerules.AddToTail(sHook);
+					return true;
+				}
+			}
+
+			// else, this is already hooked.
+			return false;
 		}
 	}
 
-	if (pHookInfo)
-	{
-		//just validate it
-		switch (sHook.PropType)
-		{
-		case PropType::Prop_Int:
-		case PropType::Prop_Float:
-		case PropType::Prop_String:
-		case PropType::Prop_Bool:
-		case PropType::Prop_Vector:
-			break;
-
-		default: return false;
-		}
-
-		pHookInfo->vCallbacksInfo->AddToTail(*pInfo);
-	}
-	else
-	{
-		switch (sHook.PropType)
-		{
-		case PropType::Prop_Int: sHook.iLastValue = *(int *)((unsigned char *)g_pGameRules + sHook.Offset); break;
-		case PropType::Prop_Float: sHook.flLastValue = *(float *)((unsigned char*)g_pGameRules + sHook.Offset); break;
-		case PropType::Prop_String: strncpynull(sHook.cLastValue, (const char *)((unsigned char *)g_pGameRules + sHook.Offset), sizeof(sHook.cLastValue)); break;
-		case PropType::Prop_Bool: sHook.bLastValue = *(bool *)((unsigned char *)g_pGameRules + sHook.Offset); break;
-		case PropType::Prop_Vector: sHook.vecLastValue = *(Vector *)((unsigned char *)g_pGameRules + sHook.Offset); break;
-		default: return false;
-		}
-
-		CallBackInfo sCallInfo = *pInfo;
-		sHook.vCallbacksInfo->AddToTail(sCallInfo);
-		g_ChangeHooksGamerules.AddToTail(sHook);
-	}
+	// else, this is a new prop.
+	CallBackInfo sCallInfo = *pInfo;
+	sHook.vCallbacksInfo->AddToTail(sCallInfo);
+	g_ChangeHooksGamerules.AddToTail(sHook);
 
 	return true;
 }
