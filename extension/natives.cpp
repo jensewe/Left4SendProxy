@@ -296,7 +296,7 @@ static cell_t Native_HookArray(IPluginContext * pContext, const cell_t * params)
 			if (!pProp)
 				return pContext->ThrowNativeError("Prop %s does not contain any elements", propName);
 			
-			if (element > info.prop->GetNumElements())
+			if (element > info.prop->GetNumElements() - 1 || element < 0)
 				return pContext->ThrowNativeError("Could not find element %d in %s", element, info.prop->GetName());
 			
 			if (!IsPropValid(pProp, propType))
@@ -327,6 +327,9 @@ static cell_t Native_HookArray(IPluginContext * pContext, const cell_t * params)
 
 			if (!st)
 				return pContext->ThrowNativeError("Prop %s does not contain any elements", propName);
+
+			if (element > st->GetNumProps() - 1 || element < 0)
+				return pContext->ThrowNativeError("Could not find element %d in %s", element, info.prop->GetName());
 
 			pProp = st->GetProp(element);
 			if (!pProp)
@@ -434,7 +437,7 @@ static cell_t Native_UnhookArray(IPluginContext * pContext, const cell_t * param
 			if (!pProp)
 				return pContext->ThrowNativeError("Prop %s does not contain any elements", propName);
 			
-			if (element > info.prop->GetNumElements())
+			if (element > info.prop->GetNumElements() - 1 || element < 0)
 				return pContext->ThrowNativeError("Could not find element %d in %s", element, info.prop->GetName());
 
 			break;
@@ -446,6 +449,9 @@ static cell_t Native_UnhookArray(IPluginContext * pContext, const cell_t * param
 
 			if (!st)
 				return pContext->ThrowNativeError("Prop %s does not contain any elements", propName);
+
+			if (element > st->GetNumProps() - 1 || element < 0)
+				return pContext->ThrowNativeError("Could not find element %d in %s", element, info.prop->GetName());
 
 			pProp = st->GetProp(element);
 			if (!pProp)
@@ -500,7 +506,7 @@ static cell_t Native_HookGameRulesArray(IPluginContext * pContext, const cell_t 
 			if (!pProp)
 				return pContext->ThrowNativeError("Prop %s does not contain any elements", propName);
 			
-			if (element > info.prop->GetNumElements())
+			if (element > info.prop->GetNumElements() - 1 || element < 0)
 				return pContext->ThrowNativeError("Could not find element %d in %s", element, info.prop->GetName());
 			
 			if (!IsPropValid(pProp, propType))
@@ -531,6 +537,9 @@ static cell_t Native_HookGameRulesArray(IPluginContext * pContext, const cell_t 
 
 			if (!st)
 				return pContext->ThrowNativeError("Prop %s does not contain any elements", propName);
+
+			if (element > st->GetNumProps() - 1 || element < 0)
+				return pContext->ThrowNativeError("Could not find element %d in %s", element, info.prop->GetName());
 
 			pProp = st->GetProp(element);
 			if (!pProp)
@@ -622,7 +631,7 @@ static cell_t Native_UnhookGameRulesArray(IPluginContext * pContext, const cell_
 			if (!pProp)
 				return pContext->ThrowNativeError("Prop %s does not contain any elements", propName);
 			
-			if (element > info.prop->GetNumElements())
+			if (element > info.prop->GetNumElements() - 1 || element < 0)
 				return pContext->ThrowNativeError("Could not find element %d in %s", element, info.prop->GetName());
 
 			break;
@@ -634,6 +643,9 @@ static cell_t Native_UnhookGameRulesArray(IPluginContext * pContext, const cell_
 
 			if (!st)
 				return pContext->ThrowNativeError("Prop %s does not contain any elements", propName);
+
+			if (element > st->GetNumProps() - 1 || element < 0)
+				return pContext->ThrowNativeError("Could not find element %d in %s", element, info.prop->GetName());
 
 			pProp = st->GetProp(element);
 			if (!pProp)
@@ -764,7 +776,7 @@ static cell_t Native_IsArrayHooked(IPluginContext * pContext, const cell_t * par
 			if (!pProp)
 				return pContext->ThrowNativeError("Prop %s does not contain any elements", propName);
 			
-			if (element > info.prop->GetNumElements())
+			if (element > info.prop->GetNumElements() - 1 || element < 0)
 				return pContext->ThrowNativeError("Could not find element %d in %s", element, info.prop->GetName());
 
 			break;
@@ -776,6 +788,9 @@ static cell_t Native_IsArrayHooked(IPluginContext * pContext, const cell_t * par
 
 			if (!st)
 				return pContext->ThrowNativeError("Prop %s does not contain any elements", propName);
+
+			if (element > st->GetNumProps() - 1 || element < 0)
+				return pContext->ThrowNativeError("Could not find element %d in %s", element, info.prop->GetName());
 
 			pProp = st->GetProp(element);
 			if (!pProp)
@@ -824,7 +839,7 @@ static cell_t Native_IsGameRulesArrayHooked(IPluginContext * pContext, const cel
 			if (!pProp)
 				return pContext->ThrowNativeError("Prop %s does not contain any elements", propName);
 			
-			if (element > info.prop->GetNumElements())
+			if (element > info.prop->GetNumElements() - 1 || element < 0)
 				return pContext->ThrowNativeError("Could not find element %d in %s", element, info.prop->GetName());
 
 			break;
@@ -836,6 +851,9 @@ static cell_t Native_IsGameRulesArrayHooked(IPluginContext * pContext, const cel
 
 			if (!st)
 				return pContext->ThrowNativeError("Prop %s does not contain any elements", propName);
+
+			if (element > st->GetNumProps() - 1 || element < 0)
+				return pContext->ThrowNativeError("Could not find element %d in %s", element, info.prop->GetName());
 
 			pProp = st->GetProp(element);
 			if (!pProp)
@@ -964,7 +982,9 @@ static cell_t Native_UnhookChange(IPluginContext * pContext, const cell_t * para
 		{
 			for (int j = 0; j < pCallBacks->Count(); j++)
 			{
-				if ((*pCallBacks)[j].pCallback == (void *)callback && (*pCallBacks)[j].pOwner == (void *)pContext)
+				if ((*pCallBacks)[j].iCallbackType == CallBackType::Callback_PluginFunction && 
+					(*pCallBacks)[j].pCallback == (void *)callback && 
+					(*pCallBacks)[j].pOwner == (void *)pContext)
 				{
 					bFoundCallBack = true;
 					break;
@@ -978,7 +998,8 @@ static cell_t Native_UnhookChange(IPluginContext * pContext, const cell_t * para
 		if (g_ChangeHooks[i].objectID == entity && 
 			g_ChangeHooks[i].pVar == info.prop &&
 			g_ChangeHooks[i].Offset == info.actual_offset &&
-   			g_ChangeHooks[i].SendPropType == info.prop->GetType())
+   			g_ChangeHooks[i].SendPropType == info.prop->GetType() &&
+			strcmp(g_ChangeHooks[i].pVar->GetName(), info.prop->GetName()) == 0)
 		{
 			CallBackInfo sInfo;
 			sInfo.pCallback = callback;
@@ -1074,7 +1095,9 @@ static cell_t Native_UnhookGameRulesChange(IPluginContext * pContext, const cell
 		{
 			for (int j = 0; j < pCallBacks->Count(); j++)
 			{
-				if ((*pCallBacks)[j].pCallback == (void *)callback && (*pCallBacks)[j].pOwner == (void *)pContext)
+				if ((*pCallBacks)[j].iCallbackType == CallBackType::Callback_PluginFunction && 
+					(*pCallBacks)[j].pCallback == (void *)callback && 
+					(*pCallBacks)[j].pOwner == (void *)pContext)
 				{
 					bFoundCallBack = true;
 					break;
@@ -1087,7 +1110,8 @@ static cell_t Native_UnhookGameRulesChange(IPluginContext * pContext, const cell
 
 		if (g_ChangeHooksGamerules[i].pVar == info.prop &&
 			g_ChangeHooksGamerules[i].Offset == info.actual_offset &&
-   			g_ChangeHooksGamerules[i].SendPropType == info.prop->GetType())
+   			g_ChangeHooksGamerules[i].SendPropType == info.prop->GetType() &&
+			strcmp(g_ChangeHooksGamerules[i].pVar->GetName(), info.prop->GetName()) == 0)
 		{
 			CallBackInfo sInfo;
 			sInfo.pCallback = callback;
@@ -1137,7 +1161,7 @@ static cell_t Native_HookArrayChange(IPluginContext * pContext, const cell_t * p
 			if (!pProp)
 				return pContext->ThrowNativeError("Prop %s does not contain any elements", name);
 			
-			if (element > info.prop->GetNumElements())
+			if (element > info.prop->GetNumElements() - 1 || element < 0)
 				return pContext->ThrowNativeError("Could not find element %d in %s", element, info.prop->GetName());
 			
 			if (!IsPropValid(pProp, propType))
@@ -1168,6 +1192,9 @@ static cell_t Native_HookArrayChange(IPluginContext * pContext, const cell_t * p
 
 			if (!st)
 				return pContext->ThrowNativeError("Prop %s does not contain any elements", name);
+
+			if (element > st->GetNumProps() - 1 || element < 0)
+				return pContext->ThrowNativeError("Could not find element %d in %s", element, info.prop->GetName());
 
 			pProp = st->GetProp(element);
 			if (!pProp)
@@ -1250,7 +1277,7 @@ static cell_t Native_UnhookArrayChange(IPluginContext * pContext, const cell_t *
 			if (!pProp)
 				return pContext->ThrowNativeError("Prop %s does not contain any elements", name);
 			
-			if (element > info.prop->GetNumElements())
+			if (element > info.prop->GetNumElements() - 1 || element < 0)
 				return pContext->ThrowNativeError("Could not find element %d in %s", element, info.prop->GetName());
 
 			break;
@@ -1262,6 +1289,9 @@ static cell_t Native_UnhookArrayChange(IPluginContext * pContext, const cell_t *
 
 			if (!st)
 				return pContext->ThrowNativeError("Prop %s does not contain any elements", name);
+
+			if (element > st->GetNumProps() - 1 || element < 0)
+				return pContext->ThrowNativeError("Could not find element %d in %s", element, info.prop->GetName());
 
 			pProp = st->GetProp(element);
 			if (!pProp)
@@ -1285,7 +1315,9 @@ static cell_t Native_UnhookArrayChange(IPluginContext * pContext, const cell_t *
 		{
 			for (int j = 0; j < pCallBacks->Count(); j++)
 			{
-				if ((*pCallBacks)[j].pCallback == (void *)callback && (*pCallBacks)[j].pOwner == (void *)pContext)
+				if ((*pCallBacks)[j].iCallbackType == CallBackType::Callback_PluginFunction && 
+					(*pCallBacks)[j].pCallback == (void *)callback && 
+					(*pCallBacks)[j].pOwner == (void *)pContext)
 				{
 					bFoundCallBack = true;
 					break;
@@ -1300,7 +1332,8 @@ static cell_t Native_UnhookArrayChange(IPluginContext * pContext, const cell_t *
 			g_ChangeHooks[i].Element == element && 
 			g_ChangeHooks[i].SendPropType == info.prop->GetType() &&
 			g_ChangeHooks[i].pVar == pProp &&
-			g_ChangeHooks[i].Offset == info.actual_offset + pProp->GetOffset())
+			g_ChangeHooks[i].Offset == info.actual_offset + pProp->GetOffset() &&
+			strcmp(g_ChangeHooks[i].pVar->GetName(), pProp->GetName()) == 0)
 		{
 			CallBackInfo sInfo;
 			sInfo.pCallback = (void *)callback;
@@ -1337,7 +1370,7 @@ static cell_t Native_HookGameRulesArrayChange(IPluginContext * pContext, const c
 			if (!pProp)
 				return pContext->ThrowNativeError("Prop %s does not contain any elements", name);
 			
-			if (element > info.prop->GetNumElements())
+			if (element > info.prop->GetNumElements() - 1 || element < 0)
 				return pContext->ThrowNativeError("Could not find element %d in %s", element, info.prop->GetName());
 			
 			if (!IsPropValid(pProp, propType))
@@ -1368,6 +1401,9 @@ static cell_t Native_HookGameRulesArrayChange(IPluginContext * pContext, const c
 
 			if (!st)
 				return pContext->ThrowNativeError("Prop %s does not contain any elements", name);
+
+			if (element > st->GetNumProps() - 1 || element < 0)
+				return pContext->ThrowNativeError("Could not find element %d in %s", element, info.prop->GetName());
 
 			pProp = st->GetProp(element);
 			if (!pProp)
@@ -1436,7 +1472,7 @@ static cell_t Native_UnhookGameRulesArrayChange(IPluginContext * pContext, const
 			if (!pProp)
 				return pContext->ThrowNativeError("Prop %s does not contain any elements", name);
 			
-			if (element > info.prop->GetNumElements())
+			if (element > info.prop->GetNumElements() - 1 || element < 0)
 				return pContext->ThrowNativeError("Could not find element %d in %s", element, info.prop->GetName());
 
 			break;
@@ -1448,6 +1484,9 @@ static cell_t Native_UnhookGameRulesArrayChange(IPluginContext * pContext, const
 
 			if (!st)
 				return pContext->ThrowNativeError("Prop %s does not contain any elements", name);
+
+			if (element > st->GetNumProps() - 1 || element < 0)
+				return pContext->ThrowNativeError("Could not find element %d in %s", element, info.prop->GetName());
 
 			pProp = st->GetProp(element);
 			if (!pProp)
@@ -1471,7 +1510,9 @@ static cell_t Native_UnhookGameRulesArrayChange(IPluginContext * pContext, const
 		{
 			for (int j = 0; j < pCallBacks->Count(); j++)
 			{
-				if ((*pCallBacks)[j].pCallback == (void *)callback && (*pCallBacks)[j].pOwner == (void *)pContext)
+				if ((*pCallBacks)[j].iCallbackType == CallBackType::Callback_PluginFunction && 
+					(*pCallBacks)[j].pCallback == (void *)callback && 
+					(*pCallBacks)[j].pOwner == (void *)pContext)
 				{
 					bFoundCallBack = true;
 					break;
@@ -1521,9 +1562,8 @@ static cell_t Native_IsChangeHooked(IPluginContext * pContext, const cell_t * pa
 
 	sm_sendprop_info_t info;
 	gamehelpers->FindSendPropInfo(sc->GetName(), propName, &info);
-	SendProp * pProp = info.prop;
 
-	if (!pProp)
+	if (!info.prop)
 		return pContext->ThrowNativeError("Could not find prop %s", propName);
 
 	for (int i = 0; i < g_ChangeHooks.Count(); i++)
@@ -1532,7 +1572,7 @@ static cell_t Native_IsChangeHooked(IPluginContext * pContext, const cell_t * pa
 			strcmp(propName, g_ChangeHooks[i].pVar->GetName()) == 0 && 
 			g_ChangeHooks[i].Offset == info.actual_offset && 
 		    g_ChangeHooks[i].SendPropType == info.prop->GetType() && 
-			g_ChangeHooks[i].pVar == pProp)
+			g_ChangeHooks[i].pVar == info.prop)
 		{
 			auto pCallbacks = g_ChangeHooks[i].vCallbacksInfo;
 			if (pCallbacks->Count())
@@ -1626,7 +1666,7 @@ static cell_t Native_IsArrayChangeHooked(IPluginContext * pContext, const cell_t
 			if (!pProp)
 				return pContext->ThrowNativeError("Prop %s does not contain any elements", name);
 			
-			if (element > info.prop->GetNumElements())
+			if (element > info.prop->GetNumElements() - 1 || element < 0)
 				return pContext->ThrowNativeError("Could not find element %d in %s", element, info.prop->GetName());
 
 			break;
@@ -1638,6 +1678,9 @@ static cell_t Native_IsArrayChangeHooked(IPluginContext * pContext, const cell_t
 
 			if (!st)
 				return pContext->ThrowNativeError("Prop %s does not contain any elements", name);
+
+			if (element > st->GetNumProps() - 1 || element < 0)
+				return pContext->ThrowNativeError("Could not find element %d in %s", element, info.prop->GetName());
 
 			pProp = st->GetProp(element);
 			if (!pProp)
@@ -1698,7 +1741,7 @@ static cell_t Native_IsGameRulesArrayChangeHooked(IPluginContext * pContext, con
 			if (!pProp)
 				return pContext->ThrowNativeError("Prop %s does not contain any elements", name);
 			
-			if (element > info.prop->GetNumElements())
+			if (element > info.prop->GetNumElements() - 1 || element < 0)
 				return pContext->ThrowNativeError("Could not find element %d in %s", element, info.prop->GetName());
 
 			break;
@@ -1710,6 +1753,9 @@ static cell_t Native_IsGameRulesArrayChangeHooked(IPluginContext * pContext, con
 
 			if (!st)
 				return pContext->ThrowNativeError("Prop %s does not contain any elements", name);
+
+			if (element > st->GetNumProps() - 1 || element < 0)
+				return pContext->ThrowNativeError("Could not find element %d in %s", element, info.prop->GetName());
 
 			pProp = st->GetProp(element);
 			if (!pProp)
