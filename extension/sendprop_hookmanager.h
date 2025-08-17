@@ -45,8 +45,21 @@ struct SendPropEntityInfo
 	ProxyVariant data;
 };
 
+namespace SendProxy
+{
+	struct IntHashMapPolicy
+	{
+		static inline bool matches(const int32_t lookup, const int32_t compare) {
+			return lookup == compare;
+		}
+		static inline uint32_t hash(const int32_t key) {
+			return ke::HashInt32(key);
+		}
+	};
+}
+
 using SendPropHookMap = ke::HashMap<const SendProp *, std::weak_ptr<SendProxyHook>, ke::PointerPolicy<const SendProp>>;
-using SendPropEntityInfoMap = ke::HashMap<int, SendPropEntityInfo, detail::IntHashMapPolicy>;
+using SendPropEntityInfoMap = ke::HashMap<int, SendPropEntityInfo, SendProxy::IntHashMapPolicy>;
 
 class SendPropHookManager
 {
