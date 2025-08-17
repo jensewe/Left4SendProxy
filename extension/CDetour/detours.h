@@ -408,7 +408,7 @@ private:
 	if (name##_Detour != NULL) \
 	{ \
 		name##_Detour->EnableDetour(); \
-		var = true; \
+		var &= true; \
 	} else { \
 		g_pSM->LogError(myself, "Failed to create " signname " detour, check error log.\n"); \
 		var = false; \
@@ -419,7 +419,7 @@ private:
 	if (name##_Detour != NULL) \
 	{ \
 		name##_Detour->EnableDetour(); \
-		var = true; \
+		var &= true; \
 	} else { \
 		g_pSM->LogError(myself, "Failed to create " signname " detour, check error log.\n"); \
 		var = false; \

@@ -9,7 +9,9 @@ sourceFiles = [
   'CDetour/detours.cpp',
   'asm/asm.c',
   'natives.cpp',
-  'interfaceimpl.cpp'
+  'clientpacks_detours.cpp',
+  'sendproxy_callback.cpp',
+  'sendprop_hookmanager.cpp',
 ]
 
 ###############

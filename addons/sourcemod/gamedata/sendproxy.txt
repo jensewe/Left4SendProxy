@@ -32,6 +32,15 @@
 				"library"			"engine"
 				"linux"				"@_Z21SV_ComputeClientPacksiPP11CGameClientP14CFrameSnapshot"
 				"windows"			"\x55\x8B\xEC\x83\xEC\x44\xA1\x2A\x2A\x2A\x2A\x53"
+									// 55 8B EC 83 EC 44 A1 ? ? ? ? 53
+			}
+
+			"PackEntities_Normal"
+			{
+				"library"			"engine"
+				"linux"				"@_Z19PackEntities_NormaliPP11CGameClientP14CFrameSnapshot"
+				"windows"			"\x55\x8B\xEC\xB8\x48\x60\x00\x00"
+									// 55 8B EC B8 48 60 00 00
 			}
 
 			"CFrameSnapshotManager::UsePreviouslySentPacket"
@@ -39,6 +48,7 @@
 				"library"			"engine"
 				"linux"				"@_ZN21CFrameSnapshotManager23UsePreviouslySentPacketEP14CFrameSnapshotii"
 				"windows"			"\x55\x8B\xEC\x56\x8B\x75\x0C\x57\x8B\xBC\xB1\x9C\x00\x00\x00"
+									// 55 8B EC 56 8B 75 0C 57 8B BC B1 9C 00 00 00
 			}
 
 			"CFrameSnapshotManager::GetPreviouslySentPacket"
@@ -53,13 +63,24 @@
 				"library"			"engine"
 				"linux"				"@_ZN21CFrameSnapshotManager18CreatePackedEntityEP14CFrameSnapshoti"
 				"windows"			"\x55\x8B\xEC\x83\xEC\x0C\x53\x8B\xD9\x56"
+									// 55 8B EC 83 EC 0C 53 8B D9 56
 			}
 
-			"CFrameSnapshotManager::TakeTickSnapshot"
+			"CFrameSnapshotManager::CreateEmptySnapshot"
 			{
 				"library"			"engine"
-				"linux"				"@_ZN21CFrameSnapshotManager16TakeTickSnapshotEi"
-				"windows"			"\x55\x8B\xEC\xB8\x10\x10\x00\x00\xE8\x2A\x2A\x2A\x2A\xA1\x2A\x2A\x2A\x2A\x33\xC5\x89\x45\xFC\x8B\x15"
+				"linux"				"@_ZN21CFrameSnapshotManager19CreateEmptySnapshotEii"
+				"windows"			"\x55\x8B\xEC\x83\xEC\x0C\x53\x56\x57\x89\x4D\xF8"
+									// 55 8B EC 83 EC 0C 53 56 57 89 4D F8
+									// Search string "Sending full update to Client %s (%s)", the called function with arg2 is 2048
+			}
+
+			"CFrameSnapshotManager::RemoveEntityReference"
+			{
+				"library"			"engine"
+				"linux"				"@_ZN21CFrameSnapshotManager21RemoveEntityReferenceEi"
+				"windows"			"\x55\x8B\xEC\x51\x8B\x45\x08\x53\x8B\x18"
+									// 55 8B EC 51 8B 45 08 53 8B 18 
 			}
 
 			"CFrameSnapshot::ReleaseReference"
@@ -67,6 +88,7 @@
 				"library"			"engine"
 				"linux"				"@_ZN14CFrameSnapshot16ReleaseReferenceEv"
 				"windows"			"\x55\x8B\xEC\x51\x56\x8B\x35\x2A\x2A\x2A\x2A\x57"
+									// 55 8B EC 51 56 8B 35 ? ? ? ? 57
 			}
 		}
 	}
