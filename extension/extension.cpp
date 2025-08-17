@@ -278,7 +278,13 @@ static CBaseEntity *FindEntityByNetClass(int start, const char *classname)
 			continue;
 		}
 
-		ServerClass *pServerClass = gamehelpers->FindEntityServerClass(pEntity);
+		IServerNetworkable* pNetwork = ((IServerUnknown *)pEntity)->GetNetworkable();
+		if (pNetwork == nullptr)
+		{
+			continue;
+		}
+
+		ServerClass *pServerClass = pNetwork->GetServerClass();
 		if (pServerClass == nullptr)
 		{
 			continue;
