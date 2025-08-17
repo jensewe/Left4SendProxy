@@ -2,7 +2,7 @@
 #define _SENDPROP_HOOKMANAGER_H
 
 #include "extension.h"
-#include "sm_hashmap.h"
+#include "am-hashmap.h"
 #include "sendproxy_callback.h"
 #include "sendproxy_variant.h"
 #include <forward_list>
