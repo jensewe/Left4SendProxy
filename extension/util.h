@@ -12,9 +12,6 @@
 		return false; \
 	}
 
-edict_t *UTIL_EdictOfIndex(int index);
-bool IsPropValid(const SendProp *prop, PropType type);
-
 class ConVarSaveSet
 {
 public:
