@@ -102,9 +102,6 @@ DETOUR_DECL_STATIC3(PackEntities_Normal, void, int, iClientCount, CGameClient **
 DETOUR_DECL_STATIC3(SV_ComputeClientPacks, void, int, iClientCount, CGameClient **, pClients, CFrameSnapshot *, pSnapShot)
 {
 	if (playerhelpers->GetMaxClients() <= 1
-#ifndef DEBUG
-	 || iClientCount <= 1
-#endif
 	 || !g_pSendPropHookManager->IsAnyEntityHooked())
 	{
 		return DETOUR_STATIC_CALL(SV_ComputeClientPacks)(iClientCount, pClients, pSnapShot);
