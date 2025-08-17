@@ -35,9 +35,9 @@ typeset SendProxyCallbackGamerules
 native bool SendProxy_HookEntity(int entity, const char[] prop, SendPropType type, SendProxyCallback callback, int element = 0);
 native bool SendProxy_UnhookEntity(int entity, const char[] prop, SendProxyCallback callback, int element = 0);
 native bool SendProxy_IsHookedEntity(int entity, const char[] prop, SendProxyCallback callback, int element = 0);
-native bool SendProxy_HookGameRules(const char[] prop, SendPropType type, SendProxyCallback callback, int element = 0);
-native bool SendProxy_UnhookGameRules(const char[] prop, SendProxyCallback callback, int element = 0);
-native bool SendProxy_IsHookedGameRules(const char[] prop, SendProxyCallback callback, int element = 0);
+native bool SendProxy_HookGameRules(const char[] prop, SendPropType type, SendProxyCallbackGamerules callback, int element = 0);
+native bool SendProxy_UnhookGameRules(const char[] prop, SendProxyCallbackGamerules callback, int element = 0);
+native bool SendProxy_IsHookedGameRules(const char[] prop, SendProxyCallbackGamerules callback, int element = 0);
 
 public __ext_sendproxymanager_SetNTVOptional()
 {

@@ -7,7 +7,10 @@ bool SendProxyPluginCallback(void *callback, const SendProp *pProp, ProxyVariant
 	auto func = static_cast<IPluginFunction *>(callback);
 
 	cell_t result = Pl_Continue;
-	func->PushCell(entity);
+
+	if (gamehelpers->ReferenceToEntity(entity) != GetGameRulesProxyEnt())
+		func->PushCell(entity);
+
 	func->PushString(pProp->GetName());
 
 	ProxyVariant temp = variant;
