@@ -23,8 +23,8 @@ jobs:
             compiler_cxx: clang++
           - os: ubuntu-22.04
             os_short: oldlinux
-            compiler_cc: clang-8
-            compiler_cxx: clang++-8
+            compiler_cc: clang-14
+            compiler_cxx: clang++-14
       fail-fast: false
 
     name: Build Project ${{ matrix.os_short }}
