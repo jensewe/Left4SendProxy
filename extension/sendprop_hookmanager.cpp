@@ -258,7 +258,7 @@ void GlobalProxy(const SendProp *pProp, const void *pStructBase, const void * pD
 			continue;
 		}
 
-		if (hook.fnProcess(hook.pCallback, pProp, pEntHook->data, iElement, objectID, client))
+		if (hook.fnProcess(hook.pCallback, pProp, pEntHook->data, hook.element, objectID, client))
 		{
 			pOverride = &pEntHook->data;
 			return;
