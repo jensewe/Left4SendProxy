@@ -58,11 +58,12 @@ namespace SendProxy
 	};
 }
 
-using SendPropHookMap = ke::HashMap<const SendProp *, std::weak_ptr<SendProxyHook>, ke::PointerPolicy<const SendProp>>;
-using SendPropEntityInfoMap = ke::HashMap<int, SendPropEntityInfo, SendProxy::IntHashMapPolicy>;
-
 class SendPropHookManager
 {
+public:
+	using SendPropHookMap = ke::HashMap<const SendProp *, std::weak_ptr<SendProxyHook>, ke::PointerPolicy<const SendProp>>;
+	using SendPropEntityInfoMap = ke::HashMap<int, SendPropEntityInfo, SendProxy::IntHashMapPolicy>;
+
 public:
 	SendPropHookManager();
 	SendPropHookManager(const SendPropHookManager &other) = delete;

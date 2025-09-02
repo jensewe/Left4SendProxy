@@ -277,7 +277,9 @@ static void CopyPackedEntities(CFrameSnapshot *dest, const CFrameSnapshot *src)
 	{
 		auto data = src->m_pEntities[i].m_pPackedData;
 		dest->m_pEntities[i].m_pPackedData = data;
-		framesnapshotmanager->AddEntityReference(data);
+
+		if (data != INVALID_PACKED_ENTITY_HANDLE)
+			framesnapshotmanager->AddEntityReference(data);
 	}
 
 	if (dest->m_pHLTVEntityData && src->m_pHLTVEntityData)

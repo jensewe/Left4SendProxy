@@ -196,7 +196,7 @@ private:
 	std::function<void()> m_call;
 };
 
-// !! MUST BE CALLED ON MAIN THREAD
+// !! MUST BE CALLED IN MAIN THREAD
 void GlobalProxy(const SendProp *pProp, const void *pStructBase, const void * pData, DVariant *pOut, int iElement, int objectID)
 {
 	auto pHook = g_pSendPropHookManager->GetPropHook(pProp);

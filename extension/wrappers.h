@@ -6,6 +6,7 @@
 #include "tier1/utllinkedlist.h"
 #include "tier1/mempool.h"
 #include "iclient.h"
+#include <type_traits>
 
 #if defined( _LINUX ) || defined( _OSX )
 // linux implementation
@@ -244,16 +245,28 @@ public:
 	static ICallWrapper* s_callRemoveEntityReference;
 	void RemoveEntityReference( PackedEntityHandle_t handle )
 	{
-		m_PackedEntities[ handle ]->m_ReferenceCount++;
+		struct {
+			CFrameSnapshotManager *pThis;
+			PackedEntityHandle_t handle;
+		} stack{ this, handle };
+
+		s_callRemoveEntityReference->Execute(&stack, nullptr);
 	}
 
 public:
 	uint32_t pad[21];
 
-	CUtlFixedLinkedList<PackedEntity *>					m_PackedEntities;
+	template <typename T>
+	class CUtlFixedLinkedListHack : public CUtlFixedLinkedList<T>
+	{
+	private:
+		int	m_NumAlloced;		// The number of allocated elements
+	};
 
-	// FIXME: Update CUtlFixedLinkedList in hl2sdk-l4d2
-	int pad2;
+	std::conditional_t<sizeof(CUtlFixedLinkedList<PackedEntity *>) == 40u,
+		CUtlFixedLinkedListHack<PackedEntity *>,
+		CUtlFixedLinkedList<PackedEntity *>
+		> m_PackedEntities;
 
 	int								m_nPackedEntityCacheCounter;  // increase with every cache access
 	CUtlVector<UnpackedDataCache_t>	m_PackedEntityCache;	// cache for uncompressed packed entities
