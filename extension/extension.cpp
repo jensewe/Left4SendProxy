@@ -255,9 +255,7 @@ bool SendProxyManager::SDK_OnMetamodLoad(ISmmAPI *ismm, char *error, size_t maxl
 
 	gpGlobals = ismm->GetCGlobals();
 	
-	sv_parallel_packentities = cvar->FindVar("sv_parallel_packentities");
-	if (sv_parallel_packentities == nullptr)
-		return false;
+	GET_CONVAR(sv_parallel_packentities);
 
 	return true;
 }
