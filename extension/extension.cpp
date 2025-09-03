@@ -251,8 +251,13 @@ void SendProxyManager::OnCoreMapEnd()
 
 bool SendProxyManager::SDK_OnMetamodLoad(ISmmAPI *ismm, char *error, size_t maxlen, bool late)
 {
-	GET_V_IFACE_ANY(GetEngineFactory, g_pCVar, ICvar, CVAR_INTERFACE_VERSION);
+	if (!engine->IsDedicatedServer())
+	{
+		ke::SafeStrcpy(error, maxlen, "Local server support is deprecated.");
+		return false;
+	}
 
+	GET_V_IFACE_ANY(GetEngineFactory, g_pCVar, ICvar, CVAR_INTERFACE_VERSION);
 	gpGlobals = ismm->GetCGlobals();
 	
 	GET_CONVAR(sv_parallel_packentities);

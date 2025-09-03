@@ -142,7 +142,7 @@ class CFrameSnapshot
 public:
 	static void *s_pfnReleaseReference;
 	static ICallWrapper *s_callReleaseReference;
-	void ReleaseReference()
+	inline void ReleaseReference()
 	{
 		struct {
 			CFrameSnapshot *pThis;
@@ -223,7 +223,7 @@ public:
 
 	static void* s_pfnCreateEmptySnapshot;
 	static ICallWrapper* s_callCreateEmptySnapshot;
-	CFrameSnapshot* CreateEmptySnapshot(int tickcount, int maxEntities)
+	inline CFrameSnapshot* CreateEmptySnapshot(int tickcount, int maxEntities)
 	{
 		struct {
 			CFrameSnapshotManager *pThis;
@@ -236,14 +236,14 @@ public:
 		return ret;
 	}
 
-	void AddEntityReference( PackedEntityHandle_t handle )
+	inline void AddEntityReference( PackedEntityHandle_t handle )
 	{
 		m_PackedEntities[ handle ]->m_ReferenceCount++;
 	}
 
 	static void* s_pfnRemoveEntityReference;
 	static ICallWrapper* s_callRemoveEntityReference;
-	void RemoveEntityReference( PackedEntityHandle_t handle )
+	inline void RemoveEntityReference( PackedEntityHandle_t handle )
 	{
 		struct {
 			CFrameSnapshotManager *pThis;
