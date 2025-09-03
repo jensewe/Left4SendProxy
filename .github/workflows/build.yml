@@ -136,4 +136,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: sendproxy-${{ matrix.os_short }}
-          path: src/addons
+          path: src
