@@ -5,8 +5,8 @@
 void GlobalProxy(const SendProp *pProp, const void *pStructBase, const void *pData, DVariant *pOut, int iElement, int objectID);
 
 SendProxyHook::SendProxyHook(SendProp *pProp, SendVarProxyFn pfnProxy)
-	: m_pProp(pProp)
 {
+	m_pProp = pProp;
 	m_fnRealProxy = m_pProp->GetProxyFn();
 	m_pProp->SetProxyFn( pfnProxy );
 }
@@ -81,7 +81,7 @@ bool SendPropHookManager::HookEntity(int entity, SendProp *pProp, int element, P
 	hook.pOwner = pFunc->GetParentRuntime();
 
 	auto i = m_propHooks.findForAdd(pProp);
-	Assert(!i.found() || !i->value.expired());
+	AssertFatal(!i.found() || !i->value.expired());
 
 	if (i.found())
 	{
@@ -231,7 +231,6 @@ void GlobalProxy(const SendProp *pProp, const void *pStructBase, const void * pD
 		return;
 
 	int client = ClientPacksDetour::GetCurrentClientIndex();
-	AssertFatal(client > 0);
 	if (client == -1)
 		return;
 
