@@ -81,7 +81,7 @@ bool SendPropHookManager::HookEntity(int entity, SendProp *pProp, int element, P
 	hook.pOwner = pFunc->GetParentRuntime();
 
 	auto i = m_propHooks.findForAdd(pProp);
-	AssertFatal(!i.found() || !i->value.expired());
+	Assert(!i.found() || !i->value.expired());
 
 	if (i.found())
 	{
