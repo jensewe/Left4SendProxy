@@ -19,7 +19,7 @@ bool SendProxyPluginCallback(void *callback, const SendProp *pProp, ProxyVariant
 	std::visit(overloaded {
 		[func](int &arg)			{ func->PushCellByRef(reinterpret_cast<cell_t*>(&arg)); },
 		[func](float &arg)			{ func->PushFloatByRef(&arg); },
-		[func](std::string& arg)	{ func->PushStringEx(arg.data(), arg.capacity(), SM_PARAM_STRING_UTF8 | SM_PARAM_STRING_COPY, SM_PARAM_COPYBACK); },
+		[func](std::string& arg)	{ func->PushStringEx(arg.data(), arg.capacity(), SM_PARAM_STRING_UTF8 | SM_PARAM_STRING_COPY, SM_PARAM_COPYBACK); func->PushCell(arg.capacity()); },
 		[func](Vector &arg)			{ func->PushArray(reinterpret_cast<cell_t*>(&arg), 3, SM_PARAM_COPYBACK); },
 		[func, &iEntity](CBaseHandle &arg) {
 			if (edict_t *edict = gamehelpers->GetHandleEntity(arg))
