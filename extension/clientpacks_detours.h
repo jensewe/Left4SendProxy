@@ -10,8 +10,9 @@ public:
 	static void Shutdown();
 	static void Clear();
 	static int GetCurrentClientIndex();
-	static void OnEntityHooked(int index);
-	static void OnEntityUnhooked(int index);
+	static void OnEntityHooked(int entity);
+	static void OnEntityUnhooked(int entity);
+	static void OnClientDisconnect(int client);
 };
 
 #endif

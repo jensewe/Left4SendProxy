@@ -238,6 +238,7 @@ void SendProxyManager::OnEntityDestroyed(CBaseEntity* pEnt)
 void SendProxyManager::OnClientDisconnected(int client)
 {
 	g_pSendPropHookManager->UnhookEntityAll(client);
+	ClientPacksDetour::OnClientDisconnect(client);
 }
 
 void SendProxyManager::OnCoreMapStart(edict_t * pEdictList, int edictCount, int clientMax)

@@ -6,6 +6,11 @@
 #include "util.h"
 #include <unordered_map>
 #include <array>
+#include <bitset>
+
+#if defined(DEBUG) || defined(_DEBUG)
+#define DEBUG_SENDPROXY_MEMORY
+#endif
 
 DECL_DETOUR(CFrameSnapshotManager_UsePreviouslySentPacket);
 DECL_DETOUR(CFrameSnapshotManager_GetPreviouslySentPacket);
@@ -15,8 +20,18 @@ DECL_DETOUR(SV_ComputeClientPacks);
 
 volatile int g_iCurrentClientIndexInLoop = -1; //used for optimization
 
-using PackedEntityArray = std::array<PackedEntityHandle_t, MAXPLAYERS>;
-std::unordered_map<int, PackedEntityArray> g_EntityPackMap;
+struct PackedEntityInfo
+{
+	PackedEntityInfo()
+	{
+		handles.fill(INVALID_PACKED_ENTITY_HANDLE);
+		updatebits.set();
+	}
+
+	std::array<PackedEntityHandle_t, MAXPLAYERS> handles;
+	std::bitset<MAXPLAYERS> updatebits;
+};
+std::unordered_map<int, PackedEntityInfo> g_EntityPackMap;
 
 ConVar ext_sendproxy_frame_callback("ext_sendproxy_frame_callback", "0", FCVAR_NONE, "Invoke hooked proxy every frame.");
 
@@ -33,36 +48,21 @@ ConVar ext_sendproxy_frame_callback("ext_sendproxy_frame_callback", "0", FCVAR_N
 
 DETOUR_DECL_MEMBER3(CFrameSnapshotManager_UsePreviouslySentPacket, bool, CFrameSnapshot*, pSnapshot, int, entity, int, entSerialNumber)
 {
-	if (g_iCurrentClientIndexInLoop == -1)
-		return DETOUR_MEMBER_CALL(CFrameSnapshotManager_UsePreviouslySentPacket)(pSnapshot, entity, entSerialNumber);
-
-	if (g_EntityPackMap[entity][g_iCurrentClientIndexInLoop] == INVALID_PACKED_ENTITY_HANDLE)
-		return false;
-
-	if (framesnapshotmanager->m_pLastPackedData[entity] != INVALID_PACKED_ENTITY_HANDLE)
+	if (g_iCurrentClientIndexInLoop != -1)
 	{
-		PackedEntity *newpe = framesnapshotmanager->m_PackedEntities[ framesnapshotmanager->m_pLastPackedData[entity] ];
-		PackedEntity *oldpe = framesnapshotmanager->m_PackedEntities[ g_EntityPackMap[entity][g_iCurrentClientIndexInLoop] ];
-
-		if (newpe && oldpe && newpe->m_nSnapshotCreationTick > oldpe->m_nSnapshotCreationTick)
-		{
-			gamehelpers->EdictOfIndex(entity)->m_fStateFlags |= FL_EDICT_CHANGED;
-			return false;
-		}
+		framesnapshotmanager->m_pLastPackedData[entity] = g_EntityPackMap.at(entity).handles[g_iCurrentClientIndexInLoop];
 	}
 
-	framesnapshotmanager->m_pLastPackedData[entity] = g_EntityPackMap[entity][g_iCurrentClientIndexInLoop];
 	return DETOUR_MEMBER_CALL(CFrameSnapshotManager_UsePreviouslySentPacket)(pSnapshot, entity, entSerialNumber);
 }
 
 DETOUR_DECL_MEMBER2(CFrameSnapshotManager_GetPreviouslySentPacket, PackedEntity*, int, entity, int, entSerialNumber)
 {
-	if (g_iCurrentClientIndexInLoop == -1)
+	if (g_iCurrentClientIndexInLoop != -1)
 	{
-		return DETOUR_MEMBER_CALL(CFrameSnapshotManager_GetPreviouslySentPacket)(entity, entSerialNumber);
+		framesnapshotmanager->m_pLastPackedData[entity] = g_EntityPackMap.at(entity).handles[g_iCurrentClientIndexInLoop];
 	}
 
-	framesnapshotmanager->m_pLastPackedData[entity] = g_EntityPackMap[entity][g_iCurrentClientIndexInLoop];
 	return DETOUR_MEMBER_CALL(CFrameSnapshotManager_GetPreviouslySentPacket)(entity, entSerialNumber);
 }
 
@@ -73,16 +73,11 @@ DETOUR_DECL_MEMBER2(CFrameSnapshotManager_CreatePackedEntity, PackedEntity*, CFr
 		return DETOUR_MEMBER_CALL(CFrameSnapshotManager_CreatePackedEntity)(pSnapshot, entity);
 	}
 
-	PackedEntityHandle_t origHandle = framesnapshotmanager->m_pLastPackedData[entity];
-
-	if (g_EntityPackMap[entity][g_iCurrentClientIndexInLoop] != INVALID_PACKED_ENTITY_HANDLE)
-	{
-		framesnapshotmanager->m_pLastPackedData[entity] = g_EntityPackMap[entity][g_iCurrentClientIndexInLoop];
-	}
+	framesnapshotmanager->m_pLastPackedData[entity] = g_EntityPackMap.at(entity).handles[g_iCurrentClientIndexInLoop];
 
 	PackedEntity *result = DETOUR_MEMBER_CALL(CFrameSnapshotManager_CreatePackedEntity)(pSnapshot, entity);
 
-	g_EntityPackMap[entity][g_iCurrentClientIndexInLoop] = framesnapshotmanager->m_pLastPackedData[entity];
+	g_EntityPackMap.at(entity).handles[g_iCurrentClientIndexInLoop] = framesnapshotmanager->m_pLastPackedData[entity];
 
 	return result;
 }
@@ -170,9 +165,21 @@ DETOUR_DECL_STATIC3(SV_ComputeClientPacks, void, int, iClientCount, CGameClient 
 			snapshot->m_pValidEntities += numEntities - numHooked;
 			snapshot->m_nValidEntities = numHooked;
 
-			if (ext_sendproxy_frame_callback.GetBool())
-				std::for_each_n( snapshot->m_pValidEntities, snapshot->m_nValidEntities, [](int edictidx){ gamehelpers->EdictOfIndex(edictidx)->m_fStateFlags |= FL_EDICT_CHANGED; });
-			
+			std::for_each_n(snapshot->m_pValidEntities,
+							snapshot->m_nValidEntities,
+							[](int edictidx)
+							{
+								auto edict = gamehelpers->EdictOfIndex(edictidx);
+								if (edict->HasStateChanged() || ext_sendproxy_frame_callback.GetBool())
+									g_EntityPackMap.at(edictidx).updatebits.set();
+								
+								if (g_EntityPackMap.at(edictidx).updatebits[g_iCurrentClientIndexInLoop])
+								{
+									g_EntityPackMap.at(edictidx).updatebits[g_iCurrentClientIndexInLoop] = false;
+									edict->m_fStateFlags |= FL_EDICT_CHANGED;
+								}
+							});
+
 			DETOUR_STATIC_CALL(PackEntities_Normal)(1, &client, snapshot);
 
 			snapshot->m_nValidEntities = numEntities;
@@ -198,31 +205,49 @@ int ClientPacksDetour::GetCurrentClientIndex()
 	return g_iCurrentClientIndexInLoop + 1;
 }
 
-void ClientPacksDetour::OnEntityHooked(int index)
+void ClientPacksDetour::OnEntityHooked(int entity)
 {
-	if (g_EntityPackMap.find(index) == g_EntityPackMap.end())
+	if (g_EntityPackMap.find(entity) == g_EntityPackMap.end())
 	{
-		PackedEntityArray arr;
-		arr.fill(INVALID_PACKED_ENTITY_HANDLE);
-		g_EntityPackMap.emplace(index, std::move(arr));
+		g_EntityPackMap.emplace(entity, PackedEntityInfo());
+
+		if (framesnapshotmanager->m_pLastPackedData[entity] != INVALID_PACKED_ENTITY_HANDLE)
+		{
+			framesnapshotmanager->RemoveEntityReference(framesnapshotmanager->m_pLastPackedData[entity]);
+			framesnapshotmanager->m_pLastPackedData[entity] = INVALID_PACKED_ENTITY_HANDLE;
+		}
 	}
 }
 
-void ClientPacksDetour::OnEntityUnhooked(int index)
+void ClientPacksDetour::OnEntityUnhooked(int entity)
 {
-	if (g_EntityPackMap.find(index) == g_EntityPackMap.end())
+	if (g_EntityPackMap.find(entity) == g_EntityPackMap.end())
 		return;
 
-	for (PackedEntityHandle_t pack : g_EntityPackMap[index])
+	for (PackedEntityHandle_t handle : g_EntityPackMap.at(entity).handles)
 	{
-		if (pack != INVALID_PACKED_ENTITY_HANDLE
-		 && pack != framesnapshotmanager->m_pLastPackedData[index])
+		if (handle != INVALID_PACKED_ENTITY_HANDLE)
 		{
-			framesnapshotmanager->RemoveEntityReference(pack);
+			framesnapshotmanager->RemoveEntityReference(handle);
 		}
 	}
 	
-	g_EntityPackMap.erase(index);
+	g_EntityPackMap.erase(entity);
+	framesnapshotmanager->m_pLastPackedData[entity] = INVALID_PACKED_ENTITY_HANDLE;
+}
+
+void ClientPacksDetour::OnClientDisconnect(int client)
+{
+	int index = client - 1;
+
+	for (auto& [_, info] : g_EntityPackMap)
+	{
+		if (info.handles[index] != INVALID_PACKED_ENTITY_HANDLE)
+		{
+			framesnapshotmanager->RemoveEntityReference(info.handles[index]);
+			info.handles[index] = INVALID_PACKED_ENTITY_HANDLE;
+		}
+	}
 }
 
 bool ClientPacksDetour::Init(IGameConfig *gc)
@@ -253,6 +278,10 @@ void ClientPacksDetour::Shutdown()
 
 void ClientPacksDetour::Clear()
 {
+#ifdef DEBUG_SENDPROXY_MEMORY
+	g_pSM->LogMessage(myself, "=== PACKED ENTITIES COUNT (%d) ===", framesnapshotmanager->m_PackedEntities.Count());
+#endif
+
 	g_EntityPackMap.clear();
 }
 
