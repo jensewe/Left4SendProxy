@@ -181,6 +181,13 @@ DETOUR_DECL_STATIC3(SV_ComputeClientPacks, void, int, iClientCount, CGameClient 
 	}
 
 	g_iCurrentClientIndexInLoop = -1;
+
+	// finally decrement reference of manually created snapshots
+	for (int i = 1; i < iClientCount; ++i)
+	{
+		Assert(clientSnapshots[i]->m_nReferences == 2);
+		clientSnapshots[i]->ReleaseReference();
+	}
 }
 
 int ClientPacksDetour::GetCurrentClientIndex()
