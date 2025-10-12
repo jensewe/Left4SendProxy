@@ -42,7 +42,9 @@ bool SendProxyPluginCallback(void *callback, const SendProp *pProp, ProxyVariant
 			},
 
 			[func, iEntity, &intercept](CBaseHandle &arg) {
-				if (edict_t *edict = gamehelpers->EdictOfIndex(iEntity)) {
+				if (iEntity == -1) {
+					arg.Term();
+				} else if (edict_t *edict = gamehelpers->EdictOfIndex(iEntity)) {
 					gamehelpers->SetHandleEntity(arg, edict);
 				} else {
 					func->GetParentRuntime()->GetDefaultContext()->BlamePluginError(
