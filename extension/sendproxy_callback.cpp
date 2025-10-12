@@ -1,6 +1,5 @@
 #include "sendproxy_callback.h"
 #include "dt_send.h"
-#include <string>
 
 bool SendProxyPluginCallback(void *callback, const SendProp *pProp, ProxyVariant &variant, int element, int entity, int client)
 {

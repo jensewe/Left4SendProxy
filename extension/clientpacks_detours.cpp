@@ -1,9 +1,7 @@
 #include "clientpacks_detours.h"
 #include "sendprop_hookmanager.h"
 #include "CDetour/detours.h"
-#include "wrappers.h"
 #include "iclient.h"
-#include "util.h"
 #include <unordered_map>
 #include <array>
 #include <bitset>

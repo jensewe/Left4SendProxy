@@ -9,8 +9,6 @@
 #include <memory>
 #include <functional>
 
-class SendProp;
-
 class SendProxyHook
 {
 public:

@@ -30,7 +30,6 @@
  */
 
 #include "natives.h"
-#include "util.h"
 #include "sendprop_hookmanager.h"
 
 static bool IsPropValid(const SendProp *prop, PropType type)

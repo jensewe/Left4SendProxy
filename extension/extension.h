@@ -43,6 +43,10 @@
 #include <ISDKHooks.h>
 #include <ISDKTools.h>
 #include "wrappers.h"
+#include <optional>
+#include <string>
+#include <algorithm>
+#include "util.h"
 
 class SendProxyManager :
 	public SDKExtension,

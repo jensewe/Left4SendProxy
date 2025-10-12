@@ -4,8 +4,6 @@
 #include "extension.h"
 #include "sendproxy_variant.h"
 
-class SendProp;
-
 using SendProxyCallback = bool (void *callback, const SendProp *pProp, ProxyVariant &variant, int element, int entity, int client);
 
 bool SendProxyPluginCallback(void *callback, const SendProp *pProp, ProxyVariant &variant, int element, int entity, int client);

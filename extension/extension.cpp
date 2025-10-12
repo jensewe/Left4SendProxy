@@ -33,9 +33,6 @@
 #include "natives.h"
 #include "clientpacks_detours.h"
 #include "sendprop_hookmanager.h"
-#include "util.h"
-#include <optional>
-#include <string>
 
 SendProxyManager g_SendProxyManager;
 SMEXT_LINK(&g_SendProxyManager);
