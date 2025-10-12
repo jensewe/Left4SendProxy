@@ -114,6 +114,9 @@ DETOUR_DECL_STATIC3(SV_ComputeClientPacks, void, int, iClientCount, CGameClient 
 			const auto tail = pSnapShot->m_nValidEntities - numHooked - 1;
 			std::swap(pSnapShot->m_pValidEntities[i], pSnapShot->m_pValidEntities[tail]);
 			numHooked++;
+
+			if (gamehelpers->EdictOfIndex(entindex)->HasStateChanged() || ext_sendproxy_frame_callback.GetBool())
+				g_EntityPackMap.at(entindex).updatebits.set();
 		}
 	}
 
@@ -169,14 +172,10 @@ DETOUR_DECL_STATIC3(SV_ComputeClientPacks, void, int, iClientCount, CGameClient 
 							snapshot->m_nValidEntities,
 							[](int edictidx)
 							{
-								auto edict = gamehelpers->EdictOfIndex(edictidx);
-								if (edict->HasStateChanged() || ext_sendproxy_frame_callback.GetBool())
-									g_EntityPackMap.at(edictidx).updatebits.set();
-								
 								if (g_EntityPackMap.at(edictidx).updatebits[g_iCurrentClientIndexInLoop])
 								{
 									g_EntityPackMap.at(edictidx).updatebits[g_iCurrentClientIndexInLoop] = false;
-									edict->m_fStateFlags |= FL_EDICT_CHANGED;
+									gamehelpers->EdictOfIndex(edictidx)->m_fStateFlags |= FL_EDICT_CHANGED;
 								}
 							});
 
