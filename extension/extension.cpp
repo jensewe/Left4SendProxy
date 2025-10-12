@@ -46,8 +46,8 @@ SendPropHookManager *g_pSendPropHookManager = &s_SendPropHookManager;
 std::string g_szGameRulesProxy;
 IServerGameEnts * gameents = nullptr;
 IServerGameClients * gameclients = nullptr;
-CGlobalVars *gpGlobals = NULL;
-IBinTools* bintools = NULL;
+CGlobalVars *gpGlobals = nullptr;
+IBinTools* bintools = nullptr;
 ISDKHooks * sdkhooks = nullptr;
 ConVar *sv_parallel_packentities = nullptr;
 
@@ -191,7 +191,8 @@ void SendProxyManager::SDK_OnAllLoaded()
 
 bool SendProxyManager::QueryInterfaceDrop(SMInterface* pInterface)
 {
-	if (pInterface == sdkhooks || pInterface == bintools)
+	std::string_view name = pInterface->GetInterfaceName();
+	if (name == SMINTERFACE_SDKHOOKS_NAME || name == SMINTERFACE_BINTOOLS_NAME)
 		return false;
 
 	return true;
@@ -199,6 +200,17 @@ bool SendProxyManager::QueryInterfaceDrop(SMInterface* pInterface)
 
 void SendProxyManager::NotifyInterfaceDrop(SMInterface* pInterface)
 {
+	std::string_view name = pInterface->GetInterfaceName();
+
+	if (name == SMINTERFACE_SDKHOOKS_NAME)
+	{
+		sdkhooks = nullptr;
+	}
+	else if (name == SMINTERFACE_BINTOOLS_NAME)
+	{
+		bintools = nullptr;
+	}
+	
 	SDK_OnUnload();
 }
 
@@ -218,6 +230,9 @@ bool SendProxyManager::RegisterConCommandBase(ConCommandBase* pVar)
 
 void SendProxyManager::SDK_OnUnload()
 {
+	g_pSendPropHookManager->Clear();
+	ClientPacksDetour::Shutdown();
+
 	plsys->RemovePluginsListener(this);
 	playerhelpers->RemoveClientListener(this);
 
@@ -227,6 +242,24 @@ void SendProxyManager::SDK_OnUnload()
 	}
 
 	ConVar_Unregister();
+
+	if (CFrameSnapshot::s_callReleaseReference != nullptr)
+	{
+		CFrameSnapshot::s_callReleaseReference->Destroy();
+		CFrameSnapshot::s_callReleaseReference = nullptr;
+	}
+
+	if (CFrameSnapshotManager::s_callCreateEmptySnapshot != nullptr)
+	{
+		CFrameSnapshotManager::s_callCreateEmptySnapshot->Destroy();
+		CFrameSnapshotManager::s_callCreateEmptySnapshot = nullptr;
+	}
+
+	if (CFrameSnapshotManager::s_callRemoveEntityReference != nullptr)
+	{
+		CFrameSnapshotManager::s_callRemoveEntityReference->Destroy();
+		CFrameSnapshotManager::s_callRemoveEntityReference = nullptr;
+	}
 }
 
 void SendProxyManager::OnEntityDestroyed(CBaseEntity* pEnt)
