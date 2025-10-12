@@ -101,7 +101,6 @@ public:
 #endif
 
 public: //SDKExtension
-	void OnCoreMapStart(edict_t *, int, int) override;
 	void OnCoreMapEnd() override;
 
 public: //IPluginsListener

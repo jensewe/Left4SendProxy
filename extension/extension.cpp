@@ -76,9 +76,6 @@ bool SendProxyManager::SDK_OnLoad(char *error, size_t maxlen, bool late)
 	if (!ClientPacksDetour::Init(gc))
 		return false;
 
-	if (late) //if we loaded late, we need manually to call that
-		OnCoreMapStart(nullptr, 0, 0);
-	
 	sharesys->AddDependency(myself, "sdkhooks.ext", true, true);
 	sharesys->AddDependency(myself, "bintools.ext", true, true);
 	
@@ -215,10 +212,6 @@ void SendProxyManager::OnClientDisconnected(int client)
 {
 	g_pSendPropHookManager->UnhookEntityAll(client);
 	ClientPacksDetour::OnClientDisconnect(client);
-}
-
-void SendProxyManager::OnCoreMapStart(edict_t * pEdictList, int edictCount, int clientMax)
-{
 }
 
 void SendProxyManager::OnCoreMapEnd()

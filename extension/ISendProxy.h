@@ -32,18 +32,6 @@
 #ifndef _INCLUDE_ISENDPROXY_
 #define _INCLUDE_ISENDPROXY_
  
-#include "dt_send.h"
-#include "server_class.h"
-
-#define SMINTERFACE_SENDPROXY_NAME		"ISendProxyInterface133"
-#define SMINTERFACE_SENDPROXY_VERSION	0x133
-
-class CBaseEntity;
-class CBasePlayer;
-class ISendProxyUnhookListener;
-
-using namespace SourceMod;
-
 enum class PropType : uint8_t
 {
 	Prop_Int = 0,
@@ -53,12 +41,5 @@ enum class PropType : uint8_t
 	Prop_EHandle,
 	Prop_Max
 };
-
-enum class CallbackType : uint8_t
-{
-	Callback_OnChanged = 0,		// Callback only when the edict is marked changed
-	Callback_Constant,			// Callback on every frame
-};
-
 
 #endif
