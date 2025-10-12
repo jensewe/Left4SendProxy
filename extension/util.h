@@ -1,7 +1,4 @@
-#ifndef _SENDPROXY_UTIL_H
-#define _SENDPROXY_UTIL_H
-
-#include "extension.h"
+#pragma once
 
 #define GET_CONVAR(name) \
 	name = g_pCVar->FindVar(#name); \
@@ -34,6 +31,99 @@ private:
 	std::string m_savevalue;
 };
 
+class AutoGameConfig
+{
+public:
+	static std::optional<AutoGameConfig> Load(const char *name)
+	{
+		char buffer[256];
+		IGameConfig *gc;
+		if (!gameconfs->LoadGameConfigFile(name, &gc, buffer, sizeof(buffer)))
+		{
+			smutils->LogError(myself, "Could not read config file (%s) (%s)", name, buffer);
+			return {};
+		}
+		return AutoGameConfig(gc);
+	}
+
+protected:
+	AutoGameConfig(IGameConfig *gc) : gc_(gc) {}
+
+public:
+	AutoGameConfig() : gc_(nullptr) {}
+
+	AutoGameConfig(AutoGameConfig &&other) noexcept
+	{
+		gc_ = other.gc_;
+		other.gc_ = nullptr;
+	}
+	AutoGameConfig &operator=(AutoGameConfig &&other)
+	{
+		gc_ = other.gc_;
+		other.gc_ = nullptr;
+	}
+
+	AutoGameConfig(const AutoGameConfig &other) = delete;
+	AutoGameConfig &operator=(const AutoGameConfig &other) = delete;
+
+	~AutoGameConfig()
+	{
+		Destroy();
+	}
+
+	void Destroy() noexcept
+	{
+		if (gc_ != nullptr)
+		{
+			gameconfs->CloseGameConfigFile(gc_);
+			gc_ = nullptr;
+		}
+	}
+
+	operator IGameConfig *() const noexcept
+	{
+		return gc_;
+	}
+
+	IGameConfig *operator->() const noexcept
+	{
+		return gc_;
+	}
+
+private:
+	IGameConfig *gc_;
+};
+
+#define GAMECONF_GETADDRESS(conf, key, var)                                      \
+	do                                                                           \
+	{                                                                            \
+		if (!conf->GetAddress(key, (void **)var))                                \
+		{                                                                        \
+			ke::SafeStrcpy(error, maxlen, "Unable to find address (" key ")\n"); \
+			return false;                                                        \
+		}                                                                        \
+	} while (false)
+
+#define GAMECONF_GETOFFSET(conf, key, var)                                      \
+	do                                                                          \
+	{                                                                           \
+		if (!conf->GetOffset(key, (void **)var))                                \
+		{                                                                       \
+			ke::SafeStrcpy(error, maxlen, "Unable to find offset (" key ")\n"); \
+			return false;                                                       \
+		}                                                                       \
+	} while (false)
+
+#define GAMECONF_GETSIGNATURE(conf, key, var)                                      \
+	do                                                                             \
+	{                                                                              \
+		if (!conf->GetMemSig(key, (void **)var))                                   \
+		{                                                                          \
+			ke::SafeStrcpy(error, maxlen, "Unable to find signature (" key ")\n"); \
+			return false;                                                          \
+		}                                                                          \
+	} while (false)
+
 inline edict_t *UTIL_EdictOfIndex(int index)
 {
 	if (index < 0 || index >= MAX_EDICTS)
@@ -42,27 +132,39 @@ inline edict_t *UTIL_EdictOfIndex(int index)
 	return gamehelpers->EdictOfIndex(index);
 }
 
-inline bool IsPropValid(const SendProp *prop, PropType type)
+extern CGlobalVars *gpGlobals;
+inline CBaseEntity *FindEntityByNetClass(int start, const char *classname)
 {
-	switch (type)
+	if (gpGlobals == nullptr)
+		return nullptr;
+
+	int maxEntities = gpGlobals->maxEntities;
+	for (int i = start; i < maxEntities; i++)
 	{
-	case PropType::Prop_Int:
-		return prop->GetType() == DPT_Int;
+		CBaseEntity *pEntity = gamehelpers->ReferenceToEntity(i);
+		if (pEntity == nullptr)
+		{
+			continue;
+		}
 
-	case PropType::Prop_EHandle:
-		return prop->GetType() == DPT_Int && prop->m_nBits == NUM_NETWORKED_EHANDLE_BITS;
+		IServerNetworkable* pNetwork = ((IServerUnknown *)pEntity)->GetNetworkable();
+		if (pNetwork == nullptr)
+		{
+			continue;
+		}
 
-	case PropType::Prop_Float:
-		return prop->GetType() == DPT_Float;
+		ServerClass *pServerClass = pNetwork->GetServerClass();
+		if (pServerClass == nullptr)
+		{
+			continue;
+		}
 
-	case PropType::Prop_Vector:
-		return prop->GetType() == DPT_Vector || prop->GetType() == DPT_VectorXY;
-
-	case PropType::Prop_String:
-		return prop->GetType() == DPT_String;
+		const char *name = pServerClass->GetName();
+		if (!strcmp(name, classname))
+		{
+			return pEntity;
+		}
 	}
 
-	return false;
+	return nullptr;
 }
-
-#endif

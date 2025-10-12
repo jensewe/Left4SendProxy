@@ -51,42 +51,6 @@ IBinTools* bintools = nullptr;
 ISDKHooks * sdkhooks = nullptr;
 ConVar *sv_parallel_packentities = nullptr;
 
-class AutoSMGameConfig
-{
-public:
-	static std::optional<AutoSMGameConfig> Load(const char* name)
-	{
-		char error[256];
-		IGameConfig *gc = nullptr;
-		if (!gameconfs->LoadGameConfigFile(name, &gc, error, sizeof(error)))
-		{
-			smutils->LogError(myself, "Could not read config file sdktools.games.txt: %s", error);
-			return {};
-		}
-		return gc;
-	}
-
-public:
-	AutoSMGameConfig() noexcept: gc_(nullptr) { }
-	AutoSMGameConfig(IGameConfig *gc) noexcept: gc_(gc) { }
-	~AutoSMGameConfig()
-	{
-		if (gc_ != nullptr)
-			gameconfs->CloseGameConfigFile(gc_);
-	}
-	operator IGameConfig*() const noexcept
-	{
-		return gc_;
-	}
-	IGameConfig* operator->() const noexcept
-	{
-		return gc_;
-	}
-
-private:
-	IGameConfig *gc_;
-};
-
 CFrameSnapshotManager* framesnapshotmanager = nullptr;
 void* CFrameSnapshotManager::s_pfnCreateEmptySnapshot = nullptr;
 ICallWrapper* CFrameSnapshotManager::s_callCreateEmptySnapshot = nullptr;
@@ -95,43 +59,22 @@ ICallWrapper* CFrameSnapshotManager::s_callRemoveEntityReference = nullptr;
 void* CFrameSnapshot::s_pfnReleaseReference = nullptr;
 ICallWrapper *CFrameSnapshot::s_callReleaseReference = nullptr;
 
-bool SendProxyManager::SDK_OnLoad(char *error, size_t maxlength, bool late)
+bool SendProxyManager::SDK_OnLoad(char *error, size_t maxlen, bool late)
 {
-	auto gc_sdktools = AutoSMGameConfig::Load("sdktools.games");
-	auto gc = AutoSMGameConfig::Load("sendproxy");
+	auto gc_sdktools = *AutoGameConfig::Load("sdktools.games");
+	auto gc = *AutoGameConfig::Load("sendproxy");
 	if (!gc_sdktools || !gc)
 		return false;
 
-	g_szGameRulesProxy = gc_sdktools.value()->GetKeyValue("GameRulesProxy");
+	g_szGameRulesProxy = gc_sdktools->GetKeyValue("GameRulesProxy");
 
-	if (!gc.value()->GetMemSig("CFrameSnapshotManager::CreateEmptySnapshot", &CFrameSnapshotManager::s_pfnCreateEmptySnapshot))
-	{
-		ke::SafeSprintf(error, maxlength, "Unable to find signature address ""\"CFrameSnapshotManager::CreateEmptySnapshot\"""");
-		return false;
-	}
+	GAMECONF_GETSIGNATURE(gc, "CFrameSnapshotManager::CreateEmptySnapshot", &CFrameSnapshotManager::s_pfnCreateEmptySnapshot);
+	GAMECONF_GETSIGNATURE(gc, "CFrameSnapshotManager::RemoveEntityReference", &CFrameSnapshotManager::s_pfnRemoveEntityReference);
+	GAMECONF_GETSIGNATURE(gc, "CFrameSnapshot::ReleaseReference", &CFrameSnapshot::s_pfnReleaseReference);
+	GAMECONF_GETADDRESS(gc, "framesnapshotmanager", &framesnapshotmanager);
 
-	if (!gc.value()->GetMemSig("CFrameSnapshotManager::RemoveEntityReference", &CFrameSnapshotManager::s_pfnRemoveEntityReference))
-	{
-		ke::SafeSprintf(error, maxlength, "Unable to find signature address ""\"CFrameSnapshotManager::RemoveEntityReference\"""");
+	if (!ClientPacksDetour::Init(gc))
 		return false;
-	}
-
-	if (!gc.value()->GetMemSig("CFrameSnapshot::ReleaseReference", &CFrameSnapshot::s_pfnReleaseReference))
-	{
-		ke::SafeSprintf(error, maxlength, "Unable to find signature address ""\"CFrameSnapshot::ReleaseReference\"""");
-		return false;
-	}
-
-	if (!gc.value()->GetAddress("framesnapshotmanager", (void**)&framesnapshotmanager))
-	{
-		ke::SafeSprintf(error, maxlength, "Unable to find address (framesnapshotmanager)");
-		return false;
-	}
-
-	if (!ClientPacksDetour::Init(gc.value()))
-	{
-		return false;
-	}
 
 	if (late) //if we loaded late, we need manually to call that
 		OnCoreMapStart(nullptr, 0, 0);
@@ -302,39 +245,6 @@ bool SendProxyManager::SDK_OnMetamodLoad(ISmmAPI *ismm, char *error, size_t maxl
 void SendProxyManager::OnPluginUnloaded(IPlugin * plugin)
 {
 	g_pSendPropHookManager->OnPluginUnloaded(plugin);
-}
-
-static CBaseEntity *FindEntityByNetClass(int start, const char *classname)
-{
-	int maxEntities = gpGlobals->maxEntities;
-	for (int i = start; i < maxEntities; i++)
-	{
-		CBaseEntity *pEntity = gamehelpers->ReferenceToEntity(i);
-		if (pEntity == nullptr)
-		{
-			continue;
-		}
-
-		IServerNetworkable* pNetwork = ((IServerUnknown *)pEntity)->GetNetworkable();
-		if (pNetwork == nullptr)
-		{
-			continue;
-		}
-
-		ServerClass *pServerClass = pNetwork->GetServerClass();
-		if (pServerClass == nullptr)
-		{
-			continue;
-		}
-
-		const char *name = pServerClass->GetName();
-		if (!strcmp(name, classname))
-		{
-			return pEntity;
-		}
-	}
-
-	return nullptr;
 }
 
 CBaseEntity* GetGameRulesProxyEnt()
