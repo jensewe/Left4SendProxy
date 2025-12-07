@@ -33,5 +33,7 @@ for sdk_name in Extension.sdks:
   sdk = Extension.sdks[sdk_name]
   
   binary = Extension.HL2Config(project, projectName + '.ext.' + sdk.ext, sdk)
+  # Memory management via g_pMemAlloc
+  binary.sources += [os.path.join(sdk.path, 'public', 'tier0', 'memoverride.cpp')]
 
 Extension.extensions = builder.Add(project)
