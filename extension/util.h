@@ -9,19 +9,19 @@
 		return false; \
 	}
 
-class ConVarSaveSet
+class ConVarScopedSet
 {
 public:
-	explicit ConVarSaveSet(ConVar *cvar, const char *value)
+	explicit ConVarScopedSet(ConVar *cvar, const char *value)
 		: m_cvar(cvar), m_savevalue(m_cvar->GetString())
 	{
 		m_cvar->SetValue(value);
 	}
 
-	ConVarSaveSet() = delete;
-	ConVarSaveSet(const ConVarSaveSet &other) = delete;
+	ConVarScopedSet() = delete;
+	ConVarScopedSet(const ConVarScopedSet &other) = delete;
 
-	~ConVarSaveSet()
+	~ConVarScopedSet()
 	{
 		m_cvar->SetValue(m_savevalue.data());
 	}
@@ -61,6 +61,7 @@ public:
 	{
 		gc_ = other.gc_;
 		other.gc_ = nullptr;
+		return *this;
 	}
 
 	AutoGameConfig(const AutoGameConfig &other) = delete;
