@@ -75,14 +75,6 @@
 									// Search string "Sending full update to Client %s (%s)", the called function with arg2 is 2048
 			}
 
-			"CFrameSnapshotManager::TakeTickSnapshot"
-			{
-				"library"			"engine"
-				"linux"				"@_ZN21CFrameSnapshotManager16TakeTickSnapshotEi"
-				"windows"			"\x55\x8B\xEC\xB8\x10\x10\x00\x00\xE8\x2A\x2A\x2A\x2A\xA1\x2A\x2A\x2A\x2A\x33\xC5\x89\x45\xFC\x8B\x15"
-									// 55 8B EC B8 10 10 00 00 E8 ? ? ? ? A1 ? ? ? ? 33 C5 89 45 FC 8B 15
-			}
-
 			"CFrameSnapshotManager::RemoveEntityReference"
 			{
 				"library"			"engine"

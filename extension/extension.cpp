@@ -49,8 +49,8 @@ ISDKHooks * sdkhooks = nullptr;
 ConVar *sv_parallel_packentities = nullptr;
 
 CFrameSnapshotManager* framesnapshotmanager = nullptr;
-void* CFrameSnapshotManager::s_pfnTakeTickSnapshot = nullptr;
-ICallWrapper* CFrameSnapshotManager::s_callTakeTickSnapshot = nullptr;
+void* CFrameSnapshotManager::s_pfnCreateEmptySnapshot = nullptr;
+ICallWrapper* CFrameSnapshotManager::s_callCreateEmptySnapshot = nullptr;
 void* CFrameSnapshotManager::s_pfnRemoveEntityReference = nullptr;
 ICallWrapper* CFrameSnapshotManager::s_callRemoveEntityReference = nullptr;
 void* CFrameSnapshot::s_pfnReleaseReference = nullptr;
@@ -65,7 +65,7 @@ bool SendProxyManager::SDK_OnLoad(char *error, size_t maxlen, bool late)
 
 	g_szGameRulesProxy = gc_sdktools->GetKeyValue("GameRulesProxy");
 
-	GAMECONF_GETSIGNATURE(gc, "CFrameSnapshotManager::TakeTickSnapshot", &CFrameSnapshotManager::s_pfnTakeTickSnapshot);
+	GAMECONF_GETSIGNATURE(gc, "CFrameSnapshotManager::CreateEmptySnapshot", &CFrameSnapshotManager::s_pfnCreateEmptySnapshot);
 	GAMECONF_GETSIGNATURE(gc, "CFrameSnapshotManager::RemoveEntityReference", &CFrameSnapshotManager::s_pfnRemoveEntityReference);
 	GAMECONF_GETSIGNATURE(gc, "CFrameSnapshot::ReleaseReference", &CFrameSnapshot::s_pfnReleaseReference);
 	GAMECONF_GETADDRESS(gc, "framesnapshotmanager", &framesnapshotmanager);
@@ -110,9 +110,9 @@ void SendProxyManager::SDK_OnAllLoaded()
 			return;
 		}
 
-		CFrameSnapshotManager::s_callTakeTickSnapshot = bintools->CreateCall(CFrameSnapshotManager::s_pfnTakeTickSnapshot, CallConv_ThisCall, &params[2], &params[0], 2);
-		if (CFrameSnapshotManager::s_callTakeTickSnapshot == NULL) {
-			smutils->LogError(myself, "Unable to create ICallWrapper for \"CFrameSnapshotManager::TakeTickSnapshot\"!");
+		CFrameSnapshotManager::s_callCreateEmptySnapshot = bintools->CreateCall(CFrameSnapshotManager::s_pfnCreateEmptySnapshot, CallConv_ThisCall, &params[2], &params[0], 2);
+		if (CFrameSnapshotManager::s_callCreateEmptySnapshot == NULL) {
+			smutils->LogError(myself, "Unable to create ICallWrapper for \"CFrameSnapshotManager::CreateEmptySnapshot\"!");
 			return;
 		}
 
@@ -186,10 +186,10 @@ void SendProxyManager::SDK_OnUnload()
 		CFrameSnapshot::s_callReleaseReference = nullptr;
 	}
 
-	if (CFrameSnapshotManager::s_callTakeTickSnapshot != nullptr)
+	if (CFrameSnapshotManager::s_callCreateEmptySnapshot != nullptr)
 	{
-		CFrameSnapshotManager::s_callTakeTickSnapshot->Destroy();
-		CFrameSnapshotManager::s_callTakeTickSnapshot = nullptr;
+		CFrameSnapshotManager::s_callCreateEmptySnapshot->Destroy();
+		CFrameSnapshotManager::s_callCreateEmptySnapshot = nullptr;
 	}
 
 	if (CFrameSnapshotManager::s_callRemoveEntityReference != nullptr)

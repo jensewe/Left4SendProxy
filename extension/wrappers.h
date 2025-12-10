@@ -221,17 +221,18 @@ class CFrameSnapshotManager
 public:
 	virtual ~CFrameSnapshotManager( void );
 
-	static void* s_pfnTakeTickSnapshot;
-	static ICallWrapper* s_callTakeTickSnapshot;
-	inline CFrameSnapshot* TakeTickSnapshot(int tickcount)
+	static void* s_pfnCreateEmptySnapshot;
+	static ICallWrapper* s_callCreateEmptySnapshot;
+	inline CFrameSnapshot* CreateEmptySnapshot(int tickcount, int maxEntities)
 	{
 		struct {
 			CFrameSnapshotManager *pThis;
 			int tickcount;
-		} stack{ this, tickcount };
+			int maxEntities;
+		} stack{ this, tickcount, maxEntities };
 
 		CFrameSnapshot *ret;
-		s_callTakeTickSnapshot->Execute(&stack, &ret);
+		s_callCreateEmptySnapshot->Execute(&stack, &ret);
 		return ret;
 	}
 

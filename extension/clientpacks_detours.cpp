@@ -123,7 +123,7 @@ DETOUR_DECL_STATIC3(SV_ComputeClientPacks, void, int, iClientCount, CGameClient 
 	clientSnapshots[0] = pSnapShot;
 	for (int i = 1; i < iClientCount; ++i)
 	{
-		clientSnapshots[i] = framesnapshotmanager->TakeTickSnapshot(pSnapShot->m_nTickCount);
+		clientSnapshots[i] = framesnapshotmanager->CreateEmptySnapshot(pSnapShot->m_nTickCount, pSnapShot->m_nNumEntities);
 		CopyFrameSnapshot(clientSnapshots[i], pSnapShot);
 	}
 
@@ -287,8 +287,16 @@ static void CopyFrameSnapshot(CFrameSnapshot *dest, const CFrameSnapshot *src)
 	Assert(dest->m_nNumEntities == src->m_nNumEntities);
 	Q_memcpy(dest->m_pEntities, src->m_pEntities, dest->m_nNumEntities * sizeof(CFrameSnapshotEntry));
 
-	Assert(dest->m_nValidEntities == src->m_nValidEntities);
+	dest->m_nValidEntities = src->m_nValidEntities;
+	dest->m_pValidEntities = new unsigned short[dest->m_nValidEntities];
 	Q_memcpy(dest->m_pValidEntities, src->m_pValidEntities, dest->m_nValidEntities * sizeof(unsigned short));
+
+	if (src->m_pHLTVEntityData != NULL)
+	{
+		Assert(dest->m_pHLTVEntityData == NULL);
+		dest->m_pHLTVEntityData = new CHLTVEntityData[dest->m_nValidEntities];
+		Q_memset( dest->m_pHLTVEntityData, 0, dest->m_nValidEntities * sizeof(CHLTVEntityData) );
+	}
 
 	dest->m_iExplicitDeleteSlots = src->m_iExplicitDeleteSlots;
 
