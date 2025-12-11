@@ -17,14 +17,17 @@ jobs:
           - os: windows-latest
             os_short: win
             compiler_cc: msvc
+            dbgopt: 
           - os: ubuntu-latest
             os_short: linux
             compiler_cc: clang
             compiler_cxx: clang++
+            dbgopt: --enable-debug
           - os: ubuntu-22.04
             os_short: oldlinux
             compiler_cc: clang-14
             compiler_cxx: clang++-14
+            dbgopt: --enable-debug
       fail-fast: false
 
     name: Build Project ${{ matrix.os_short }}
@@ -125,7 +128,7 @@ jobs:
             --mms-path="${{ github.workspace }}/alliedmodders/mmsource-1.10" \
             --sdks=${{ join(fromJSON(env.SDKS)) }} \
             --enable-optimize \
-            --enable-debug
+            ${{ matrix.dbgopt }}
           ambuild
 
       - name: Copy to addons directory
