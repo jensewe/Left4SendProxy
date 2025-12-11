@@ -34,3 +34,4 @@
 .vscode/*.*
 
 extension/build/*
+build/*

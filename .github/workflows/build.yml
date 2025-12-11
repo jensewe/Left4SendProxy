@@ -82,11 +82,12 @@ jobs:
         run: |
           python -m pip install --upgrade pip setuptools wheel
   
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-        with:
-          path: src
-  
+      - name: Install AMBuild
+        working-directory: alliedmodders
+        run: |
+          git clone https://github.com/alliedmodders/ambuild
+          pip install ./ambuild
+
       - name: Prepare Alliedmodders Directory
         shell: bash
         run: |
@@ -109,17 +110,15 @@ jobs:
         run: |
           git clone https://github.com/alliedmodders/metamod-source mmsource-1.10 -b 1.10-dev
 
-      - name: Install AMBuild
-        working-directory: alliedmodders
-        run: |
-          git clone https://github.com/alliedmodders/ambuild
-          pip install ./ambuild
-
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          path: src
+  
       - name: Run AMBuild
         working-directory: src
         shell: bash
         run: |
-          cd extension
           mkdir build
           cd build
           python ../configure.py \
@@ -131,14 +130,8 @@ jobs:
             ${{ matrix.dbgopt }}
           ambuild
 
-      - name: Copy to addons directory
-        working-directory: src
-        shell: bash
-        run: |
-          cp -r extension/build/package/addons/sourcemod/extensions addons/sourcemod
-
       - name: Upload Binary (Package)
         uses: actions/upload-artifact@v4
         with:
-          name: sendproxy-${{ matrix.os_short }}
-          path: src/addons
+          name: sendproxy-${{ matrix.os_short }}-${{ env.GITHUB_SHA_SHORT }}
+          path: src/build/package
