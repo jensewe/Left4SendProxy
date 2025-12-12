@@ -115,12 +115,14 @@ jobs:
 
       - name: Setup HL2SDK Manifest Environment
         if: ${{ !matrix.hl2sdk_manifest_prepare }}
+        shell: bash
         run: |
           echo "HL2SDKMANIFEST=${{ github.workspace }}/alliedmodders/sourcemod/hl2sdk-manifests" >> $GITHUB_ENV
 
       - name: Prepare HL2SDK Manifest
         working-directory: alliedmodders
         if: matrix.hl2sdk_manifest_prepare
+        shell: bash
         run: |
           git clone https://github.com/alliedmodders/hl2sdk-manifests hl2sdk-manifests
           echo "HL2SDKMANIFEST=${{ github.workspace }}/alliedmodders/hl2sdk-manifests" >> $GITHUB_ENV

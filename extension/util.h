@@ -9,6 +9,38 @@
 		return false; \
 	}
 
+#define DECL_DETOUR(name) \
+	CDetour *name##_Detour = nullptr;
+
+#define CREATE_DETOUR(name, signname, var) \
+	name##_Detour = DETOUR_CREATE_MEMBER(name, signname); \
+	if (name##_Detour != NULL) \
+	{ \
+		name##_Detour->EnableDetour(); \
+		var &= true; \
+	} else { \
+		g_pSM->LogError(myself, "Failed to create " signname " detour, check error log.\n"); \
+		var = false; \
+	}
+
+#define CREATE_DETOUR_STATIC(name, signname, var) \
+	name##_Detour = DETOUR_CREATE_STATIC(name, signname); \
+	if (name##_Detour != NULL) \
+	{ \
+		name##_Detour->EnableDetour(); \
+		var &= true; \
+	} else { \
+		g_pSM->LogError(myself, "Failed to create " signname " detour, check error log.\n"); \
+		var = false; \
+	}
+
+#define DESTROY_DETOUR(name) \
+	if (name##_Detour != nullptr) \
+{ \
+	name##_Detour->Destroy(); \
+	name##_Detour = nullptr; \
+}
+
 class ConVarScopedSet
 {
 public:

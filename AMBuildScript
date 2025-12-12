@@ -341,7 +341,7 @@ class ExtensionConfig(object):
     return binary
 
   def AddCxxCompat(self, binary):
-    if binary.compiler.target.platform == 'linux':
+    if binary.compiler.target.platform == 'linux' and os.path.exists( os.path.join(self.sm_root, 'public', 'amtl', 'compat', 'stdcxx.cpp') ):
       binary.sources += [
         os.path.join(self.sm_root, 'public', 'amtl', 'compat', 'stdcxx.cpp'),
       ]
