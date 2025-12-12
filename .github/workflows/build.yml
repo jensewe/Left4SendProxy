@@ -42,7 +42,7 @@ jobs:
             
       fail-fast: false
 
-    name: Build Project ${{ matrix.os_short }}
+    name: Build ${{ matrix.os_short }}-${{ matrix.sm_branch }}
     runs-on: ${{ matrix.os }}
     env:
       SDKS: '["l4d","l4d2"]'
@@ -94,16 +94,16 @@ jobs:
         run: |
           python -m pip install --upgrade pip setuptools wheel
   
+      - name: Prepare Alliedmodders Directory
+        shell: bash
+        run: |
+          mkdir alliedmodders
+
       - name: Install AMBuild
         working-directory: alliedmodders
         run: |
           git clone https://github.com/alliedmodders/ambuild
           pip install ./ambuild
-
-      - name: Prepare Alliedmodders Directory
-        shell: bash
-        run: |
-          mkdir alliedmodders
 
       - name: Prepare Sourcemod
         working-directory: alliedmodders
