@@ -7,8 +7,6 @@ projectName = 'sendproxy'
 sourceFiles = [
   'sdk/memoverride.cpp',
   'extension.cpp',
-  'CDetour/detours.cpp',
-  'asm/asm.c',
   'natives.cpp',
   'clientpacks_detours.cpp',
   'sendproxy_callback.cpp',
@@ -36,5 +34,6 @@ for sdk_name in Extension.sdks:
       continue
 
     binary = Extension.HL2ExtConfig(project, builder, cxx, projectName + '.ext.' + sdk['extension'], sdk)
+    Extension.AddCDetour(binary)
 
 Extension.extensions += builder.Add(project)
