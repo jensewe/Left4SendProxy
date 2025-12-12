@@ -361,6 +361,7 @@ class ExtensionConfig(object):
       raise Exception('No suitable build of safetyhook was found.')
     elif os.path.exists( os.path.join(sm_public_path, 'asm') ) and os.path.exists( os.path.join(sm_public_path, 'libudis86') ):
       # sm1.10+
+      binary.compiler.includes += [ sm_public_path ]
       binary.sources += [ os.path.join(sm_public_path, 'asm', 'asm.c') ]
       libudis_folder = os.path.join(sm_public_path, 'libudis86')
       if os.path.isdir(libudis_folder):
