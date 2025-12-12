@@ -33,16 +33,19 @@ jobs:
           - sm_version: sm1.11
             sm_branch: 1.11-dev
             mm_branch: 1.10-dev
+            hl2sdk_manifest_prepare: true
           - sm_version: sm1.12
             sm_branch: 1.12-dev
             mm_branch: 1.12-dev
+            hl2sdk_manifest_prepare: false
           - sm_version: smlatest
             sm_branch: master
             mm_branch: 1.12-dev
+            hl2sdk_manifest_prepare: false
             
       fail-fast: false
 
-    name: Build ${{ matrix.os_short }}-${{ matrix.sm_branch }}
+    name: Build ${{ matrix.os_short }}-${{ matrix.sm_version }}
     runs-on: ${{ matrix.os }}
     env:
       SDKS: '["l4d","l4d2"]'
@@ -108,7 +111,19 @@ jobs:
       - name: Prepare Sourcemod
         working-directory: alliedmodders
         run: |
-          git clone --recursive https://github.com/alliedmodders/sourcemod -b ${{ matrix.sm_branch }}
+          git clone --recursive https://github.com/alliedmodders/sourcemod sourcemod -b ${{ matrix.sm_branch }}
+
+      - name: Setup HL2SDK Manifest Environment
+        if: ${{ !matrix.hl2sdk_manifest_prepare }}
+        run: |
+          echo "HL2SDKMANIFEST=${{ github.workspace }}/alliedmodders/sourcemod/hl2sdk-manifests" >> $GITHUB_ENV
+
+      - name: Prepare HL2SDK Manifest
+        working-directory: alliedmodders
+        if: matrix.hl2sdk_manifest_prepare
+        run: |
+          git clone https://github.com/alliedmodders/hl2sdk-manifests hl2sdk-manifests
+          echo "HL2SDKMANIFEST=${{ github.workspace }}/alliedmodders/hl2sdk-manifests" >> $GITHUB_ENV
 
       - name: Prepare L4D SDK
         working-directory: alliedmodders
@@ -120,7 +135,7 @@ jobs:
       - name: Prepare Metamod Source
         working-directory: alliedmodders
         run: |
-          git clone https://github.com/alliedmodders/metamod-source mmsource-1.10 -b ${{ matrix.mm_branch }}
+          git clone https://github.com/alliedmodders/metamod-source metamod-source -b ${{ matrix.mm_branch }}
 
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -136,7 +151,7 @@ jobs:
           python ../configure.py \
             --hl2sdk-root="${{ github.workspace }}/alliedmodders" \
             --sm-path="${{ github.workspace }}/alliedmodders/sourcemod" \
-            --mms-path="${{ github.workspace }}/alliedmodders/mmsource-1.10" \
+            --mms-path="${{ github.workspace }}/alliedmodders/metamod-source" \
             --sdks=${{ join(fromJSON(env.SDKS)) }} \
             --enable-optimize \
             ${{ matrix.dbgopt }}
