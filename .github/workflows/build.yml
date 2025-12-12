@@ -13,6 +13,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-22.04, ubuntu-latest, windows-latest]
+        sm_version: [sm1.11, sm1.12, smlatest]
         include:
           - os: windows-latest
             os_short: win
@@ -28,6 +29,17 @@ jobs:
             compiler_cc: clang-14
             compiler_cxx: clang++-14
             dbgopt: --enable-debug
+          
+          - sm_version: sm1.11
+            sm_branch: 1.11-dev
+            mm_branch: 1.10-dev
+          - sm_version: sm1.12
+            sm_branch: 1.12-dev
+            mm_branch: 1.12-dev
+          - sm_version: smlatest
+            sm_branch: master
+            mm_branch: 1.12-dev
+            
       fail-fast: false
 
     name: Build Project ${{ matrix.os_short }}
@@ -96,7 +108,7 @@ jobs:
       - name: Prepare Sourcemod
         working-directory: alliedmodders
         run: |
-          git clone --recursive https://github.com/alliedmodders/sourcemod -b 1.11-dev
+          git clone --recursive https://github.com/alliedmodders/sourcemod -b ${{ matrix.sm_branch }}
 
       - name: Prepare L4D SDK
         working-directory: alliedmodders
@@ -108,7 +120,7 @@ jobs:
       - name: Prepare Metamod Source
         working-directory: alliedmodders
         run: |
-          git clone https://github.com/alliedmodders/metamod-source mmsource-1.10 -b 1.10-dev
+          git clone https://github.com/alliedmodders/metamod-source mmsource-1.10 -b ${{ matrix.mm_branch }}
 
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -133,5 +145,5 @@ jobs:
       - name: Upload Binary (Package)
         uses: actions/upload-artifact@v4
         with:
-          name: sendproxy-${{ matrix.os_short }}-${{ env.GITHUB_SHA_SHORT }}
+          name: sendproxy-${{ matrix.os_short }}-${{ matrix.sm_branch }}-${{ env.GITHUB_SHA_SHORT }}
           path: src/build/package
