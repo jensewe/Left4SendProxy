@@ -162,5 +162,5 @@ jobs:
       - name: Upload Binary (Package)
         uses: actions/upload-artifact@v4
         with:
-          name: sendproxy-${{ matrix.os_short }}-${{ matrix.sm_branch }}-${{ env.GITHUB_SHA_SHORT }}
+          name: sendproxy-${{ matrix.os_short }}-${{ matrix.sm_version }}-${{ env.GITHUB_SHA_SHORT }}
           path: src/build/package
