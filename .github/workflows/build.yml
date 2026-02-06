@@ -48,7 +48,7 @@ jobs:
     name: Build ${{ matrix.os_short }}-${{ matrix.sm_version }}
     runs-on: ${{ matrix.os }}
     env:
-      SDKS: '["l4d","l4d2"]'
+      SDKS: '["l4d2"]'
 
     steps:
       - name: Setup Environment
