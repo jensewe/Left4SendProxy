@@ -19,7 +19,7 @@
 		name##_Detour->EnableDetour(); \
 		var &= true; \
 	} else { \
-		g_pSM->LogError(myself, "Failed to create " signname " detour, check error log.\n"); \
+		LogError("Failed to create " signname " detour, check error log.\n"); \
 		var = false; \
 	}
 
@@ -30,7 +30,7 @@
 		name##_Detour->EnableDetour(); \
 		var &= true; \
 	} else { \
-		g_pSM->LogError(myself, "Failed to create " signname " detour, check error log.\n"); \
+		LogError("Failed to create " signname " detour, check error log.\n"); \
 		var = false; \
 	}
 
@@ -39,6 +39,18 @@
 { \
 	name##_Detour->Destroy(); \
 	name##_Detour = nullptr; \
+}
+
+template <typename ...Args>
+inline void LogMessage(const char *format, Args... args)
+{
+	g_pSM->LogMessage(myself, format, args...);
+}
+
+template <typename ...Args>
+inline void LogError(const char *format, Args... args)
+{
+	g_pSM->LogError(myself, format, args...);
 }
 
 class ConVarScopedSet
@@ -72,7 +84,7 @@ public:
 		IGameConfig *gc;
 		if (!gameconfs->LoadGameConfigFile(name, &gc, buffer, sizeof(buffer)))
 		{
-			smutils->LogError(myself, "Could not read config file (%s) (%s)", name, buffer);
+			LogError("Could not read config file (%s) (%s)", name, buffer);
 			return {};
 		}
 		return AutoGameConfig(gc);

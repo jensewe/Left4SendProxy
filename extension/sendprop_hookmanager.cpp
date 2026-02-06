@@ -203,7 +203,7 @@ void GlobalProxy(const SendProp *pProp, const void *pStructBase, const void * pD
 	Assert(pHook != nullptr);
 	if (!pHook)
 	{
-		g_pSM->LogError(myself, "FATAL: Leftover entity proxy %s", pProp->GetName());
+		LogError("FATAL: Leftover entity proxy %s", pProp->GetName());
 		return;
 	}
 
@@ -253,7 +253,7 @@ void GlobalProxy(const SendProp *pProp, const void *pStructBase, const void * pD
 		} else if (hook.type == PropType::Prop_EHandle) {
 			pEntHook->data = *reinterpret_cast<const CBaseHandle *>(pData);
 		} else {
-			g_pSM->LogError(myself, "%s: SendProxy report: Unknown prop type (%s).", __func__, pProp->GetName());
+			LogError("%s: SendProxy report: Unknown prop type (%s).", __func__, pProp->GetName());
 			continue;
 		}
 

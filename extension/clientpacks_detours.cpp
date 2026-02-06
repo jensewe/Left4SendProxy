@@ -98,6 +98,14 @@ DETOUR_DECL_STATIC3(SV_ComputeClientPacks, void, int, iClientCount, CGameClient 
 	 || !g_pSendPropHookManager->IsAnyEntityHooked()
 	 || *g_ppLocalNetworkBackdoor != nullptr)
 	{
+		static bool isLocalBackdoorEncountered = false;
+
+		if (!isLocalBackdoorEncountered && *g_ppLocalNetworkBackdoor != nullptr)
+		{
+			isLocalBackdoorEncountered = true;
+			LogError("SendProxy will NOT work in single player.");
+		}
+
 		return DETOUR_STATIC_CALL(SV_ComputeClientPacks)(iClientCount, pClients, pSnapShot);
 	}
 
@@ -277,7 +285,7 @@ void ClientPacksDetour::Shutdown()
 void ClientPacksDetour::Clear()
 {
 #ifdef DEBUG_SENDPROXY_MEMORY
-	g_pSM->LogMessage(myself, "=== PACKED ENTITIES COUNT (%d) ===", framesnapshotmanager->m_PackedEntities.Count());
+	LogMessage("=== PACKED ENTITIES COUNT (%d) ===", framesnapshotmanager->m_PackedEntities.Count());
 #endif
 
 	g_EntityPackMap.clear();

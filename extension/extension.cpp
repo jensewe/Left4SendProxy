@@ -109,19 +109,19 @@ void SendProxyManager::SDK_OnAllLoaded()
 
 		CFrameSnapshot::s_callReleaseReference = bintools->CreateCall(CFrameSnapshot::s_pfnReleaseReference, CallConv_ThisCall, NULL, params, 0);
 		if (CFrameSnapshot::s_callReleaseReference == NULL) {
-			smutils->LogError(myself, "Unable to create ICallWrapper for \"CFrameSnapshot::ReleaseReference\"!");
+			LogError("Unable to create ICallWrapper for \"CFrameSnapshot::ReleaseReference\"!");
 			return;
 		}
 
 		CFrameSnapshotManager::s_callCreateEmptySnapshot = bintools->CreateCall(CFrameSnapshotManager::s_pfnCreateEmptySnapshot, CallConv_ThisCall, &params[2], &params[0], 2);
 		if (CFrameSnapshotManager::s_callCreateEmptySnapshot == NULL) {
-			smutils->LogError(myself, "Unable to create ICallWrapper for \"CFrameSnapshotManager::CreateEmptySnapshot\"!");
+			LogError("Unable to create ICallWrapper for \"CFrameSnapshotManager::CreateEmptySnapshot\"!");
 			return;
 		}
 
 		CFrameSnapshotManager::s_callRemoveEntityReference = bintools->CreateCall(CFrameSnapshotManager::s_pfnRemoveEntityReference, CallConv_ThisCall, NULL, &params[3], 1);
 		if (CFrameSnapshotManager::s_callRemoveEntityReference == NULL) {
-			smutils->LogError(myself, "Unable to create ICallWrapper for \"CFrameSnapshotManager::RemoveEntityReference\"!");
+			LogError("Unable to create ICallWrapper for \"CFrameSnapshotManager::RemoveEntityReference\"!");
 			return;
 		}
 	}
