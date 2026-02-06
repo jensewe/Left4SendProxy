@@ -34,3 +34,5 @@
 .vscode/*.*
 
 extension/build/*
+build/*
+safetyhook/*

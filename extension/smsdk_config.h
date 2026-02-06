@@ -40,9 +40,9 @@
 /* Basic information exposed publicly */
 #define SMEXT_CONF_NAME			"SendProxy Manager"
 #define SMEXT_CONF_DESCRIPTION	"Change stuff without actually changing stuff!"
-#define SMEXT_CONF_VERSION		"1.3.3"
-#define SMEXT_CONF_AUTHOR		"afronanny & AlliedModders community"
-#define SMEXT_CONF_URL			"https://forums.alliedmods.net/showthread.php?t=169795"
+#define SMEXT_CONF_VERSION		"2.0.0"
+#define SMEXT_CONF_AUTHOR		"afronanny & AlliedModders community, Forgetest"
+#define SMEXT_CONF_URL			"https://github.com/jensewe/Left4SendProxy"
 #define SMEXT_CONF_LOGTAG		"SENDPROXY"
 #define SMEXT_CONF_LICENSE		"GPL"
 #define SMEXT_CONF_DATESTRING	__DATE__
@@ -77,6 +77,6 @@
 //#define SMEXT_ENABLE_USERMSGS
 //#define SMEXT_ENABLE_TRANSLATOR
 //#define SMEXT_ENABLE_NINVOKE
-#define SMEXT_ENABLE_ROOTCONSOLEMENU
+//#define SMEXT_ENABLE_ROOTCONSOLEMENU
 
 #endif // _INCLUDE_SOURCEMOD_EXTENSION_CONFIG_H_

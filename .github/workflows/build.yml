@@ -13,24 +13,42 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-22.04, ubuntu-latest, windows-latest]
+        sm_version: [sm1.11, sm1.12, smlatest]
         include:
           - os: windows-latest
             os_short: win
             compiler_cc: msvc
+            dbgopt: 
           - os: ubuntu-latest
             os_short: linux
             compiler_cc: clang
             compiler_cxx: clang++
+            dbgopt: --enable-debug
           - os: ubuntu-22.04
             os_short: oldlinux
             compiler_cc: clang-14
             compiler_cxx: clang++-14
+            dbgopt: --enable-debug
+          
+          - sm_version: sm1.11
+            sm_branch: 1.11-dev
+            mm_branch: 1.10-dev
+            hl2sdk_manifest_prepare: true
+          - sm_version: sm1.12
+            sm_branch: 1.12-dev
+            mm_branch: 1.12-dev
+            hl2sdk_manifest_prepare: false
+          - sm_version: smlatest
+            sm_branch: master
+            mm_branch: 1.12-dev
+            hl2sdk_manifest_prepare: false
+            
       fail-fast: false
 
-    name: Build Project ${{ matrix.os_short }}
+    name: Build ${{ matrix.os_short }}-${{ matrix.sm_version }}
     runs-on: ${{ matrix.os }}
     env:
-      SDKS: '["l4d","l4d2"]'
+      SDKS: '["l4d2"]'
 
     steps:
       - name: Setup Environment
@@ -72,27 +90,42 @@ jobs:
           )
             
       - uses: actions/setup-python@v5
-        name: Setup Python 3.8
+        name: Setup Python 3.12
         with:
-          python-version: 3.8
+          python-version: 3.12
       - name: Install Python dependencies
         run: |
           python -m pip install --upgrade pip setuptools wheel
-  
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-        with:
-          path: src
   
       - name: Prepare Alliedmodders Directory
         shell: bash
         run: |
           mkdir alliedmodders
 
+      - name: Install AMBuild
+        working-directory: alliedmodders
+        run: |
+          git clone https://github.com/alliedmodders/ambuild
+          pip install ./ambuild
+
       - name: Prepare Sourcemod
         working-directory: alliedmodders
         run: |
-          git clone --recursive https://github.com/alliedmodders/sourcemod -b 1.11-dev
+          git clone --recursive https://github.com/alliedmodders/sourcemod sourcemod -b ${{ matrix.sm_branch }}
+
+      - name: Setup HL2SDK Manifest Environment
+        if: ${{ !matrix.hl2sdk_manifest_prepare }}
+        shell: bash
+        run: |
+          echo "HL2SDKMANIFEST=${{ github.workspace }}/alliedmodders/sourcemod/hl2sdk-manifests" >> $GITHUB_ENV
+
+      - name: Prepare HL2SDK Manifest
+        working-directory: alliedmodders
+        if: matrix.hl2sdk_manifest_prepare
+        shell: bash
+        run: |
+          git clone https://github.com/alliedmodders/hl2sdk-manifests hl2sdk-manifests
+          echo "HL2SDKMANIFEST=${{ github.workspace }}/alliedmodders/hl2sdk-manifests" >> $GITHUB_ENV
 
       - name: Prepare L4D SDK
         working-directory: alliedmodders
@@ -104,36 +137,30 @@ jobs:
       - name: Prepare Metamod Source
         working-directory: alliedmodders
         run: |
-          git clone https://github.com/alliedmodders/metamod-source mmsource-1.10 -b 1.10-dev
+          git clone https://github.com/alliedmodders/metamod-source metamod-source -b ${{ matrix.mm_branch }}
 
-      - name: Install AMBuild
-        working-directory: alliedmodders
-        run: |
-          git clone https://github.com/alliedmodders/ambuild
-          pip install ./ambuild
-
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          path: src
+  
       - name: Run AMBuild
         working-directory: src
         shell: bash
         run: |
-          cd extension
           mkdir build
           cd build
           python ../configure.py \
             --hl2sdk-root="${{ github.workspace }}/alliedmodders" \
             --sm-path="${{ github.workspace }}/alliedmodders/sourcemod" \
-            --mms-path="${{ github.workspace }}/alliedmodders/mmsource-1.10" \
-            --sdks=${{ join(fromJSON(env.SDKS)) }}
+            --mms-path="${{ github.workspace }}/alliedmodders/metamod-source" \
+            --sdks=${{ join(fromJSON(env.SDKS)) }} \
+            --enable-optimize \
+            ${{ matrix.dbgopt }}
           ambuild
-
-      - name: Copy to addons directory
-        working-directory: src
-        shell: bash
-        run: |
-          cp -r extension/build/package/addons/sourcemod/extensions addons/sourcemod
 
       - name: Upload Binary (Package)
         uses: actions/upload-artifact@v4
         with:
-          name: sendproxy-${{ matrix.os_short }}
-          path: src
+          name: sendproxy-${{ matrix.os_short }}-${{ matrix.sm_version }}-${{ env.GITHUB_SHA_SHORT }}
+          path: src/build/package
