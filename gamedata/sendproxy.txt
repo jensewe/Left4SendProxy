@@ -17,6 +17,19 @@
 				}
 				"read"	"0"
 			}
+
+			"g_ppLocalNetworkBackdoor"
+			{
+				"linux"
+				{
+					"signature"		"g_pLocalNetworkBackdoor"
+				}
+				"windows"
+				{
+					"signature"		"SV_ComputeClientPacks"
+					"read" "331"
+				}
+			}
 		}
 
 		"Signatures"
@@ -25,6 +38,12 @@
 			{
 				"library"			"engine"
 				"linux"				"@framesnapshotmanager"
+			}
+
+			"g_pLocalNetworkBackdoor"
+			{
+				"library"			"engine"
+				"linux"				"@g_pLocalNetworkBackdoor"
 			}
 
 			"SV_ComputeClientPacks"
