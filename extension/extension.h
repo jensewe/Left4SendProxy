@@ -123,6 +123,7 @@ public: //IConCommandBaseAccessor
 extern SendProxyManager g_SendProxyManager;
 extern ConVar *sv_parallel_packentities;
 extern CFrameSnapshotManager *framesnapshotmanager;
+extern void **g_ppLocalNetworkBackdoor;
 
 CBaseEntity *GetGameRulesProxyEnt();
 

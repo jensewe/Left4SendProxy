@@ -33,8 +33,6 @@ std::unordered_map<int, PackedEntityInfo> g_EntityPackMap;
 
 ConVar ext_sendproxy_frame_callback("ext_sendproxy_frame_callback", "0", FCVAR_NONE, "Invoke hooked proxy every frame.");
 
-void **g_ppLocalNetworkBackdoor = nullptr;
-
 /*Call stack:
 	...
 	1. CGameServer::SendClientMessages //function we hooking to send props individually for each client
@@ -260,8 +258,6 @@ bool ClientPacksDetour::Init(IGameConfig *gc)
 	CREATE_DETOUR(CFrameSnapshotManager_CreatePackedEntity, "CFrameSnapshotManager::CreatePackedEntity", bDetoursInited);
 	CREATE_DETOUR_STATIC(PackEntities_Normal, "PackEntities_Normal", bDetoursInited);
 	CREATE_DETOUR_STATIC(SV_ComputeClientPacks, "SV_ComputeClientPacks", bDetoursInited);
-
-	GAMECONF_GETADDRESS(gc, "g_ppLocalNetworkBackdoor", &g_ppLocalNetworkBackdoor);
 	
 	if (!bDetoursInited)
 		return false;

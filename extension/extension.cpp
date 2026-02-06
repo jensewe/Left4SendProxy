@@ -56,6 +56,8 @@ ICallWrapper* CFrameSnapshotManager::s_callRemoveEntityReference = nullptr;
 void* CFrameSnapshot::s_pfnReleaseReference = nullptr;
 ICallWrapper *CFrameSnapshot::s_callReleaseReference = nullptr;
 
+void **g_ppLocalNetworkBackdoor = nullptr;
+
 bool SendProxyManager::SDK_OnLoad(char *error, size_t maxlen, bool late)
 {
 	auto gc_sdktools = *AutoGameConfig::Load("sdktools.games");
@@ -69,6 +71,7 @@ bool SendProxyManager::SDK_OnLoad(char *error, size_t maxlen, bool late)
 	GAMECONF_GETSIGNATURE(gc, "CFrameSnapshotManager::RemoveEntityReference", &CFrameSnapshotManager::s_pfnRemoveEntityReference);
 	GAMECONF_GETSIGNATURE(gc, "CFrameSnapshot::ReleaseReference", &CFrameSnapshot::s_pfnReleaseReference);
 	GAMECONF_GETADDRESS(gc, "framesnapshotmanager", &framesnapshotmanager);
+	GAMECONF_GETADDRESS(gc, "g_ppLocalNetworkBackdoor", &g_ppLocalNetworkBackdoor);
 
 	if (!ClientPacksDetour::Init(gc))
 		return false;
