@@ -55,15 +55,36 @@ static bool IsPropValid(const SendProp *prop, PropType type)
 	return false;
 }
 
+static ServerClass* FindEdictServerClass(edict_t *edict)
+{
+	if (IServerNetworkable *pNetwork = edict->GetNetworkable())
+	{
+		return pNetwork->GetServerClass();
+	}
+
+	if (IServerUnknown *pUnk = edict->GetUnknown())
+	{
+		if (IServerNetworkable *pNetwork = pUnk->GetNetworkable())
+			return pNetwork->GetServerClass();
+	}
+
+	if (const char* pClassname = gamehelpers->GetEntityClassname(edict))
+	{
+		return gamehelpers->FindServerClass(pClassname);
+	}
+
+	return nullptr;
+}
+
 void UTIL_FindSendProp(SendProp* &ret, IPluginContext *pContext, int index, const char* propname, bool checkType, PropType type, int element)
 {
 	edict_t *edict = UTIL_EdictOfIndex(index);
-	if (!edict)
+	if (!edict || edict->IsFree())
 		return pContext->ReportError("Invalid edict index (%d)", index);
 
-	ServerClass *sc = edict->GetNetworkable()->GetServerClass();
+	ServerClass *sc = FindEdictServerClass(edict);
 	if (!sc)
-		return pContext->ReportError("Cannot find ServerClass for entity %d", index);
+		return pContext->ReportError("Cannot find ServerClass for edict (%d)", index);
 
 	sm_sendprop_info_t info;
 	gamehelpers->FindSendPropInfo(sc->GetName(), propname, &info);
