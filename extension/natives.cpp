@@ -57,10 +57,14 @@ static bool IsPropValid(const SendProp *prop, PropType type)
 
 static ServerClass* FindEdictServerClass(edict_t *edict)
 {
-	if (IServerNetworkable *pNetwork = edict->GetNetworkable())
-	{
-		return pNetwork->GetServerClass();
-	}
+	// BUG: (See https://github.com/alliedmodders/hl2sdk/blob/72b927a0a4ee25c788148e6591ff859d1f81df65/game/server/baseentity.cpp#L403-L413)
+	//   gEntList.AddNetworkableEntity is called right before edict()->m_pNetworkable is set
+	//   which may lead to crashes if user establishes a hook in "OnEntityCreated".
+	//
+	// if (IServerNetworkable *pNetwork = edict->GetNetworkable())
+	// {
+	// 	return pNetwork->GetServerClass();
+	// }
 
 	if (IServerUnknown *pUnk = edict->GetUnknown())
 	{
