@@ -424,9 +424,10 @@ class SafetyHookShim(object):
 SafetyHook = SafetyHookShim()
 SafetyHookPath = os.path.join(Extension.sm_root, 'public', 'safetyhook')
 
-if os.path.exists(SafetyHookPath):
-  if os.path.exists( os.path.join('safetyhook', 'AMBuilder') ):
-    os.unlink(os.path.join('safetyhook', 'AMBuilder'))
+if os.path.exists(os.path.join(SafetyHookPath, 'AMBuilder')):
+  # Clear existing safetyhook and copy one from sourcemod
+  if os.path.exists(os.path.join('safetyhook')):
+    os.unlink(os.path.join('safetyhook'))
   shutil.copytree(SafetyHookPath, os.path.join(builder.sourcePath, 'safetyhook'), dirs_exist_ok = True)
 
   SafetyHook.all_targets = Extension.all_targets
