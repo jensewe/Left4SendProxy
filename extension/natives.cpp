@@ -55,15 +55,40 @@ static bool IsPropValid(const SendProp *prop, PropType type)
 	return false;
 }
 
+static ServerClass* FindEdictServerClass(edict_t *edict)
+{
+	// BUG: (See https://github.com/alliedmodders/hl2sdk/blob/72b927a0a4ee25c788148e6591ff859d1f81df65/game/server/baseentity.cpp#L403-L413)
+	//   gEntList.AddNetworkableEntity is called right before edict()->m_pNetworkable is set
+	//   which may lead to crashes if user establishes a hook in "OnEntityCreated".
+	//
+	// if (IServerNetworkable *pNetwork = edict->GetNetworkable())
+	// {
+	// 	return pNetwork->GetServerClass();
+	// }
+
+	if (IServerUnknown *pUnk = edict->GetUnknown())
+	{
+		if (IServerNetworkable *pNetwork = pUnk->GetNetworkable())
+			return pNetwork->GetServerClass();
+	}
+
+	if (const char* pClassname = gamehelpers->GetEntityClassname(edict))
+	{
+		return gamehelpers->FindServerClass(pClassname);
+	}
+
+	return nullptr;
+}
+
 void UTIL_FindSendProp(SendProp* &ret, IPluginContext *pContext, int index, const char* propname, bool checkType, PropType type, int element)
 {
 	edict_t *edict = UTIL_EdictOfIndex(index);
-	if (!edict)
+	if (!edict || edict->IsFree())
 		return pContext->ReportError("Invalid edict index (%d)", index);
 
-	ServerClass *sc = edict->GetNetworkable()->GetServerClass();
+	ServerClass *sc = FindEdictServerClass(edict);
 	if (!sc)
-		return pContext->ReportError("Cannot find ServerClass for entity %d", index);
+		return pContext->ReportError("Cannot find ServerClass for edict (%d)", index);
 
 	sm_sendprop_info_t info;
 	gamehelpers->FindSendPropInfo(sc->GetName(), propname, &info);
