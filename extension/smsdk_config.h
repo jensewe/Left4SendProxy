@@ -40,7 +40,7 @@
 /* Basic information exposed publicly */
 #define SMEXT_CONF_NAME			"SendProxy Manager"
 #define SMEXT_CONF_DESCRIPTION	"Change stuff without actually changing stuff!"
-#define SMEXT_CONF_VERSION		"2.0.0"
+#define SMEXT_CONF_VERSION		"2.0.1"
 #define SMEXT_CONF_AUTHOR		"afronanny & AlliedModders community, Forgetest"
 #define SMEXT_CONF_URL			"https://github.com/jensewe/Left4SendProxy"
 #define SMEXT_CONF_LOGTAG		"SENDPROXY"
