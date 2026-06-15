@@ -103,17 +103,19 @@ void UTIL_FindSendProp(SendProp* &ret, IPluginContext *pContext, int index, cons
 		if (!pProp)
 			return pContext->ReportError("Unexpected: Prop %s is an array but has no array prop", propname);
 		
-		if (element < 0 || element > info.prop->GetNumElements())
-			return pContext->ReportError("Unable to find element %d of prop %s", element, propname);
+		if (element < 0 || element >= info.prop->GetNumElements())
+			return pContext->ReportError("Element %d is out of bounds (Prop %s has %d elements)", element, propname, info.prop->GetNumElements());
 	}
 	else if (pProp->GetType() == DPT_DataTable)
 	{
-		if (!pProp->GetDataTable())
+		SendTable *table = pProp->GetDataTable();
+		if (!table)
 			return pContext->ReportError("Unexpected: Prop %s is a datatable but has no data table", propname);
 
-		pProp = pProp->GetDataTable()->GetProp(element);
-		if (!pProp)
-			return pContext->ReportError("Unable to find element %d of prop %s", element, propname);
+		if (element < 0 || element >= table->GetNumProps())
+			return pContext->ReportError("Element %d is out of bounds (Prop %s has %d elements)", element, propname, table->GetNumProps());
+
+		pProp = table->GetProp(element);
 	}
 
 	if (checkType && !IsPropValid(pProp, type))
