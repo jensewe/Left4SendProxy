@@ -293,10 +293,6 @@ public:
 
 extern CFrameSnapshotManager* framesnapshotmanager;
 
-#if SOURCE_ENGINE == SE_LEFT4DEAD || SOURCE_ENGINE == SE_LEFT4DEAD2
-constexpr int MAXPLAYERS = 32;
-#else
 constexpr int MAXPLAYERS = SM_MAXPLAYERS;
-#endif
 
 #endif
