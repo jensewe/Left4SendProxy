@@ -147,7 +147,7 @@ SendPropEntityInfo* SendPropHookManager::GetEntityHooks(int entity)
 std::shared_ptr<SendProxyHook> SendPropHookManager::GetPropHook(const SendProp *pProp)
 {
 	auto r = m_propHooks.find(pProp);
-	if (!r.found() || r->value.expired())
+	if (!r.found())
 		return nullptr;
 
 	return r->value.lock();
@@ -209,7 +209,7 @@ void GlobalProxy(const SendProp *pProp, const void *pStructBase, const void * pD
 
 	ProxyVariant *pOverride = nullptr;
 	TailInvoker finally(
-		[&]() -> void
+		[&, hook = std::move(pHook)]() -> void
 		{
 			if (pOverride) {
 				const void *pNewData = nullptr;
@@ -219,9 +219,9 @@ void GlobalProxy(const SendProp *pProp, const void *pStructBase, const void * pD
 					[&pNewData](const std::string &arg) { pNewData = arg.c_str(); },
 				}, *pOverride);
 
-				pHook->CallOriginal(pStructBase, pNewData, pOut, iElement, objectID);
+				hook->CallOriginal(pStructBase, pNewData, pOut, iElement, objectID);
 			} else {
-				pHook->CallOriginal(pStructBase, pData, pOut, iElement, objectID);
+				hook->CallOriginal(pStructBase, pData, pOut, iElement, objectID);
 			}
 		}
 	);
