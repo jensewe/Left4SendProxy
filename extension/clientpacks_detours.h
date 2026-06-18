@@ -12,7 +12,7 @@ public:
 	static int GetCurrentClientIndex();
 	static void OnEntityHooked(int entity);
 	static void OnEntityUnhooked(int entity);
-	static void OnClientDisconnect(int client);
+	static void OnClientDisconnected(int client);
 };
 
 #endif

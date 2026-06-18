@@ -31,8 +31,6 @@ struct PackedEntityInfo
 };
 std::unordered_map<int, PackedEntityInfo> g_EntityPackMap;
 
-ConVar ext_sendproxy_frame_callback("ext_sendproxy_frame_callback", "0", FCVAR_NONE, "Invoke hooked proxy every frame.");
-
 /*Call stack:
 	...
 	1. CGameServer::SendClientMessages //function we hooking to send props individually for each client
@@ -122,7 +120,7 @@ DETOUR_DECL_STATIC3(SV_ComputeClientPacks, void, int, iClientCount, CGameClient 
 			std::swap(pSnapShot->m_pValidEntities[i], pSnapShot->m_pValidEntities[tail]);
 			numHooked++;
 
-			if (gamehelpers->EdictOfIndex(entindex)->HasStateChanged() || ext_sendproxy_frame_callback.GetBool())
+			if (gamehelpers->EdictOfIndex(entindex)->HasStateChanged())
 				g_EntityPackMap.at(entindex).updatebits.set();
 		}
 	}
@@ -242,7 +240,7 @@ void ClientPacksDetour::OnEntityUnhooked(int entity)
 	framesnapshotmanager->m_pLastPackedData[entity] = INVALID_PACKED_ENTITY_HANDLE;
 }
 
-void ClientPacksDetour::OnClientDisconnect(int client)
+void ClientPacksDetour::OnClientDisconnected(int client)
 {
 	int index = client - 1;
 
@@ -253,6 +251,7 @@ void ClientPacksDetour::OnClientDisconnect(int client)
 			framesnapshotmanager->RemoveEntityReference(info.handles[index]);
 			info.handles[index] = INVALID_PACKED_ENTITY_HANDLE;
 		}
+		info.updatebits[index] = true;
 	}
 }
 
