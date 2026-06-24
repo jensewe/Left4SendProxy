@@ -33,14 +33,12 @@ bool SendProxyPluginCallback(void *callback, const SendProp *pProp, ProxyVariant
 
 	if (result == Pl_Changed)
 	{
-		bool intercept = true;
+		bool okay = true;
 
 		std::visit(overloaded {
-			[&variant](auto &arg) {
-				variant = arg;
-			},
+			[](auto &arg) { },
 
-			[func, iEntity, &intercept](CBaseHandle &arg) {
+			[func, iEntity, &okay](CBaseHandle &arg) {
 				if (iEntity == -1) {
 					arg.Term();
 				} else if (edict_t *edict = gamehelpers->EdictOfIndex(iEntity)) {
@@ -49,12 +47,16 @@ bool SendProxyPluginCallback(void *callback, const SendProp *pProp, ProxyVariant
 					func->GetParentRuntime()->GetDefaultContext()->BlamePluginError(
 						func, "Unexpected invalid edict index (%d)", iEntity);
 
-					intercept = false;
+					okay = false;
 				}
 			},
 		}, temp);
 
-		return intercept;
+		if (okay)
+		{
+			variant = temp;
+			return true;
+		}
 	}
 	
 	return false;
