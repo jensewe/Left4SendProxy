@@ -259,6 +259,7 @@ void GlobalProxy(const SendProp *pProp, const void *pStructBase, const void * pD
 
 		if (hook.fnProcess(hook.pCallback, pProp, pEntHook->data, hook.element, objectID, client))
 		{
+			gamehelpers->EdictOfIndex(objectID)->m_fStateFlags |= FL_EDICT_CHANGED;
 			pOverride = &pEntHook->data;
 			return;
 		}
