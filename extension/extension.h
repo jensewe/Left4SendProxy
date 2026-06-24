@@ -56,9 +56,9 @@ class SendProxyManager :
 	public ISMEntityListener
 {
 public:
-	virtual bool SDK_OnLoad(char * error, size_t maxlength, bool late);
-	virtual void SDK_OnUnload();
-	virtual void SDK_OnAllLoaded();
+	bool SDK_OnLoad(char * error, size_t maxlength, bool late) override;
+	void SDK_OnUnload() override;
+	void SDK_OnAllLoaded() override;
 
 	/**
 	 * @brief Asks the extension whether it's safe to remove an external
@@ -99,9 +99,9 @@ public:
 	
 public:
 #if defined SMEXT_CONF_METAMOD
-	virtual bool SDK_OnMetamodLoad(ISmmAPI * ismm, char * error, size_t maxlen, bool late);
-	//virtual bool SDK_OnMetamodUnload(char *error, size_t maxlength);
-	//virtual bool SDK_OnMetamodPauseChange(bool paused, char *error, size_t maxlength);
+	bool SDK_OnMetamodLoad(ISmmAPI * ismm, char * error, size_t maxlen, bool late) override;
+	//bool SDK_OnMetamodUnload(char *error, size_t maxlength) override;
+	//bool SDK_OnMetamodPauseChange(bool paused, char *error, size_t maxlength) override;
 #endif
 
 public: //SDKExtension
