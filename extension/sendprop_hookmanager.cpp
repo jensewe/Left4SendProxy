@@ -19,8 +19,6 @@ SendProxyHook::~SendProxyHook()
 
 SendPropHookManager::SendPropHookManager()
 {
-	m_propHooks.init();
-	m_entityInfos.init();
 }
 
 void SendPropHookManager::Clear()
@@ -32,75 +30,54 @@ void SendPropHookManager::Clear()
 
 void SendPropHookManager::RemoveHook(const SendProp *pProp)
 {
-	m_propHooks.removeIfExists(pProp);
+	m_propHooks.erase(pProp);
 }
 
 void SendPropHookManager::RemoveEntity(int entity, std::function<bool(const SendPropHook &)> pred)
 {
-	auto r = m_entityInfos.find(entity);
-	if (!r.found())
-		return;
+	if (auto&& it = m_entityInfos.find(entity); it != m_entityInfos.end())
+		RemoveEntityAt(it, pred);
+}
 
-	r->value.list.remove_if(pred);
+SendPropHookManager::SendPropEntityInfoMap::iterator
+SendPropHookManager::RemoveEntityAt(SendPropEntityInfoMap::iterator &it, std::function<bool(const SendPropHook &)> pred)
+{
+	auto &&[entity, info] = *it;
+	Assert(info != nullptr);
 
-	if (r->value.list.empty())
+	info->list.remove_if(pred);
+	if (info->list.empty())
 	{
 		OnEntityLeaveHook(entity);
-		m_entityInfos.remove(r);
+		return m_entityInfos.erase(it);
 	}
+	return ++it;
 }
 
-void SendPropHookManager::RemoveEntity(SendPropEntityInfoMap::iterator it, std::function<bool(const SendPropHook &)> pred)
+bool SendPropHookManager::HookEntity(int entity, SendProp *pProp, int element, PropType type, IPluginFunction *pFunc) noexcept
 {
-	it->value.list.remove_if(pred);
+	Assert(m_propHooks.find(pProp) == m_propHooks.end() || !m_propHooks[pProp].expired());
 
-	if (it->value.list.empty())
-	{
-		OnEntityLeaveHook(it->key);
-		it.erase();
-	}
-}
-
-void SendPropHookManager::OnEntityEnterHook(int entity)
-{
-	ClientPacksDetour::OnEntityHooked(entity);
-}
-
-void SendPropHookManager::OnEntityLeaveHook(int entity)
-{
-	ClientPacksDetour::OnEntityUnhooked(entity);
-}
-
-bool SendPropHookManager::HookEntity(int entity, SendProp *pProp, int element, PropType type, IPluginFunction *pFunc)
-{
 	SendPropHook hook;
 	hook.element = element;
 	hook.type = type;
 	hook.fnProcess = SendProxyPluginCallback;
 	hook.pCallback = pFunc;
 	hook.pOwner = pFunc->GetParentRuntime();
+	hook.proxy = m_propHooks[pProp].lock();
 
-	auto i = m_propHooks.findForAdd(pProp);
-	Assert(!i.found() || !i->value.expired());
-
-	if (i.found())
-	{
-		hook.proxy = i->value.lock();
-	}
-
-	if (!hook.proxy)
+	if (hook.proxy == nullptr)
 	{
 		hook.proxy = std::make_shared<SendProxyHook>(pProp, GlobalProxy);
-		m_propHooks.add(i, pProp, hook.proxy);
+		m_propHooks[pProp] = hook.proxy;
 	}
 
-	auto ii = m_entityInfos.findForAdd(entity);
-	if (!ii.found())
+	if (m_entityInfos.find(entity) == m_entityInfos.end())
 	{
-		m_entityInfos.add(ii, entity);
+		m_entityInfos.emplace(entity, std::make_shared<SendPropEntityInfo>());
 		OnEntityEnterHook(entity);
 	}
-	ii->value.list.emplace_front(std::move(hook));
+	m_entityInfos.at(entity)->list.emplace_front(std::move(hook));
 
 	return true;
 }
@@ -119,69 +96,82 @@ void SendPropHookManager::UnhookEntityAll(int entity)
 
 void SendPropHookManager::OnPluginUnloaded(IPlugin *plugin)
 {
-	for (auto it = m_entityInfos.iter(); !it.empty(); it.next())
+	for (auto it = m_entityInfos.begin(); it != m_entityInfos.end();)
 	{
-		RemoveEntity(it, [pOwner = plugin->GetRuntime()](const SendPropHook &hook)
-					 { return hook.pOwner == pOwner; });
+		it = RemoveEntityAt(it, [pOwner = plugin->GetRuntime()](const SendPropHook &hook)
+							{ return hook.pOwner == pOwner; });
 	}
 }
 
 void SendPropHookManager::OnExtentionUnloaded(IExtension *ext)
 {
-	for (auto it = m_entityInfos.iter(); !it.empty(); it.next())
+	for (auto it = m_entityInfos.begin(); it != m_entityInfos.end();)
 	{
-		RemoveEntity(it, [pOwner = ext](const SendPropHook &hook)
-					 { return hook.pOwner == pOwner; });
+		it = RemoveEntityAt(it, [pOwner = ext](const SendPropHook &hook)
+							{ return hook.pOwner == pOwner; });
 	}
 }
 
-SendPropEntityInfo* SendPropHookManager::GetEntityHooks(int entity)
+std::shared_ptr<SendPropEntityInfo>
+SendPropHookManager::GetEntityHooks(int entity) noexcept
 {
-	auto r = m_entityInfos.find(entity);
-	if (!r.found())
-		return nullptr;
+	if (m_entityInfos.find(entity)!= m_entityInfos.end())
+		return m_entityInfos.at(entity);
 
-	return &r->value;
+	return nullptr;
 }
 
-std::shared_ptr<SendProxyHook> SendPropHookManager::GetPropHook(const SendProp *pProp)
+std::shared_ptr<SendProxyHook>
+SendPropHookManager::GetPropHook(const SendProp *pProp) noexcept
 {
-	auto r = m_propHooks.find(pProp);
-	if (!r.found())
-		return nullptr;
+	if (m_propHooks.find(pProp) != m_propHooks.end())
+		return m_propHooks.at(pProp).lock();
 
-	return r->value.lock();
+	return nullptr;
 }
 
 bool SendPropHookManager::IsPropHooked(const SendProp *pProp) const
 {
-	auto r = m_propHooks.find(pProp);
-	return r.found() && !r->value.expired();
+	const auto it = m_propHooks.find(pProp);
+	return it != m_propHooks.end() && !it->second.expired();
 }
 
 bool SendPropHookManager::IsEntityHooked(int entity) const
 {
-	auto r = m_entityInfos.find(entity);
-	return r.found();
+	const auto it = m_entityInfos.find(entity);
+	return it != m_entityInfos.end();
 }
 
 bool SendPropHookManager::IsEntityHooked(int entity, const SendProp *pProp, int element, const IPluginFunction *pFunc) const
 {
-	auto r = m_entityInfos.find(entity);
-	if (!r.found())
+	const auto it = m_entityInfos.find(entity);
+	if (it == m_entityInfos.end())
 		return false;
 
-	return std::any_of(r->value.list.cbegin(), r->value.list.cend(), [&](const SendPropHook &hook) {
-		return hook.proxy->GetProp() == pProp
-			&& hook.pCallback == (void *)pFunc
-			&& ((hook.proxy->GetProp()->GetType() != DPT_Array && hook.proxy->GetProp()->GetType() != DPT_DataTable)
-			 || hook.element == element);
-	});
+	return std::any_of(it->second->list.cbegin(), it->second->list.cend(),
+		[&](const SendPropHook &hook)
+		{
+			return hook.proxy->GetProp() == pProp
+				&& hook.pCallback == (void *)pFunc
+				&& ((hook.proxy->GetProp()->GetType() != DPT_Array && hook.proxy->GetProp()->GetType() != DPT_DataTable)
+				 || hook.element == element);
+		}
+	);
 }
 
 bool SendPropHookManager::IsAnyEntityHooked() const
 {
-	return m_entityInfos.elements() > 0;
+	return m_entityInfos.size() > 0;
+}
+
+void SendPropHookManager::OnEntityEnterHook(int entity)
+{
+	ClientPacksDetour::OnEntityHooked(entity);
+}
+
+void SendPropHookManager::OnEntityLeaveHook(int entity)
+{
+	ClientPacksDetour::OnEntityUnhooked(entity);
 }
 
 class TailInvoker
@@ -226,7 +216,7 @@ void GlobalProxy(const SendProp *pProp, const void *pStructBase, const void * pD
 		}
 	);
 
-	SendPropEntityInfo *pEntHook = g_pSendPropHookManager->GetEntityHooks(objectID);
+	std::shared_ptr<SendPropEntityInfo> pEntHook = g_pSendPropHookManager->GetEntityHooks(objectID);
 	if (!pEntHook)
 		return;
 
