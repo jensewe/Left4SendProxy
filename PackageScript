@@ -47,3 +47,5 @@ CopyFiles('scripting', 'addons/sourcemod/scripting/include',
 # Copy binaries.
 for cxx_task in Extension.extensions:
   builder.AddCopy(cxx_task.binary, folder_map['addons/sourcemod/extensions'])
+  if cxx_task.target.platform == 'windows':
+    builder.AddCopy(cxx_task.debug, folder_map['addons/sourcemod/extensions'])
