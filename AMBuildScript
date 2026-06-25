@@ -436,7 +436,7 @@ SafetyHookPath = os.path.join(Extension.sm_root, 'public', 'safetyhook')
 
 if os.path.exists(os.path.join(SafetyHookPath, 'AMBuilder')):
   # Copy safetyhook from sourcemod
-  if not os.path.exists(os.path.join('safetyhook')):
+  if not os.path.exists(os.path.join(builder.sourcePath, 'safetyhook')):
     shutil.copytree(SafetyHookPath, os.path.join(builder.sourcePath, 'safetyhook'))
 
   SafetyHook.all_targets = Extension.all_targets
